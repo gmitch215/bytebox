@@ -1,0 +1,6 @@
+.gradle/
+.kotlin/
+out/
+build/
+node_modules/
+.husky/
