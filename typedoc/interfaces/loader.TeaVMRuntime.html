@@ -14,10 +14,15 @@
 <section class="tsd-panel tsd-comment">
 <div class="tsd-comment tsd-typography"><p>The subset of TeaVM's generated <code>*.wasm-runtime.js</code> that bytebox drives. Build with
 <code>modularRuntime = true</code> so the file is an ES module rather than a global assignment.</p>
+<p>Only <code>defaults</code> is used. The generated <code>load</code> is not: it probes for JS String Builtins by
+compiling a module from bytes, which workerd refuses at request time; it takes the Node branch
+on any compatibility date from 2026-08-04 because <code>nodejs_compat</code> defines <code>process</code>; and it
+resolves the program's JavaScript imports with a dynamic <code>import()</code> of a specifier read out of
+a wasm custom section, which no bundler can follow.</p>
 </div></section>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">TeaVMRuntime</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-call-signature" href="#defaults-1">defaults</a><span class="tsd-signature-symbol">(</span><br/>        <span class="tsd-kind-parameter">imports</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">userExports</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">,</span><br/>        <span class="tsd-kind-parameter">stringBuiltinsSupported</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">,</span><br/>    <span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-call-signature">supplyExports</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">exports</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">WebAssembly.Exports</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span> <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/9cd11d81e73c29ff8982724f834bd679e63c237a/npm/src/loader.ts#L7">npm/src/loader.ts:7</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/a2e43f9c68bb57f924ca5c7bc1e4e7c910fd79c4/npm/src/loader.ts#L20">npm/src/loader.ts:20</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -44,7 +49,7 @@
 <li><span><span class="tsd-kind-parameter">stringBuiltinsSupported</span>: <span class="tsd-signature-type">boolean</span></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{</span> <span class="tsd-kind-call-signature">supplyExports</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">exports</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">WebAssembly.Exports</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span> <span class="tsd-signature-symbol">}</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/9cd11d81e73c29ff8982724f834bd679e63c237a/npm/src/loader.ts#L8">npm/src/loader.ts:8</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/a2e43f9c68bb57f924ca5c7bc1e4e7c910fd79c4/npm/src/loader.ts#L21">npm/src/loader.ts:21</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">

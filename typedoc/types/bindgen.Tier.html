@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>isByteboxError | bytebox - v1.0.0</title><meta name="description" content="Documentation for bytebox"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Tier | bytebox - v1.0.0</title><meta name="description" content="Documentation for bytebox"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container"><a href="../index.html" class="title">bytebox - v1.0.0</a>
 <div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
 <ul role="listbox" id="tsd-search-results"></ul>
@@ -8,21 +8,70 @@
 <div class="col-content">
 <div class="tsd-page-title">
 <ul class="tsd-breadcrumb" aria-label="Breadcrumb">
-<li><a href="../modules/errors.html">errors</a></li>
-<li><a href="" aria-current="page">isByteboxError</a></li></ul>
-<h1>Function isByteboxError</h1></div>
-<section class="tsd-panel">
-<ul class="tsd-signatures">
-<li class="">
-<div class="tsd-signature tsd-anchor-link" id="isbyteboxerror"><span class="tsd-kind-call-signature">isByteboxError</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">error</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-kind-parameter">error</span> <span class="tsd-signature-keyword">is</span> <a href="../classes/errors.ByteboxError.html" class="tsd-signature-type tsd-kind-class">ByteboxError</a><a href="#isbyteboxerror" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></div>
-<div class="tsd-description">
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li><span><span class="tsd-kind-parameter">error</span>: <span class="tsd-signature-type">unknown</span></span></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-kind-parameter">error</span> <span class="tsd-signature-keyword">is</span> <a href="../classes/errors.ByteboxError.html" class="tsd-signature-type tsd-kind-class">ByteboxError</a></h4><aside class="tsd-sources">
+<li><a href="../modules/bindgen.html">bindgen</a></li>
+<li><a href="" aria-current="page">Tier</a></li></ul>
+<h1>Type Alias Tier</h1></div>
+<div class="tsd-signature"><span class="tsd-kind-type-alias">Tier</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">1</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">2</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">3</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">4</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">5</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">6</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">7</span></div>
+<div class="tsd-comment tsd-typography"><p>Where a package's types came from.</p>
+<p>Resolution walks these in order and stops at the first that answers, so a package with no types of
+its own still binds. Tier 7 is the floor and cannot fail: whatever the module turns out to be, it
+binds as one <code>TSObject</code> and the caller drives it by name.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Source</th>
+<th>What you get</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>the package's own <code>.d.ts</code></td>
+<td>full types</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>@types/&lt;pkg&gt;</code> from DefinitelyTyped</td>
+<td>full types</td>
+</tr>
+<tr>
+<td>3</td>
+<td>JSDoc-annotated <code>.js</code>, demoted on disagreement</td>
+<td>most types</td>
+</tr>
+<tr>
+<td>4</td>
+<td>inference over plain <code>.js</code></td>
+<td>partial types</td>
+</tr>
+<tr>
+<td>5</td>
+<td>the syntax tree alone</td>
+<td>names and arity</td>
+</tr>
+<tr>
+<td>6</td>
+<td>importing the module and reading it</td>
+<td>names and arity</td>
+</tr>
+<tr>
+<td>7</td>
+<td>the module itself</td>
+<td>one <code>TSObject</code></td>
+</tr>
+</tbody>
+</table>
+<p>Tiers 1 through 4 share one code path and differ only in compiler flags. Tier 5 walks the syntax
+tree for names the checker did not resolve, and tier 6 imports the module and reads its own
+properties, which is the only thing that sees exports a package assembles at run time.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<div class="tsd-tag-since">
+<h4 class="tsd-anchor-link" id="since">Since<a href="#since" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h4><p>1.0.0</p>
+</div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/a2e43f9c68bb57f924ca5c7bc1e4e7c910fd79c4/npm/src/errors.ts#L110">npm/src/errors.ts:110</a></li></ul></aside></div></li></ul></section></div>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/a2e43f9c68bb57f924ca5c7bc1e4e7c910fd79c4/npm/src/bindgen.ts#L30">npm/src/bindgen.ts:30</a></li></ul></aside></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
