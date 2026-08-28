@@ -367,7 +367,11 @@ public final class Formatter implements Closeable, Flushable {
 			if (specifier.width >= 0 || specifier.precision >= 0) {
 				throw new java.util.IllegalFormatFlagsException(specifier.text);
 			}
-			return "\n";
+			// the platform's separator rather than a newline, which is what the conversion means; on
+			// this runtime the two are the same, and on a JVM under Windows they are not
+			// the platform's separator rather than a newline, which is what the conversion means; on
+			// this runtime the two are the same, and on a JVM under Windows they are not
+			return System.lineSeparator();
 		}
 		if (specifier.precision >= 0) {
 			throw new IllegalFormatPrecisionException(specifier.precision);
@@ -663,10 +667,6 @@ public final class Formatter implements Closeable, Flushable {
 		return specifier.left ? value + padding : padding + value;
 	}
 
-	private static String pad(String body, int zeros) {
-		return pad(body, zeros, false);
-	}
-
 	private static String pad(String body, int zeros, boolean before) {
 		StringBuilder padding = new StringBuilder();
 		for (int i = 0; i < zeros; i++) padding.append('0');
@@ -757,15 +757,6 @@ public final class Formatter implements Closeable, Flushable {
 				? Long.toOctalString((Long) argument)
 				: Long.toHexString((Long) argument);
 		}
-		throw new IllegalFormatConversionException(
-			conversion,
-			argument == null ? Object.class : argument.getClass()
-		);
-	}
-
-	private static double doubleValue(Specifier specifier, Object argument, char conversion) {
-		if (argument instanceof Double) return (Double) argument;
-		if (argument instanceof Float) return (Float) argument;
 		throw new IllegalFormatConversionException(
 			conversion,
 			argument == null ? Object.class : argument.getClass()

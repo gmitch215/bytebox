@@ -20,6 +20,21 @@ dependencies {
 	testRuntimeOnly(libs.junit.engine)
 }
 
+// the same suite again with a carriage-return line separator. %n is the platform's separator rather
+// than a newline, so a host that uses a newline cannot tell a correct implementation from one that
+// hardcoded it, and the difference only ever surfaced on Windows
+val tests = project.the<SourceSetContainer>()["test"]
+
+val testCrlf by tasks.registering(Test::class) {
+	description = "Runs the tests as a host whose line separator is a carriage-return pair"
+	group = LifecycleBasePlugin.VERIFICATION_GROUP
+	testClassesDirs = tests.output.classesDirs
+	classpath = tests.runtimeClasspath
+	jvmArgs("-Dline.separator=\r\n")
+}
+
+tasks.named("check") { dependsOn(testCrlf) }
+
 mavenPublishing {
 	coordinates(project.group.toString(), project.name, project.version.toString())
 

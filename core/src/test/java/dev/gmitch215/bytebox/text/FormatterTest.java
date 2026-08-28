@@ -286,14 +286,21 @@ class FormatterTest {
 
 	// #region the literals and the whole string
 
+	/**
+	 * The separator is the platform's, not a newline, which is the one thing in this suite that differs
+	 * between the hosts the test itself runs on. Comparing against {@link System#lineSeparator()} rather
+	 * than against {@code "\n"} is what makes the case mean the same thing on Windows as on Unix.
+	 */
 	@Test
 	@DisplayName("matches on a literal percent and a line separator")
 	void matchesOnLiterals() {
 		assertMatches("100%%");
 		assertMatches("%5%|");
 		assertMatches("%-5%|");
-		assertEquals("\n", ours("%n"));
+		assertEquals(System.lineSeparator(), ours("%n"));
 		assertMatches("a%nb");
+		assertThrows(java.util.IllegalFormatFlagsException.class, () -> ours("%5n"));
+		assertThrows(java.util.IllegalFormatFlagsException.class, () -> ours("%.2n"));
 	}
 
 	@Test
