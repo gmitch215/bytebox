@@ -1,21 +1,28 @@
 {
-	"name": "bytebox",
+	"name": "bytebox-workspace",
 	"version": "1.0.0",
 	"type": "module",
+	"private": true,
 	"description": "Java on Cloudflare Workers",
+	"workspaces": [
+		"npm"
+	],
 	"scripts": {
 		"prettier": "prettier --write .",
 		"prettier:check": "prettier --check .",
-		"prepare": "husky install"
+		"typecheck": "cd npm && tsc -p tsconfig.json --noEmit",
+		"test": "cd npm && vitest run",
+		"prepare": "husky"
 	},
 	"devDependencies": {
 		"husky": "^9.1.7",
 		"lint-staged": "^17.3.0",
 		"prettier": "^3.9.6",
 		"prettier-plugin-java": "^2.10.3",
+		"prettier-plugin-organize-imports": "^4.3.0",
 		"prettier-plugin-sh": "^0.19.0"
 	},
 	"lint-staged": {
-		"*.{java,json,md}": "prettier --write"
+		"*.{java,ts,mjs,json,jsonc,yml,yaml,md,sh}": "prettier --write"
 	}
 }
