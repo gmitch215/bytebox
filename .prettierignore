@@ -5,8 +5,10 @@ build/
 node_modules/
 .husky/
 docs/CNAME
+npm/dist/
 npm/typedoc/
 npm/coverage/
 npm/tests/fixtures/
+npm/tests/workers/*.build.mjs
 size/ledger/
 **/build/generated/

@@ -3,6 +3,7 @@ annotations = "26.1.0"
 jacoco = "0.8.13"
 junit = "6.0.2"
 teavm = "0.15.0"
+threetenbp = "1.7.0"
 
 [libraries]
 annotations = { module = "org.jetbrains:annotations", version.ref = "annotations" }
@@ -12,9 +13,12 @@ junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
 junit-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
 teavm-classlib = { module = "org.teavm:teavm-classlib", version.ref = "teavm" }
 teavm-core = { module = "org.teavm:teavm-core", version.ref = "teavm" }
+teavm-extension-spi = { module = "org.teavm:teavm-extension-spi", version.ref = "teavm" }
+teavm-gradle-plugin = { module = "org.teavm:teavm-gradle-plugin", version.ref = "teavm" }
 teavm-jso = { module = "org.teavm:teavm-jso", version.ref = "teavm" }
 teavm-jso-apis = { module = "org.teavm:teavm-jso-apis", version.ref = "teavm" }
 teavm-tooling = { module = "org.teavm:teavm-tooling", version.ref = "teavm" }
+threetenbp = { module = "org.threeten:threetenbp", version.ref = "threetenbp" }
 
 [plugins]
 teavm = { id = "org.teavm", version.ref = "teavm" }

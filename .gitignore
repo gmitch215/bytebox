@@ -8,9 +8,14 @@ node_modules
 package-lock.json
 
 # npm package
+# npm drops a symlinked LICENSE from the tarball, so prepack copies the real one in
+npm/LICENSE
 npm/typedoc
 npm/coverage
 npm/dist
+
+# the workerd lane Workers under test, bundled by tests/workers/setup.ts
+npm/tests/workers/*.build.mjs
 
 # a real compiled module is committed under npm/tests/fixtures as a test input
 
@@ -19,3 +24,7 @@ npm/dist
 size/ledger/*.json
 !size/ledger/.gitkeep
 .DS_Store
+
+# the samples build against the bytebox in this tree
+samples/*/build
+samples/build
