@@ -21,20 +21,28 @@ gradlePlugin {
 	}
 }
 
+val functionalTest by sourceSets.creating
+
+gradlePlugin.testSourceSets.add(functionalTest)
+
 dependencies {
 	implementation(gradleApi())
 	implementation(libs.teavm.tooling)
 	implementation(libs.teavm.core)
+	// this plugin applies org.teavm, so it has to be resolvable from this plugin's own classpath
+	implementation(libs.teavm.gradle.plugin)
 
 	testImplementation(gradleTestKit())
 	testImplementation(libs.junit.api)
 	testImplementation(libs.junit.params)
 	testRuntimeOnly(libs.junit.engine)
+
+	"functionalTestImplementation"(gradleTestKit())
+	"functionalTestImplementation"(libs.junit.api)
+	"functionalTestImplementation"(libs.junit.params)
+	"functionalTestRuntimeOnly"(libs.junit.engine)
+	"functionalTestRuntimeOnly"(rootProject.libs.junit.launcher)
 }
-
-val functionalTest by sourceSets.creating
-
-gradlePlugin.testSourceSets.add(functionalTest)
 
 tasks.register<Test>("functionalTest") {
 	description = "Drives the plugin against real sample projects"
@@ -42,6 +50,16 @@ tasks.register<Test>("functionalTest") {
 	testClassesDirs = functionalTest.output.classesDirs
 	classpath = functionalTest.runtimeClasspath
 	useJUnitPlatform()
+
+	// the version under test is not published anywhere a resolver could find it, so the fixture
+	// projects put it on their compile classpath by path. The path is captured as a provider rather
+	// than as the task, which the configuration cache cannot serialise.
+	val coreJar = project(":bytebox-core").tasks.named<Jar>("jar").flatMap { it.archiveFile }
+	val corePath = coreJar.map { it.asFile.absolutePath }
+	inputs.file(coreJar)
+	jvmArgumentProviders.add(
+		CommandLineArgumentProvider { listOf("-Dbytebox.core.jars=" + corePath.get()) }
+	)
 }
 
 tasks.named("check") { dependsOn("functionalTest") }
