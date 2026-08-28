@@ -1,0 +1,273 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>bytebox - v1.0.0</title><meta name="description" content="Documentation for bytebox"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script><script async src="assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container"><a href="index.html" class="title">bytebox - v1.0.0</a>
+<div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/>
+<ul role="listbox" id="tsd-search-results"></ul>
+<div id="tsd-search-status" aria-live="polite" aria-atomic="true">
+<div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header>
+<div class="container container-main">
+<div class="col-content">
+<div class="tsd-page-title">
+<h1>bytebox - v1.0.0</h1></div>
+<div class="tsd-panel tsd-typography"><h1 id="☕-bytebox" class="tsd-anchor-link">☕ bytebox<a href="#☕-bytebox" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<blockquote>
+<p>Java on Cloudflare Workers</p>
+</blockquote>
+<p><a href="https://github.com/gmitch215/bytebox/actions/workflows/build.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+<a href="https://github.com/gmitch215/bytebox/actions/workflows/coverage.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/coverage.yml/badge.svg" alt="Coverage"></a>
+<a href="https://github.com/gmitch215/bytebox/actions/workflows/prettier.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/prettier.yml/badge.svg" alt="Prettier"></a>
+<a href="https://codecov.io/gh/gmitch215/bytebox"><img src="https://codecov.io/gh/gmitch215/bytebox/branch/master/graph/badge.svg" alt="codecov"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a></p>
+<p>bytebox compiles a Java workspace into a Cloudflare Worker. Write a class, apply the Gradle plugin,
+and deploy WebAssembly that runs on Cloudflare's edge.</p>
+<p>A hello world compiles to <strong>16,539 bytes</strong> of WebAssembly and <strong>11.82 KiB</strong> of Worker against a 3 MB
+ceiling, starts in <strong>8 ms</strong> of a 1 second budget, and answers a request in under a millisecond of CPU.</p>
+<hr>
+<h2 id="📋-table-of-contents" class="tsd-anchor-link">📋 Table of Contents<a href="#📋-table-of-contents" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><a href="#-why-bytebox">Why bytebox</a></li>
+<li><a href="#-install">Install</a></li>
+<li><a href="#-quick-start">Quick Start</a></li>
+<li><a href="#-triggers">Triggers</a></li>
+<li><a href="#-bindings">Bindings</a></li>
+<li><a href="#-size">Size</a></li>
+<li><a href="#-concurrency">Concurrency</a></li>
+<li><a href="#-platform-limits">Platform Limits</a></li>
+<li><a href="#-out-of-scope">Out of Scope</a></li>
+<li><a href="#-license">License</a></li>
+</ul>
+<hr>
+<h2 id="🎯-why-bytebox" class="tsd-anchor-link">🎯 Why bytebox<a href="#🎯-why-bytebox" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Cloudflare Workers run JavaScript and WebAssembly. Java compiles to WebAssembly through TeaVM, but
+the gap between a compiled module and a deployable Worker is wide enough that nothing crossed it:
+TeaVM publishes no npm artifact, and its generated loader cannot run on Workers at all. Compilation
+from bytes is refused inside a request; the asynchronous form never settles during module evaluation;
+streaming compilation is unavailable in both places.</p>
+<p>bytebox supplies the loader that does work, the bindings a Worker needs, and the build that ties them
+together.</p>
+<hr>
+<h2 id="📥-install" class="tsd-anchor-link">📥 Install<a href="#📥-install" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>The Gradle plugin:</p>
+<pre><code class="kotlin">plugins {
+	java
+	id("dev.gmitch215.bytebox") version "1.0.0"
+}
+
+dependencies { implementation("dev.gmitch215:bytebox-core:1.0.0") }
+</code><button type="button">Copy</button></pre>
+
+<p>The loader, for a Worker assembled by hand:</p>
+<pre><code class="sh"><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">bytebox</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="🚀-quick-start" class="tsd-anchor-link">🚀 Quick Start<a href="#🚀-quick-start" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="java">package com.example;
+
+import dev.gmitch215.bytebox.*;
+
+public class HelloWorker implements Worker {
+	@Override
+	public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+		return Bytebox.response("hello from Java");
+	}
+}
+</code><button type="button">Copy</button></pre>
+
+<pre><code class="kotlin">bytebox {
+	handlerClass = "com.example.HelloWorker"
+	workerName = "hello-world"
+}
+</code><button type="button">Copy</button></pre>
+
+<pre><code class="sh"><span class="hl-0">./gradlew</span><span class="hl-1"> </span><span class="hl-2">buildWorker</span><br/><span class="hl-0">bunx</span><span class="hl-1"> </span><span class="hl-2">wrangler</span><span class="hl-1"> </span><span class="hl-2">deploy</span>
+</code><button type="button">Copy</button></pre>
+
+<hr>
+<h2 id="🎛-triggers" class="tsd-anchor-link">🎛 Triggers<a href="#🎛-triggers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>One interface per trigger, each optional. The build derives which handlers to export and which
+Wrangler keys to write from the interfaces a class implements, so an unhandled trigger costs nothing.</p>
+<table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Handles</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Worker</code></td>
+<td>HTTP requests</td>
+</tr>
+<tr>
+<td><code>Scheduled</code></td>
+<td>Cron Triggers</td>
+</tr>
+<tr>
+<td><code>Mail</code></td>
+<td>Incoming email</td>
+</tr>
+<tr>
+<td><code>Consumer&lt;T&gt;</code></td>
+<td>Queue messages</td>
+</tr>
+<tr>
+<td><code>Tail</code></td>
+<td>Trace events from another Worker</td>
+</tr>
+<tr>
+<td><code>Alarm</code></td>
+<td>Durable Object alarms</td>
+</tr>
+</tbody>
+</table>
+<p><code>InboundMail</code> records its own disposition, because a message a handler returns without acting on is
+dropped by the platform. Call <code>forward</code>, <code>reply</code> or <code>reject</code> at any point and carry on working;
+<code>drop()</code> states that discarding it was the intent.</p>
+<hr>
+<h2 id="🔌-bindings" class="tsd-anchor-link">🔌 Bindings<a href="#🔌-bindings" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Binding names are optional. Each type has a default, and repeats take a numeric suffix: the first KV
+namespace is <code>KV</code> and the second <code>KV_2</code>, the first D1 database is <code>DB</code>, the first R2 bucket is <code>BLOB</code>,
+and a Durable Object binding is <code>DO_</code> followed by the class name.</p>
+<p>Remote identifiers are supported wherever Wrangler accepts one, and omitting them lets Wrangler
+provision the resource.</p>
+<hr>
+<h2 id="📏-size" class="tsd-anchor-link">📏 Size<a href="#📏-size" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Cloudflare enforces its ceiling after applying its own gzip, so the gzip figure is the one that binds.</p>
+<p>Three APIs carry most of the weight of a real program. Each is measured on its own against a hello
+world compiled with the same settings:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Added, gzipped</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>streams, collections, reflection</td>
+<td>3.0 to 3.8 KB each</td>
+</tr>
+<tr>
+<td>threads</td>
+<td>6.8 KB</td>
+</tr>
+<tr>
+<td><code>BigDecimal</code></td>
+<td>12.7 KB</td>
+</tr>
+<tr>
+<td><code>java.util.regex</code></td>
+<td>65.3 KB</td>
+</tr>
+<tr>
+<td><code>Locale</code> and <code>NumberFormat</code></td>
+<td>75.7 KB</td>
+</tr>
+<tr>
+<td><code>String.format</code></td>
+<td>86.0 KB</td>
+</tr>
+</tbody>
+</table>
+<p>Reflection, collections and streams are inexpensive. The three costly ones carry locale data and
+pattern machinery that the isolate already provides through <code>Intl</code> and <code>RegExp</code>, which is where they
+are headed.</p>
+<p><code>sizeReport</code> prints the compiled module on every axis, and splits it between the compiler's runtime,
+the class library and your own code.</p>
+<hr>
+<h2 id="🧵-concurrency" class="tsd-anchor-link">🧵 Concurrency<a href="#🧵-concurrency" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Cloudflare Workers run in a single thread and the Web Worker API is unavailable, so there is no
+parallelism to be had. A Java thread is a fiber scheduled on the host's timer queue.</p>
+<p>That makes a blocking API the honest one. <code>env</code> calls look synchronous and suspend underneath, which
+is what a compiled continuation gives you. <code>CompletableFuture</code> is the escape hatch when work needs to
+overlap or outlive a response.</p>
+<p><code>System.currentTimeMillis()</code> does not advance inside a request, because Workers freeze the clock
+between I/O. Absolute timestamps are sound; durations taken from two readings are not.</p>
+<hr>
+<h2 id="🚧-platform-limits" class="tsd-anchor-link">🚧 Platform Limits<a href="#🚧-platform-limits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Free</th>
+<th>Paid</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Worker size, after gzip</td>
+<td>3 MB</td>
+<td>10 MB</td>
+</tr>
+<tr>
+<td>Startup</td>
+<td>1 second</td>
+<td>1 second</td>
+</tr>
+<tr>
+<td>CPU per request</td>
+<td>10 ms</td>
+<td>5 min</td>
+</tr>
+<tr>
+<td>Memory per isolate</td>
+<td>128 MB</td>
+<td>128 MB</td>
+</tr>
+<tr>
+<td>Subrequests per request</td>
+<td>50</td>
+<td>10,000</td>
+</tr>
+<tr>
+<td>Cron Triggers per account</td>
+<td>5</td>
+<td>250</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="🛑-out-of-scope" class="tsd-anchor-link">🛑 Out of Scope<a href="#🛑-out-of-scope" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><strong>Subprocesses.</strong> <code>Process</code> and <code>ProcessBuilder</code> do not exist, and Workers have no equivalent.</li>
+<li><strong>Threads.</strong> Fibers are real; parallelism is not.</li>
+<li><strong>Dynamic class loading.</strong> Compilation is closed-world, so reflection resolves against classes
+registered at build time.</li>
+</ul>
+<hr>
+<h2 id="📄-license" class="tsd-anchor-link">📄 License<a href="#📄-license" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><a href="media/LICENSE">MIT</a></p>
+</div></div>
+<div class="col-sidebar">
+<div class="page-menu">
+<div class="tsd-navigation settings">
+<details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div>
+<div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>
+<h3>On This Page</h3></summary>
+<div class="tsd-accordion-details"><a href="#☕-bytebox"><span>☕ bytebox</span></a>
+<ul>
+<li><a href="#📋-table-of-contents"><span>📋 <wbr/>Table of <wbr/>Contents</span></a></li>
+<li><a href="#🎯-why-bytebox"><span>🎯 <wbr/>Why bytebox</span></a></li>
+<li><a href="#📥-install"><span>📥 <wbr/>Install</span></a></li>
+<li><a href="#🚀-quick-start"><span>🚀 <wbr/>Quick <wbr/>Start</span></a></li>
+<li><a href="#🎛-triggers"><span>🎛 <wbr/>Triggers</span></a></li>
+<li><a href="#🔌-bindings"><span>🔌 <wbr/>Bindings</span></a></li>
+<li><a href="#📏-size"><span>📏 <wbr/>Size</span></a></li>
+<li><a href="#🧵-concurrency"><span>🧵 <wbr/>Concurrency</span></a></li>
+<li><a href="#🚧-platform-limits"><span>🚧 <wbr/>Platform <wbr/>Limits</span></a></li>
+<li><a href="#🛑-out-of-scope"><span>🛑 <wbr/>Out of <wbr/>Scope</span></a></li>
+<li><a href="#📄-license"><span>📄 <wbr/>License</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="modules.html">bytebox - v1.0.0</a>
+<ul class="tsd-small-nested-navigation" id="tsd-nav-container">
+<li>Loading...</li></ul></nav></div></div></div><footer>
+<p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer>
+<div class="overlay"></div></body></html>
