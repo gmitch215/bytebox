@@ -11,7 +11,8 @@ package-lock.json
 npm/typedoc
 npm/coverage
 npm/dist
-npm/tests/fixtures
+
+# a real compiled module is committed under npm/tests/fixtures as a test input
 
 # generated worker output
 .wrangler

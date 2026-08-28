@@ -10,8 +10,10 @@
 	"scripts": {
 		"prettier": "prettier --write .",
 		"prettier:check": "prettier --check .",
-		"typecheck": "cd npm && tsc -p tsconfig.json --noEmit",
-		"test": "cd npm && vitest run",
+		"typecheck": "bun run --cwd npm typecheck",
+		"test": "bun run --cwd npm test",
+		"test:coverage": "bun run --cwd npm test:coverage",
+		"docs:build": "bun run --cwd npm docs:build",
 		"prepare": "husky"
 	},
 	"devDependencies": {

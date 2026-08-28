@@ -19,7 +19,7 @@
 		"README.md"
 	],
 	"scripts": {
-		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"docs:build": "typedoc"
@@ -27,7 +27,8 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.22.0",
 		"@cloudflare/workers-types": "^5.20260811.1",
-		"@vitest/coverage-istanbul": "^4.1.0",
+		"@types/node": "^26.4.0",
+		"@vitest/coverage-istanbul": "^4.1.11",
 		"typedoc": "^0.28.20",
 		"typescript": "^5.9.3",
 		"vitest": "^4.1.0",
