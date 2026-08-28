@@ -134,6 +134,8 @@ jobs:
         run: npm install -g npm@latest
       - name: Install Dependencies
         run: bun install --frozen-lockfile
+      - name: Build The Package
+        run: bun run --cwd npm build
       - name: Publish to NPM
         working-directory: npm
         if: ${{ !inputs.skip_npm }}
