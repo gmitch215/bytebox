@@ -8,6 +8,11 @@ description = "Worker entry points and Cloudflare bindings for Java"
 dependencies {
 	api(libs.teavm.jso)
 	api(libs.teavm.jso.apis)
+	// java.time is absent from the class library, so this supplies it; not api, because a project
+	// writes java.time and the substitution rewrites it, and org.threeten.bp is never typed by hand
+	implementation(libs.threetenbp)
+	// the substitution policy runs in the compiler, not in the program
+	compileOnly(libs.teavm.extension.spi)
 	compileOnly(libs.annotations)
 
 	testImplementation(libs.junit.api)
