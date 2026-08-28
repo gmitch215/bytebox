@@ -52,6 +52,15 @@ jobs:
           fail_ci_if_error: false
           flags: plugin
           files: plugin/build/jacoco.xml
+      - name: Upload Size Coverage
+        if: success() || failure()
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: gmitch215/bytebox
+          fail_ci_if_error: false
+          flags: size
+          files: size/build/jacoco.xml
 
   npm:
     runs-on: ubuntu-latest

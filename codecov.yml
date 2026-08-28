@@ -13,8 +13,32 @@ coverage:
         threshold: 5%
 
 comment:
-  layout: 'condensed_header, condensed_files, condensed_footer'
+  layout: 'condensed_header, condensed_files, condensed_footer, component_list'
   require_changes: true
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        threshold: 2%
+  individual_components:
+    - component_id: core
+      name: core
+      paths:
+        - core/src/main/**
+    - component_id: plugin
+      name: plugin
+      paths:
+        - plugin/src/main/**
+    - component_id: npm
+      name: npm
+      paths:
+        - npm/src/**
+    - component_id: size
+      name: size
+      paths:
+        - size/src/main/**
 
 flag_management:
   default_rules:
@@ -29,10 +53,12 @@ flag_management:
     - name: npm
       paths:
         - npm/src/
+    - name: size
+      paths:
+        - size/src/main/
 
 ignore:
   - '**/build/**'
   - '**/src/test/**'
   - 'npm/tests/**'
   - 'samples/**'
-  - 'size/**'
