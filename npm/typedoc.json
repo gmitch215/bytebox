@@ -1,0 +1,12 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["src/index.ts", "src/loader.ts", "src/errors.ts", "src/cartridge.ts"],
+	"out": "typedoc",
+	"name": "bytebox",
+	"readme": "../README.md",
+	"includeVersion": true,
+	"excludeInternal": true,
+	"excludePrivate": true,
+	"validation": { "notExported": true, "invalidLink": true, "notDocumented": true },
+	"treatWarningsAsErrors": false
+}

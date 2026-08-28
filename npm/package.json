@@ -1,0 +1,55 @@
+{
+	"name": "bytebox",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "Run Java on Cloudflare Workers",
+	"main": "./src/index.ts",
+	"types": "./src/index.ts",
+	"exports": {
+		".": "./src/index.ts",
+		"./loader": "./src/loader.ts",
+		"./errors": "./src/errors.ts",
+		"./cartridge": "./src/cartridge.ts",
+		"./package.json": "./package.json"
+	},
+	"sideEffects": false,
+	"files": [
+		"src",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"typecheck": "tsc -p tsconfig.json --noEmit",
+		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"docs:build": "typedoc"
+	},
+	"devDependencies": {
+		"@cloudflare/vitest-pool-workers": "^0.22.0",
+		"@cloudflare/workers-types": "^5.20260811.1",
+		"@vitest/coverage-istanbul": "^4.1.0",
+		"typedoc": "^0.28.20",
+		"typescript": "^5.9.3",
+		"vitest": "^4.1.0",
+		"wrangler": "^4.20.0"
+	},
+	"license": "MIT",
+	"author": "Gregory Mitchell <me@gmitch215.xyz>",
+	"homepage": "https://github.com/gmitch215/bytebox",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/gmitch215/bytebox.git"
+	},
+	"bugs": {
+		"url": "https://github.com/gmitch215/bytebox/issues"
+	},
+	"keywords": [
+		"cloudflare",
+		"workers",
+		"java",
+		"wasm",
+		"webassembly",
+		"teavm",
+		"wasmgc"
+	]
+}
