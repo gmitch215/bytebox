@@ -1,0 +1,33 @@
+name: Check Formatting
+
+on:
+  push:
+    branches: [master, ver/*, feat/*]
+  pull_request:
+    branches: [master, ver/*, feat/*]
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  prettier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    name: Prettier
+    steps:
+      - uses: actions/checkout@v6
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 'latest'
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+      - name: Check Formatting
+        run: bun run prettier:check
