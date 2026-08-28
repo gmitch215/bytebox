@@ -4,3 +4,8 @@ out/
 build/
 node_modules/
 .husky/
+npm/typedoc/
+npm/coverage/
+npm/tests/fixtures/
+size/ledger/
+**/build/generated/
