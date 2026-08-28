@@ -4,6 +4,7 @@ out/
 build/
 node_modules/
 .husky/
+docs/CNAME
 npm/typedoc/
 npm/coverage/
 npm/tests/fixtures/

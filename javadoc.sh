@@ -10,14 +10,19 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"; git switch -f -q "$start" 2> /dev/null || true' EXIT
 
 cp -R build/docs/javadoc/. "$tmpdir/javadoc"
-# staged before the branch switch, because the landing page only exists on the source branch
+# staged before the branch switch, because these only exist on the source branch
 cp docs/index.html "$tmpdir/index.html"
+cp docs/CNAME "$tmpdir/CNAME"
 
-# a first deploy has no gh-pages to branch from, so start an orphan rather than force-pushing
 if git fetch origin gh-pages 2> /dev/null; then
 	git branch --no-track -f gh-pages origin/gh-pages 2> /dev/null || true
 	git switch -f gh-pages
+elif git show-ref --verify --quiet refs/heads/gh-pages; then
+	# the sibling script created it earlier in this same job and has not pushed yet, so reusing it
+	# is what keeps both tools' output in one branch
+	git switch -f gh-pages
 else
+	# a first deploy has nothing to branch from, so start an orphan rather than force-pushing
 	git switch --orphan gh-pages
 	# --orphan keeps the index, and only the index needs clearing; the working tree is left alone
 	# so the sibling script's build output survives
@@ -28,10 +33,12 @@ fi
 rm -rf javadoc
 cp -R "$tmpdir/javadoc" javadoc
 cp "$tmpdir/index.html" index.html
+# rewritten every deploy, because an orphan branch starts without it and Pages drops the domain
+cp "$tmpdir/CNAME" CNAME
 
 # scoped rather than `git add -A`: the working tree still holds source, build output and
 # node_modules, and gh-pages carries no .gitignore to keep them out
-git add -A -- javadoc index.html
+git add -A -- javadoc index.html CNAME
 
 if git diff --cached --quiet; then
 	echo "No Javadoc changes to deploy."
