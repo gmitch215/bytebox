@@ -36,7 +36,6 @@ jobs:
       - name: Build Javadoc
         run: ./gradlew allJavadoc
       - name: Build TypeDoc
-        working-directory: npm
         run: |
           bun install --frozen-lockfile
           bun run docs:build

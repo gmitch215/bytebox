@@ -56,7 +56,6 @@ jobs:
       - name: Check Gradle Projects
         run: ./gradlew check validatePlugins
       - name: Check NPM Package
-        working-directory: npm
         run: |
           bun install --frozen-lockfile
           bun run typecheck
@@ -120,9 +119,6 @@ jobs:
       id-token: write
 
     name: Publish NPM Package
-    defaults:
-      run:
-        working-directory: npm
     steps:
       - uses: actions/checkout@v7
       - name: Set up Bun
@@ -139,6 +135,7 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
       - name: Publish to NPM
+        working-directory: npm
         if: ${{ !inputs.skip_npm }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -151,6 +148,7 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@gmitch215'
       - name: Publish to GitHub Packages
+        working-directory: npm
         if: ${{ !inputs.skip_github_packages }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

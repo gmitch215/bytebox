@@ -110,9 +110,6 @@ jobs:
       contents: read
 
     name: Build NPM Package
-    defaults:
-      run:
-        working-directory: npm
     steps:
       - uses: actions/checkout@v6
       - name: Set up Bun
