@@ -91,7 +91,18 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Bytebox</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
-<div class="block">Factories for the platform types a handler returns.</div>
+<div class="block">Builds the platform types a handler returns, and reaches the platform functions that are not
+ bindings.
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-java"> public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+ 	if (!request.getMethod().equals("GET")) return Bytebox.status(405);
+ 	return Bytebox.json("{\"ok\":true}");
+ }
+</code></pre>
+</div>
+</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>
@@ -111,20 +122,116 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#json(java.lang.String)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;json)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#bytes(byte%5B%5D,java.lang.String)" class="member-name-link">bytes</a><wbr>(byte[]&nbsp;body,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;contentType)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Builds a response carrying already-serialised JSON.</div>
+<div class="block">A response carrying bytes.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#response(java.lang.String)" class="member-name-link">response</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#bytes(org.teavm.jso.typedarrays.ArrayBuffer,java.lang.String)" class="member-name-link">bytes</a><wbr>(org.teavm.jso.typedarrays.ArrayBuffer&nbsp;body,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;contentType)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Builds a 200 response carrying the given text.</div>
+<div class="block">A response carrying bytes.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#response(java.lang.String,int)" class="member-name-link">response</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fetch(dev.gmitch215.bytebox.Request)" class="member-name-link">fetch</a><wbr>(<a href="Request.html" title="interface in dev.gmitch215.bytebox">Request</a>&nbsp;request)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Sends a request to the internet.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fetch(java.lang.String)" class="member-name-link">fetch</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Sends a request to the internet.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#fetch(java.lang.String,dev.gmitch215.bytebox.js.TSObject)" class="member-name-link">fetch</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url,
+ <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;options)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Sends a request with options.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Headers.html" title="interface in dev.gmitch215.bytebox">Headers</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#headers()" class="member-name-link">headers</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Returns a header collection nothing has been put in yet.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#json(dev.gmitch215.bytebox.js.TSObject)" class="member-name-link">json</a><wbr>(<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A JSON response built from a JavaScript value, for anything with no codec.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#json(java.lang.String)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;json)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A 200 carrying already-serialised JSON.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#json(java.lang.String,int)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;json,
  int&nbsp;status)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Builds a response with an explicit status.</div>
+<div class="block">A JSON response with an explicit status.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static &lt;T&gt;&nbsp;<a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#json(T,java.lang.Class)" class="member-name-link">json</a><wbr>(T&nbsp;value,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A 200 carrying a Java value as JSON.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#log(java.lang.String)" class="member-name-link">log</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Writes a line to the Worker's log, which <code>wrangler tail</code> shows.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static org.teavm.jso.typedarrays.ArrayBuffer</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#random(int)" class="member-name-link">random</a><wbr>(int&nbsp;bytes)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Fills a buffer with cryptographically random bytes.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#redirect(java.lang.String,int)" class="member-name-link">redirect</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;location,
+ int&nbsp;status)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A redirect.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Request.html" title="interface in dev.gmitch215.bytebox">Request</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#request(java.lang.String,java.lang.String,java.lang.String,dev.gmitch215.bytebox.js.TSObject)" class="member-name-link">request</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;method,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
+ <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;headers)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Builds a request, for sending somewhere rather than for answering.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#response(java.lang.String)" class="member-name-link">response</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A 200 carrying text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#response(java.lang.String,int)" class="member-name-link">response</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
+ int&nbsp;status)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A response with an explicit status.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#response(java.lang.String,int,dev.gmitch215.bytebox.js.TSObject)" class="member-name-link">response</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
+ int&nbsp;status,
+ <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;headers)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A response with a status and headers.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#status(int)" class="member-name-link">status</a><wbr>(int&nbsp;status)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">An empty response with a status, for the cases where the status is the whole answer.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#upgrade(dev.gmitch215.bytebox.socket.WebSocket)" class="member-name-link">upgrade</a><wbr>(<a href="socket/WebSocket.html" title="interface in dev.gmitch215.bytebox.socket">WebSocket</a>&nbsp;client)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The 101 that completes a WebSocket upgrade.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#uuid()" class="member-name-link">uuid</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Returns a cryptographically random UUID.</div>
 </div>
 </div>
 </div>
@@ -147,7 +254,7 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="response(java.lang.String)">
 <h3>response</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">response</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body)</span></div>
-<div class="block">Builds a 200 response carrying the given text.</div>
+<div class="block">A 200 carrying text.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>body</code> - the body</dd>
@@ -161,7 +268,7 @@ loadScripts(document, 'script');</script>
 <h3>response</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">response</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
  int&nbsp;status)</span></div>
-<div class="block">Builds a response with an explicit status.</div>
+<div class="block">A response with an explicit status.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>body</code> - the body</dd>
@@ -172,15 +279,263 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="response(java.lang.String,int,dev.gmitch215.bytebox.js.TSObject)">
+<h3>response</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">response</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
+ int&nbsp;status,
+ <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;headers)</span></div>
+<div class="block">A response with a status and headers.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>body</code> - the body</dd>
+<dd><code>status</code> - the status code</dd>
+<dd><code>headers</code> - the headers, as an object of name to value</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bytes(org.teavm.jso.typedarrays.ArrayBuffer,java.lang.String)">
+<h3>bytes</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">bytes</span><wbr><span class="parameters">(org.teavm.jso.typedarrays.ArrayBuffer&nbsp;body,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;contentType)</span></div>
+<div class="block">A response carrying bytes.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>body</code> - the body</dd>
+<dd><code>contentType</code> - the media type to serve it as</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bytes(byte[],java.lang.String)">
+<h3>bytes</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">bytes</span><wbr><span class="parameters">(byte[]&nbsp;body,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;contentType)</span></div>
+<div class="block">A response carrying bytes.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>body</code> - the body</dd>
+<dd><code>contentType</code> - the media type to serve it as</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="upgrade(dev.gmitch215.bytebox.socket.WebSocket)">
+<h3>upgrade</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">upgrade</span><wbr><span class="parameters">(<a href="socket/WebSocket.html" title="interface in dev.gmitch215.bytebox.socket">WebSocket</a>&nbsp;client)</span></div>
+<div class="block">The 101 that completes a WebSocket upgrade.
+
+ <p>Carries the client end of a pair whose server end the Worker kept. A response with a
+ <code>webSocket</code> and any other status is refused by the runtime.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>client</code> - the client end, from <a href="socket/WebSocketPair.html#client()"><code>WebSocketPair.client()</code></a></dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="json(java.lang.String)">
 <h3>json</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;json)</span></div>
-<div class="block">Builds a response carrying already-serialised JSON.</div>
+<div class="block">A 200 carrying already-serialised JSON.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>json</code> - the JSON text</dd>
 <dt>Returns:</dt>
 <dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(java.lang.String,int)">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;json,
+ int&nbsp;status)</span></div>
+<div class="block">A JSON response with an explicit status.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>json</code> - the JSON text</dd>
+<dd><code>status</code> - the status code</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(T,java.lang.Class)">
+<h3 id="json(java.lang.Object,java.lang.Class)">json</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(T&nbsp;value,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</span></div>
+<div class="block">A 200 carrying a Java value as JSON.
+
+ <p>Needs a codec, which the Gradle plugin generates for any type annotated
+ <a href="json/JSONType.html" title="annotation interface in dev.gmitch215.bytebox.json"><code>JSONType</code></a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type</dd>
+<dt>Parameters:</dt>
+<dd><code>value</code> - the value</dd>
+<dd><code>type</code> - the value's type</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(dev.gmitch215.bytebox.js.TSObject)">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;value)</span></div>
+<div class="block">A JSON response built from a JavaScript value, for anything with no codec.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>value</code> - the value</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="status(int)">
+<h3>status</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">status</span><wbr><span class="parameters">(int&nbsp;status)</span></div>
+<div class="block">An empty response with a status, for the cases where the status is the whole answer.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>status</code> - the status code</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="redirect(java.lang.String,int)">
+<h3>redirect</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">redirect</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;location,
+ int&nbsp;status)</span></div>
+<div class="block">A redirect.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>location</code> - where to send the client</dd>
+<dd><code>status</code> - 301, 302, 307 or 308</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="request(java.lang.String,java.lang.String,java.lang.String,dev.gmitch215.bytebox.js.TSObject)">
+<h3>request</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Request.html" title="interface in dev.gmitch215.bytebox">Request</a></span>&nbsp;<span class="element-name">request</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;method,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;body,
+ <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;headers)</span></div>
+<div class="block">Builds a request, for sending somewhere rather than for answering.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>url</code> - the URL</dd>
+<dd><code>method</code> - the HTTP method</dd>
+<dd><code>body</code> - the body, or <code>null</code></dd>
+<dd><code>headers</code> - the headers, or <code>null</code></dd>
+<dt>Returns:</dt>
+<dd>the request</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="fetch(java.lang.String)">
+<h3>fetch</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">fetch</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url)</span></div>
+<div class="block">Sends a request to the internet.
+
+ <p>Counts against the subrequest limit, which is 50 per invocation on the free plan and 10,000
+ on paid, and against the six simultaneous outgoing connections every plan allows.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>url</code> - the URL</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="fetch(dev.gmitch215.bytebox.Request)">
+<h3>fetch</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">fetch</span><wbr><span class="parameters">(<a href="Request.html" title="interface in dev.gmitch215.bytebox">Request</a>&nbsp;request)</span></div>
+<div class="block">Sends a request to the internet.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>request</code> - the request</dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="fetch(java.lang.String,dev.gmitch215.bytebox.js.TSObject)">
+<h3>fetch</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">fetch</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;url,
+ <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&nbsp;options)</span></div>
+<div class="block">Sends a request with options.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>url</code> - the URL</dd>
+<dd><code>options</code> - <code>method</code>, <code>headers</code>, <code>body</code>, <code>cf</code></dd>
+<dt>Returns:</dt>
+<dd>the response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="headers()">
+<h3>headers</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="Headers.html" title="interface in dev.gmitch215.bytebox">Headers</a></span>&nbsp;<span class="element-name">headers</span>()</div>
+<div class="block">Returns a header collection nothing has been put in yet.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>a header collection nothing has been put in yet</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="uuid()">
+<h3>uuid</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">uuid</span>()</div>
+<div class="block">Returns a cryptographically random UUID.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>a cryptographically random UUID</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="random(int)">
+<h3>random</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">org.teavm.jso.typedarrays.ArrayBuffer</span>&nbsp;<span class="element-name">random</span><wbr><span class="parameters">(int&nbsp;bytes)</span></div>
+<div class="block">Fills a buffer with cryptographically random bytes.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>bytes</code> - how many</dd>
+<dt>Returns:</dt>
+<dd>the bytes</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="log(java.lang.String)">
+<h3>log</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">log</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;message)</span></div>
+<div class="block">Writes a line to the Worker's log, which <code>wrangler tail</code> shows.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>message</code> - the message</dd>
 </dl>
 </section>
 </li>

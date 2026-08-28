@@ -37,7 +37,7 @@ loadScripts(document, 'script');</script>
 <li>
 <p>Package:</p>
 <ul>
-<li>Description</li>
+<li><a href="#package-description">Description</a></li>
 <li><a href="#related-package-summary">Related Packages</a></li>
 <li><a href="#class-summary">Classes and Interfaces</a></li>
 </ul>
@@ -48,7 +48,7 @@ loadScripts(document, 'script');</script>
 <div id="navbar-sub-list">
 <ul class="sub-nav-list">
 <li>Package:&nbsp;</li>
-<li>Description&nbsp;|&nbsp;</li>
+<li><a href="#package-description">Description</a>&nbsp;|&nbsp;</li>
 <li><a href="#related-package-summary">Related Packages</a>&nbsp;|&nbsp;</li>
 <li><a href="#class-summary">Classes and Interfaces</a></li>
 </ul>
@@ -68,6 +68,25 @@ loadScripts(document, 'script');</script>
 </div>
 <hr>
 <div class="package-signature">package <span class="element-name">dev.gmitch215.bytebox.gradle</span></div>
+<section class="package-description" id="package-description">
+<div class="block">The Gradle plugin that turns a Java workspace into a Cloudflare Worker.
+
+ <p><a href="ByteboxPlugin.html" title="class in dev.gmitch215.bytebox.gradle"><code>ByteboxPlugin</code></a> registers the <code>bytebox { }</code> block and a
+ pipeline ending in <code>buildWorker</code>. What makes it more than a wrapper around the compiler is
+ that it derives rather than asks: which handlers the Worker exports comes from the interfaces the
+ handler class implements, and which JSON codecs exist comes from what is annotated. Neither is
+ declared twice, so neither can drift.
+
+ <p>Two things are worth knowing before reading the tasks. The generated code lives in its own
+ source set rather than in <code>main</code>, because deciding what to generate means reading the
+ compiled handler and putting the result in <code>main</code> would make compiling it depend on itself.
+ And everything up to <code>buildWorker</code> runs with no Cloudflare credentials at all — only the
+ commands that reach the account need a login, and each says so.</div>
+<dl class="notes">
+<dt>Since:</dt>
+<dd>1.0.0</dd>
+</dl>
+</section>
 <section class="summary">
 <ul class="summary-list">
 <li>
@@ -77,32 +96,119 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">dev.gmitch215.bytebox</a></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Worker entry points and the HTTP types a handler works in.</div>
+</div>
 </div>
 </div>
 </li>
 <li>
 <div id="class-summary">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button><button id="class-summary-tab4" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab4', 2)" class="table-tab">Record Classes</button></div>
 <div id="class-summary.tabpanel" role="tabpanel" aria-labelledby="class-summary-tab0">
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="ByteboxExtension.html" title="class in dev.gmitch215.bytebox.gradle">ByteboxExtension</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">The <code>bytebox { }</code> block.</div>
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="Binding.html" title="class in dev.gmitch215.bytebox.gradle">Binding</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="block">One declared binding, with the name it resolved to.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="ByteboxExtension.ModuleType.html" title="enum class in dev.gmitch215.bytebox.gradle">ByteboxExtension.ModuleType</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab3">
-<div class="block">How the compiled module is carried in the bundle.</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Bindings.html" title="class in dev.gmitch215.bytebox.gradle">Bindings</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">The <code>bindings { }</code> block.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Bindings.D1Spec.html" title="class in dev.gmitch215.bytebox.gradle">Bindings.D1Spec</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Identifiers a D1 database can carry.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Bindings.KvSpec.html" title="class in dev.gmitch215.bytebox.gradle">Bindings.KvSpec</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Identifiers a KV namespace can carry.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Bindings.R2Spec.html" title="class in dev.gmitch215.bytebox.gradle">Bindings.R2Spec</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Identifiers an R2 bucket can carry.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="BindingsReportTask.html" title="class in dev.gmitch215.bytebox.gradle">BindingsReportTask</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Prints every declared binding, its resolved name, and the remote resource it points at.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="BindingType.html" title="enum class in dev.gmitch215.bytebox.gradle">BindingType</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">A binding type, for the short form of the bindings block.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="ByteboxExtension.html" title="class in dev.gmitch215.bytebox.gradle">ByteboxExtension</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">The <code>bytebox { }</code> block.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="ByteboxPlugin.html" title="class in dev.gmitch215.bytebox.gradle">ByteboxPlugin</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Compiles a Java workspace into a Cloudflare Worker.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SizeReportTask.html" title="class in dev.gmitch215.bytebox.gradle">SizeReportTask</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="CompatibilityDate.html" title="class in dev.gmitch215.bytebox.gradle">CompatibilityDate</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Checks a compatibility date before Wrangler has to.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab4"><a href="DurableObjects.html" title="class in dev.gmitch215.bytebox.gradle">DurableObjects</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab4">
+<div class="block">A Durable Object class written in Java, and which of its handlers exist.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GenerateCodecsTask.html" title="class in dev.gmitch215.bytebox.gradle">GenerateCodecsTask</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Writes a JSON codec for every type asked for, and one class that registers them all.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="GenerateEntryPointTask.html" title="class in dev.gmitch215.bytebox.gradle">GenerateEntryPointTask</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Writes the Java class the compiled module exports its handlers from.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GenerateNPMBindingsTask.html" title="class in dev.gmitch215.bytebox.gradle">GenerateNPMBindingsTask</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Writes Java bindings for the npm packages a project asks for, from their TypeScript types.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="GenerateScaffoldTask.html" title="class in dev.gmitch215.bytebox.gradle">GenerateScaffoldTask</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Writes the Worker project around the compiled module: the Wrangler configuration, the JavaScript
+ entry point, and the package manifest.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GenerateSerialCodecsTask.html" title="class in dev.gmitch215.bytebox.gradle">GenerateSerialCodecsTask</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Writes a codec for every type annotated <code>@SerialType</code>, in Java's own serialization format.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PackWasmTask.html" title="class in dev.gmitch215.bytebox.gradle">PackWasmTask</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Puts the compiled module where the Worker imports it from, and enforces the size budget.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Runner.html" title="class in dev.gmitch215.bytebox.gradle">Runner</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Finds something that can run a Node command-line tool.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="SizeReportTask.html" title="class in dev.gmitch215.bytebox.gradle">SizeReportTask</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Measures the compiled module and prints one row per compression axis.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SizeSpec.html" title="class in dev.gmitch215.bytebox.gradle">SizeSpec</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">The <code>size { }</code> block: how the compiled module is packed, and how big it may get.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="SizeSpec.Compressor.html" title="enum class in dev.gmitch215.bytebox.gradle">SizeSpec.Compressor</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">Which compressor packs the module.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="SizeSpec.ModuleType.html" title="enum class in dev.gmitch215.bytebox.gradle">SizeSpec.ModuleType</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab3">
+<div class="block">How the compiled module is carried in the bundle.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="Triggers.html" title="enum class in dev.gmitch215.bytebox.gradle">Triggers</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">Which triggers a handler class handles.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="WranglerSpec.html" title="class in dev.gmitch215.bytebox.gradle">WranglerSpec</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">The <code>wrangler { }</code> block: what goes into the generated configuration.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="WranglerTask.html" title="class in dev.gmitch215.bytebox.gradle">WranglerTask</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Runs the Wrangler CLI in the generated Worker project.</div>
 </div>
 </div>
 </div>

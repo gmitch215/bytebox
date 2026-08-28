@@ -37,7 +37,7 @@ loadScripts(document, 'script');</script>
 <li>
 <p>Package:</p>
 <ul>
-<li>Description</li>
+<li><a href="#package-description">Description</a></li>
 <li><a href="#related-package-summary">Related Packages</a></li>
 <li><a href="#class-summary">Classes and Interfaces</a></li>
 </ul>
@@ -48,7 +48,7 @@ loadScripts(document, 'script');</script>
 <div id="navbar-sub-list">
 <ul class="sub-nav-list">
 <li>Package:&nbsp;</li>
-<li>Description&nbsp;|&nbsp;</li>
+<li><a href="#package-description">Description</a>&nbsp;|&nbsp;</li>
 <li><a href="#related-package-summary">Related Packages</a>&nbsp;|&nbsp;</li>
 <li><a href="#class-summary">Classes and Interfaces</a></li>
 </ul>
@@ -68,6 +68,23 @@ loadScripts(document, 'script');</script>
 </div>
 <hr>
 <div class="package-signature">package <span class="element-name">dev.gmitch215.bytebox</span></div>
+<section class="package-description" id="package-description">
+<div class="block">Worker entry points and the HTTP types a handler works in.
+
+ <p>A Worker implements one interface per trigger it handles — <a href="Worker.html" title="interface in dev.gmitch215.bytebox"><code>Worker</code></a>
+ for HTTP, <a href="Scheduled.html" title="interface in dev.gmitch215.bytebox"><code>Scheduled</code></a> for a Cron Trigger, and so on. Implementing only
+ what you handle is what keeps an unhandled trigger out of the generated configuration and out of
+ the compiled binary.
+
+ <p>Every handler looks synchronous and suspends underneath. A binding call returns a value rather
+ than a future because the compiler rewrites a blocking call into a continuation the host resumes.
+ There is no parallelism to go with it: Cloudflare Workers run one thread and do not provide the Web
+ Worker API, so a Java thread here is a fiber on the host's queue.</div>
+<dl class="notes">
+<dt>Since:</dt>
+<dd>1.0.0</dd>
+</dl>
+</section>
 <section class="summary">
 <ul class="summary-list">
 <li>
@@ -76,8 +93,56 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="binding/package-summary.html">dev.gmitch215.bytebox.binding</a></div>
+<div class="col-last even-row-color">
+<div class="block">The Cloudflare bindings, reached through <a href="Env.html" title="interface in dev.gmitch215.bytebox"><code>Env</code></a>.</div>
+</div>
+<div class="col-first odd-row-color"><a href="builtin/package-summary.html">dev.gmitch215.bytebox.builtin</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Platform facilities exposed as themselves rather than behind a Java API.</div>
+</div>
+<div class="col-first even-row-color"><a href="concurrent/package-summary.html">dev.gmitch215.bytebox.concurrent</a></div>
+<div class="col-last even-row-color">
+<div class="block">Suspension, and the pieces that make a blocking API possible.</div>
+</div>
+<div class="col-first odd-row-color"><a href="durable/package-summary.html">dev.gmitch215.bytebox.durable</a></div>
+<div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><a href="gradle/package-summary.html">dev.gmitch215.bytebox.gradle</a></div>
+<div class="col-last even-row-color">
+<div class="block">The Gradle plugin that turns a Java workspace into a Cloudflare Worker.</div>
+</div>
+<div class="col-first odd-row-color"><a href="http/package-summary.html">dev.gmitch215.bytebox.http</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Routing a request to a handler.</div>
+</div>
+<div class="col-first even-row-color"><a href="io/package-summary.html">dev.gmitch215.bytebox.io</a></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><a href="js/package-summary.html">dev.gmitch215.bytebox.js</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Reaching any JavaScript value from Java.</div>
+</div>
+<div class="col-first even-row-color"><a href="json/package-summary.html">dev.gmitch215.bytebox.json</a></div>
+<div class="col-last even-row-color">
+<div class="block">JSON, through generated codecs rather than reflection.</div>
+</div>
+<div class="col-first odd-row-color"><a href="net/package-summary.html">dev.gmitch215.bytebox.net</a></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><a href="regex/package-summary.html">dev.gmitch215.bytebox.regex</a></div>
+<div class="col-last even-row-color">
+<div class="block">What makes <code>java.util.regex</code> work here, which nothing in a project has to name.</div>
+</div>
+<div class="col-first odd-row-color"><a href="socket/package-summary.html">dev.gmitch215.bytebox.socket</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Raw outbound TCP, over <code>cloudflare:sockets</code>.</div>
+</div>
+<div class="col-first even-row-color"><a href="text/package-summary.html">dev.gmitch215.bytebox.text</a></div>
+<div class="col-last even-row-color">
+<div class="block">What makes <code>String.format</code> cost what it costs here, which nothing in a project has to name.</div>
+</div>
+<div class="col-first odd-row-color"><a href="time/package-summary.html">dev.gmitch215.bytebox.time</a></div>
+<div class="col-last odd-row-color">
+<div class="block">What makes <code>java.time</code> work, which nothing in a project has to name.</div>
+</div>
 </div>
 </div>
 </li>
@@ -94,7 +159,8 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Bytebox.html" title="class in dev.gmitch215.bytebox">Bytebox</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">Factories for the platform types a handler returns.</div>
+<div class="block">Builds the platform types a handler returns, and reaches the platform functions that are not
+ bindings.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab1"><a href="Consumer.html" title="interface in dev.gmitch215.bytebox">Consumer</a>&lt;T&gt;</div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
@@ -108,9 +174,17 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">The bindings declared in the Wrangler configuration, addressed by their binding names.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="ExecutionCtx.html" title="interface in dev.gmitch215.bytebox">ExecutionCtx</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="col-first odd-row-color class-summary class-summary-tab4"><a href="Env.Bound.html" title="class in dev.gmitch215.bytebox">Env.Bound</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab4">
+<div class="block">A binding that is present, waiting to be typed.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="ExecutionCtx.html" title="interface in dev.gmitch215.bytebox">ExecutionCtx</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">The per-invocation context Cloudflare passes to every handler.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Handlers.html" title="class in dev.gmitch215.bytebox">Handlers</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">What a generated entry point calls.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab1"><a href="Headers.html" title="interface in dev.gmitch215.bytebox">Headers</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
@@ -128,25 +202,41 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color class-summary class-summary-tab3">
 <div class="block">What a <a href="Mail.html" title="interface in dev.gmitch215.bytebox"><code>Mail</code></a> handler did with a message.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Message.html" title="interface in dev.gmitch215.bytebox">Message</a>&lt;T&gt;</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="MailMessage.html" title="interface in dev.gmitch215.bytebox">MailMessage</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">Cloudflare's <code>ForwardableEmailMessage</code>.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Message.html" title="interface in dev.gmitch215.bytebox">Message</a>&lt;T&gt;</div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">One message from a Queue.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="MessageBatch.html" title="interface in dev.gmitch215.bytebox">MessageBatch</a>&lt;T&gt;</div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="MessageBatch.html" title="interface in dev.gmitch215.bytebox">MessageBatch</a>&lt;T&gt;</div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">A batch of Queue messages delivered to a <a href="Consumer.html" title="interface in dev.gmitch215.bytebox"><code>Consumer</code></a>.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Request.html" title="interface in dev.gmitch215.bytebox">Request</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="QueueBatch.html" title="interface in dev.gmitch215.bytebox">QueueBatch</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Cloudflare's <code>MessageBatch</code>.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="QueueBatch.QueueMessage.html" title="interface in dev.gmitch215.bytebox">QueueBatch.QueueMessage</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">One message from a Queue, as JavaScript delivers it.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Request.html" title="interface in dev.gmitch215.bytebox">Request</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">An incoming HTTP request.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
-<div class="block">An outgoing HTTP response.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Scheduled.html" title="interface in dev.gmitch215.bytebox">Scheduled</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">An HTTP response, outgoing or received.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Scheduled.html" title="interface in dev.gmitch215.bytebox">Scheduled</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">Handles Cron Triggers.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="ScheduledController.html" title="interface in dev.gmitch215.bytebox">ScheduledController</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">The controller Cloudflare passes to a <code>scheduled</code> handler.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Tail.html" title="interface in dev.gmitch215.bytebox">Tail</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">

@@ -92,7 +92,9 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Request</span><span class="extends-implements">
 extends org.teavm.jso.JSObject</span></div>
-<div class="block">An incoming HTTP request.</div>
+<div class="block">An incoming HTTP request.
+
+ <p>A body can be read once. Reading it twice raises, because it is a stream rather than a buffer.</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>
@@ -105,12 +107,32 @@ extends org.teavm.jso.JSObject</span></div>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab5" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab5', 3)" class="table-tab">Default Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default org.teavm.jso.typedarrays.ArrayBuffer</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#bytes()" class="member-name-link">bytes</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body as bytes.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#colo()" class="member-name-link">colo</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the Cloudflare data centre that handled the request, or <code>null</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#country()" class="member-name-link">country</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the two-letter country Cloudflare resolved the client to, or <code>null</code>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getCf()" class="member-name-link">getCf</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns Cloudflare's own request properties, such as <code>country</code> and <code>colo</code>.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="Headers.html" title="interface in dev.gmitch215.bytebox">Headers</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getHeaders()" class="member-name-link">getHeaders</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
@@ -126,10 +148,105 @@ extends org.teavm.jso.JSObject</span></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns the full request URL.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#text()" class="member-name-link">text</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#host()" class="member-name-link">host</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the host, including the port when the URL carried one.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#ip()" class="member-name-link">ip</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the client's IP address as Cloudflare saw it, or <code>null</code>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isBodyUsed()" class="member-name-link">isBodyUsed</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns whether the body has already been read.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#isDelete()" class="member-name-link">isDelete</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns whether the request method is DELETE.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#isGet()" class="member-name-link">isGet</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns whether the request method is GET.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#isPatch()" class="member-name-link">isPatch</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns whether the request method is PATCH.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#isPost()" class="member-name-link">isPost</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns whether the request method is POST.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#isPut()" class="member-name-link">isPut</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns whether the request method is PUT.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#json()" class="member-name-link">json</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body and parses it as JSON.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default &lt;T&gt;&nbsp;T</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#json(java.lang.Class)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body and converts it to a Java type.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default &lt;T&gt;&nbsp;T</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#json(java.util.function.Function)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>,<wbr>T&gt;&nbsp;mapper)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body and converts it with a function of your own.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#origin()" class="member-name-link">origin</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the scheme and host, with no path.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#path()" class="member-name-link">path</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the request path, without the query string.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#query(java.lang.String)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads one query parameter.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#query(java.lang.String,java.lang.String)" class="member-name-link">query</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fallback)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads one query parameter, falling back when absent.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#rayId()" class="member-name-link">rayId</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the ray id Cloudflare traces this request by, or <code>null</code>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.teavm.jso.core.JSPromise<wbr>&lt;org.teavm.jso.typedarrays.ArrayBuffer&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readBytes()" class="member-name-link">readBytes</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.teavm.jso.core.JSPromise<wbr>&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readJson()" class="member-name-link">readJson</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.teavm.jso.core.JSPromise<wbr>&lt;org.teavm.jso.core.JSString&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readText()" class="member-name-link">readText</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#text()" class="member-name-link">text</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
 <div class="block">Reads the whole body as text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#userAgent()" class="member-name-link">userAgent</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Returns the user agent string, or <code>null</code>.</div>
 </div>
 </div>
 </div>
@@ -182,14 +299,308 @@ extends org.teavm.jso.JSObject</span></div>
 </section>
 </li>
 <li>
-<section class="detail" id="text()">
-<h3>text</h3>
-<div class="member-signature"><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">text</span>()</div>
-<div class="block">Reads the whole body as text. Suspends until the body has arrived.</div>
+<section class="detail" id="isBodyUsed()">
+<h3>isBodyUsed</h3>
+<div class="member-signature"><span class="return-type">boolean</span>&nbsp;<span class="element-name">isBodyUsed</span>()</div>
+<div class="block">Returns whether the body has already been read.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the decoded body</dd>
+<dd>whether the body has already been read</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getCf()">
+<h3>getCf</h3>
+<div class="member-signature"><span class="return-type"><a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></span>&nbsp;<span class="element-name">getCf</span>()</div>
+<div class="block">Returns Cloudflare's own request properties, such as <code>country</code> and <code>colo</code>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>Cloudflare's own request properties, such as <code>country</code> and <code>colo</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="text()">
+<h3>text</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">text</span>()</div>
+<div class="block">Reads the whole body as text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the decoded body, empty when there is none</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json()">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></span>&nbsp;<span class="element-name">json</span>()</div>
+<div class="block">Reads the whole body and parses it as JSON.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the parsed body</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bytes()">
+<h3>bytes</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">org.teavm.jso.typedarrays.ArrayBuffer</span>&nbsp;<span class="element-name">bytes</span>()</div>
+<div class="block">Reads the whole body as bytes.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the bytes</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="path()">
+<h3>path</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">path</span>()</div>
+<div class="block">Returns the request path, without the query string.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the request path, without the query string</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="host()">
+<h3>host</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">host</span>()</div>
+<div class="block">Returns the host, including the port when the URL carried one.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the host, including the port when the URL carried one</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="origin()">
+<h3>origin</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">origin</span>()</div>
+<div class="block">Returns the scheme and host, with no path.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the scheme and host, with no path</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="query(java.lang.String)">
+<h3>query</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">query</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Reads one query parameter.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - the parameter name</dd>
+<dt>Returns:</dt>
+<dd>the first value, or <code>null</code> when absent</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="query(java.lang.String,java.lang.String)">
+<h3>query</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">query</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fallback)</span></div>
+<div class="block">Reads one query parameter, falling back when absent.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - the parameter name</dd>
+<dd><code>fallback</code> - the value to use when absent</dd>
+<dt>Returns:</dt>
+<dd>the value, or the fallback</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="country()">
+<h3>country</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">country</span>()</div>
+<div class="block">Returns the two-letter country Cloudflare resolved the client to, or <code>null</code>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the two-letter country Cloudflare resolved the client to, or <code>null</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="ip()">
+<h3>ip</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">ip</span>()</div>
+<div class="block">Returns the client's IP address as Cloudflare saw it, or <code>null</code>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the client's IP address as Cloudflare saw it, or <code>null</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="colo()">
+<h3>colo</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">colo</span>()</div>
+<div class="block">Returns the Cloudflare data centre that handled the request, or <code>null</code>.
+
+ <p>Read from <code>request.cf</code> where it is present, and from the <code>CF-Ray</code> header
+ otherwise. That header is <code>&lt;rayid&gt;-&lt;colo&gt;</code>, so only its suffix is the answer.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the Cloudflare data centre that handled the request, or <code>null</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="rayId()">
+<h3>rayId</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">rayId</span>()</div>
+<div class="block">Returns the ray id Cloudflare traces this request by, or <code>null</code>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the ray id Cloudflare traces this request by, or <code>null</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="userAgent()">
+<h3>userAgent</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">userAgent</span>()</div>
+<div class="block">Returns the user agent string, or <code>null</code>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the user agent string, or <code>null</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isGet()">
+<h3>isGet</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isGet</span>()</div>
+<div class="block">Returns whether the request method is GET.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the request method is GET</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isPost()">
+<h3>isPost</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isPost</span>()</div>
+<div class="block">Returns whether the request method is POST.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the request method is POST</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isPut()">
+<h3>isPut</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isPut</span>()</div>
+<div class="block">Returns whether the request method is PUT.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the request method is PUT</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isPatch()">
+<h3>isPatch</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isPatch</span>()</div>
+<div class="block">Returns whether the request method is PATCH.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the request method is PATCH</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isDelete()">
+<h3>isDelete</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isDelete</span>()</div>
+<div class="block">Returns whether the request method is DELETE.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the request method is DELETE</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(java.lang.Class)">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type">T</span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</span></div>
+<div class="block">Reads the whole body and converts it to a Java type.
+
+ <p>Needs a codec, which the Gradle plugin generates for any type annotated
+ <a href="json/JSONType.html" title="annotation interface in dev.gmitch215.bytebox.json"><code>JSONType</code></a>. A type without one raises rather than returning
+ something half-converted; <a href="#json(java.util.function.Function)"><code>json(Function)</code></a> is the way to read a type that has none.
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-java"> @JSONType
+ record Order(String sku, int quantity) {}
+
+ Order order = request.json(Order.class);
+</code></pre>
+</div>
+</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the type to convert to</dd>
+<dt>Returns:</dt>
+<dd>the converted body</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(java.util.function.Function)">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type">T</span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>,<wbr>T&gt;&nbsp;mapper)</span></div>
+<div class="block">Reads the whole body and converts it with a function of your own.
+
+ <p>Needs no codec and no annotation, which makes it the direct route for a type the generator
+ does not know about, and for a shape that is not a record at all.
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-java"> record Order(String sku, int quantity) {}
+
+ Order order = request.json(body -&gt;
+ 	new Order(body.get("sku").asString(), body.get("quantity").asInt())
+ );
+</code></pre>
+</div>
+</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type</dd>
+<dt>Parameters:</dt>
+<dd><code>mapper</code> - reads the parsed body</dd>
+<dt>Returns:</dt>
+<dd>what the mapper returned</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="readText()">
+<h3>readText</h3>
+<div class="member-signature"><span class="return-type">org.teavm.jso.core.JSPromise&lt;org.teavm.jso.core.JSString&gt;</span>&nbsp;<span class="element-name">readText</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="readJson()">
+<h3>readJson</h3>
+<div class="member-signature"><span class="return-type">org.teavm.jso.core.JSPromise&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&gt;</span>&nbsp;<span class="element-name">readJson</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="readBytes()">
+<h3>readBytes</h3>
+<div class="member-signature"><span class="return-type">org.teavm.jso.core.JSPromise&lt;org.teavm.jso.typedarrays.ArrayBuffer&gt;</span>&nbsp;<span class="element-name">readBytes</span>()</div>
 </section>
 </li>
 </ul>

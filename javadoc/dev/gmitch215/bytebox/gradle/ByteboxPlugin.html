@@ -98,8 +98,24 @@ loadScripts(document, 'script');</script>
 implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <div class="block">Compiles a Java workspace into a Cloudflare Worker.
 
- <p>Applying this plugin registers the <code>bytebox { }</code> block and the tasks that turn compiled
- classes into a deployable Worker.</div>
+ <p>Applying this plugin registers the <code>bytebox { }</code> block and a pipeline that ends in a
+ deployable Worker:
+
+ <ol>
+   <li><code>generateNpmBindings</code> writes Java for the npm packages a project names, read from their
+       TypeScript types.
+   <li><code>generateEntryPoint</code> writes the class the module exports its handlers from, deriving
+       which handlers from the interfaces the handler class implements.
+   <li><code>generateCodecs</code> writes a JSON codec for every type annotated <code>@JSONType</code>.
+   <li><code>compileWasm</code> runs the compiler, which is TeaVM's own task.
+   <li><code>packWasm</code> puts the module where the Worker imports it, and enforces the size budget.
+   <li><code>generateWorkerScaffold</code> writes the Wrangler configuration, the JavaScript entry point
+       and the package manifest.
+   <li><code>buildWorker</code> depends on all of it.
+ </ol>
+
+ <p>Everything up to and including <code>buildWorker</code> runs with no Cloudflare credentials. Only the
+ commands that reach the account need a login, and each says so.</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>
@@ -117,9 +133,24 @@ implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#GROUP" class="member-name-link">GROUP</a></code></div>
+<div class="col-second even-row-color"><code><a href="#GENERATED_SOURCE_SET" class="member-name-link">GENERATED_SOURCE_SET</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">The source set the generated entry point and codecs are compiled in.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#GROUP" class="member-name-link">GROUP</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">The task group every task this plugin registers belongs to.</div>
+</div>
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#NPM_PACKAGE" class="member-name-link">NPM_PACKAGE</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The Java package generated npm bindings live in.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#WORKER_DIRECTORY" class="member-name-link">WORKER_DIRECTORY</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Where the generated Worker project is written, under the build directory.</div>
 </div>
 </div>
 </section>
@@ -178,6 +209,51 @@ implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <dd>
 <ul class="tag-list">
 <li><a href="../../../../constant-values.html#dev.gmitch215.bytebox.gradle.ByteboxPlugin.GROUP">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="WORKER_DIRECTORY">
+<h3>WORKER_DIRECTORY</h3>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">WORKER_DIRECTORY</span></div>
+<div class="block">Where the generated Worker project is written, under the build directory.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#dev.gmitch215.bytebox.gradle.ByteboxPlugin.WORKER_DIRECTORY">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="GENERATED_SOURCE_SET">
+<h3>GENERATED_SOURCE_SET</h3>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">GENERATED_SOURCE_SET</span></div>
+<div class="block">The source set the generated entry point and codecs are compiled in.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#dev.gmitch215.bytebox.gradle.ByteboxPlugin.GENERATED_SOURCE_SET">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="NPM_PACKAGE">
+<h3>NPM_PACKAGE</h3>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">NPM_PACKAGE</span></div>
+<div class="block">The Java package generated npm bindings live in.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#dev.gmitch215.bytebox.gradle.ByteboxPlugin.NPM_PACKAGE">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>

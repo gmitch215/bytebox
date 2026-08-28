@@ -92,7 +92,10 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Response</span><span class="extends-implements">
 extends org.teavm.jso.JSObject</span></div>
-<div class="block">An outgoing HTTP response.</div>
+<div class="block">An HTTP response, outgoing or received.
+
+ <p><a href="Bytebox.html" title="class in dev.gmitch215.bytebox"><code>Bytebox</code></a> builds one to return. The reading half matters for a response that came back
+ from a <code>fetch</code>, a service binding or a Durable Object.</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>
@@ -105,12 +108,22 @@ extends org.teavm.jso.JSObject</span></div>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab5" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab5', 3)" class="table-tab">Default Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#assertOk()" class="member-name-link">assertOk</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Throws unless the status is in the 200s, naming the status and the body.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default org.teavm.jso.typedarrays.ArrayBuffer</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#bytes()" class="member-name-link">bytes</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body as bytes.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="Headers.html" title="interface in dev.gmitch215.bytebox">Headers</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getHeaders()" class="member-name-link">getHeaders</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
@@ -120,6 +133,55 @@ extends org.teavm.jso.JSObject</span></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getStatus()" class="member-name-link">getStatus</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns the status code.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getStatusText()" class="member-name-link">getStatusText</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the status text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getUrl()" class="member-name-link">getUrl</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the URL the body came from, which differs from the one asked for after a redirect.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isBodyUsed()" class="member-name-link">isBodyUsed</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns whether the body has already been read.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#isOk()" class="member-name-link">isOk</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns whether the status is in the 200s.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#json()" class="member-name-link">json</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body and parses it as JSON.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default &lt;T&gt;&nbsp;T</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#json(java.lang.Class)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body and converts it to a Java type.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default &lt;T&gt;&nbsp;T</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#json(java.util.function.Function)" class="member-name-link">json</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>,<wbr>T&gt;&nbsp;mapper)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body and converts it with a function of your own.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.teavm.jso.core.JSPromise<wbr>&lt;org.teavm.jso.typedarrays.ArrayBuffer&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readBytes()" class="member-name-link">readBytes</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.teavm.jso.core.JSPromise<wbr>&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readJson()" class="member-name-link">readJson</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>org.teavm.jso.core.JSPromise<wbr>&lt;org.teavm.jso.core.JSString&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#readText()" class="member-name-link">readText</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#text()" class="member-name-link">text</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Reads the whole body as text.</div>
 </div>
 </div>
 </div>
@@ -150,6 +212,28 @@ extends org.teavm.jso.JSObject</span></div>
 </section>
 </li>
 <li>
+<section class="detail" id="getStatusText()">
+<h3>getStatusText</h3>
+<div class="member-signature"><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getStatusText</span>()</div>
+<div class="block">Returns the status text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the status text</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isOk()">
+<h3>isOk</h3>
+<div class="member-signature"><span class="return-type">boolean</span>&nbsp;<span class="element-name">isOk</span>()</div>
+<div class="block">Returns whether the status is in the 200s.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the status is in the 200s</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="getHeaders()">
 <h3>getHeaders</h3>
 <div class="member-signature"><span class="return-type"><a href="Headers.html" title="interface in dev.gmitch215.bytebox">Headers</a></span>&nbsp;<span class="element-name">getHeaders</span>()</div>
@@ -158,6 +242,123 @@ extends org.teavm.jso.JSObject</span></div>
 <dt>Returns:</dt>
 <dd>the response headers</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getUrl()">
+<h3>getUrl</h3>
+<div class="member-signature"><span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getUrl</span>()</div>
+<div class="block">Returns the URL the body came from, which differs from the one asked for after a redirect.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the URL the body came from, which differs from the one asked for after a redirect</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isBodyUsed()">
+<h3>isBodyUsed</h3>
+<div class="member-signature"><span class="return-type">boolean</span>&nbsp;<span class="element-name">isBodyUsed</span>()</div>
+<div class="block">Returns whether the body has already been read.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the body has already been read</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="text()">
+<h3>text</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">text</span>()</div>
+<div class="block">Reads the whole body as text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the decoded body</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json()">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></span>&nbsp;<span class="element-name">json</span>()</div>
+<div class="block">Reads the whole body and parses it as JSON.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the parsed body</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bytes()">
+<h3>bytes</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">org.teavm.jso.typedarrays.ArrayBuffer</span>&nbsp;<span class="element-name">bytes</span>()</div>
+<div class="block">Reads the whole body as bytes.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the bytes</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(java.lang.Class)">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type">T</span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link">Class</a>&lt;T&gt;&nbsp;type)</span></div>
+<div class="block">Reads the whole body and converts it to a Java type.
+
+ <p>Needs a codec, which the Gradle plugin generates for any type annotated
+ <a href="json/JSONType.html" title="annotation interface in dev.gmitch215.bytebox.json"><code>JSONType</code></a>.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type</dd>
+<dt>Parameters:</dt>
+<dd><code>type</code> - the type to convert to</dd>
+<dt>Returns:</dt>
+<dd>the converted body</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="json(java.util.function.Function)">
+<h3>json</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="type-parameters">&lt;T&gt;</span>&nbsp;<span class="return-type">T</span>&nbsp;<span class="element-name">json</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html" title="class or interface in java.util.function" class="external-link">Function</a>&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>,<wbr>T&gt;&nbsp;mapper)</span></div>
+<div class="block">Reads the whole body and converts it with a function of your own.</div>
+<dl class="notes">
+<dt>Type Parameters:</dt>
+<dd><code>T</code> - the type</dd>
+<dt>Parameters:</dt>
+<dd><code>mapper</code> - reads the parsed body</dd>
+<dt>Returns:</dt>
+<dd>what the mapper returned</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="assertOk()">
+<h3>assertOk</h3>
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type"><a href="Response.html" title="interface in dev.gmitch215.bytebox">Response</a></span>&nbsp;<span class="element-name">assertOk</span>()</div>
+<div class="block">Throws unless the status is in the 200s, naming the status and the body.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>this response</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="readText()">
+<h3>readText</h3>
+<div class="member-signature"><span class="return-type">org.teavm.jso.core.JSPromise&lt;org.teavm.jso.core.JSString&gt;</span>&nbsp;<span class="element-name">readText</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="readJson()">
+<h3>readJson</h3>
+<div class="member-signature"><span class="return-type">org.teavm.jso.core.JSPromise&lt;<a href="js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a>&gt;</span>&nbsp;<span class="element-name">readJson</span>()</div>
+</section>
+</li>
+<li>
+<section class="detail" id="readBytes()">
+<h3>readBytes</h3>
+<div class="member-signature"><span class="return-type">org.teavm.jso.core.JSPromise&lt;org.teavm.jso.typedarrays.ArrayBuffer&gt;</span>&nbsp;<span class="element-name">readBytes</span>()</div>
 </section>
 </li>
 </ul>

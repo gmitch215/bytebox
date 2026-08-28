@@ -102,9 +102,10 @@ loadScripts(document, 'script');</script>
 <span class="extends-implements">extends org.gradle.api.DefaultTask</span></div>
 <div class="block">Measures the compiled module and prints one row per compression axis.
 
- <p>Cloudflare enforces its ceiling after its own gzip, so the gzip figure is the one that binds.
- A pre-compressed frame only pays once it saves more than a synchronous decompressor costs in the
- same bundle.</div>
+ <p>Cloudflare enforces its ceiling after its own gzip, so the gzip figure is the one that binds and
+ a local <code>gzip -c | wc -c</code> is not that meter. A pre-compressed frame only pays once it saves
+ more than a synchronous decompressor costs in the same bundle, which is why the crossover is
+ reported rather than assumed.</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>
@@ -154,14 +155,19 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.file.RegularFileProperty</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getWasm()" class="member-name-link">getWasm</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Long.html" title="class or interface in java.lang" class="external-link">Long</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getBudget()" class="member-name-link">getBudget</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the ceiling to compare against, or -1 for none.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.file.RegularFileProperty</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getWasm()" class="member-name-link">getWasm</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns the compiled module to measure.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#report()" class="member-name-link">report</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#report()" class="member-name-link">report</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Measures the module and writes the result to the build log.</div>
 </div>
 </div>
@@ -214,6 +220,18 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the compiled module to measure</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getBudget()">
+<h3>getBudget</h3>
+<div class="member-signature"><span class="annotations">@Internal
+</span><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Long.html" title="class or interface in java.lang" class="external-link">Long</a>&gt;</span>&nbsp;<span class="element-name">getBudget</span>()</div>
+<div class="block">Returns the ceiling to compare against, or -1 for none.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the ceiling to compare against, or -1 for none</dd>
 </dl>
 </section>
 </li>

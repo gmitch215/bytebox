@@ -1,2 +1,16 @@
 dev.gmitch215.bytebox
+dev.gmitch215.bytebox.binding
+dev.gmitch215.bytebox.builtin
+dev.gmitch215.bytebox.concurrent
+dev.gmitch215.bytebox.durable
 dev.gmitch215.bytebox.gradle
+dev.gmitch215.bytebox.http
+dev.gmitch215.bytebox.io
+dev.gmitch215.bytebox.js
+dev.gmitch215.bytebox.json
+dev.gmitch215.bytebox.net
+dev.gmitch215.bytebox.net.http
+dev.gmitch215.bytebox.regex
+dev.gmitch215.bytebox.socket
+dev.gmitch215.bytebox.text
+dev.gmitch215.bytebox.time

@@ -37,7 +37,7 @@ loadScripts(document, 'script');</script>
 <li>
 <p>Summary:</p>
 <ul>
-<li><a href="#nested-class-summary">Nested</a></li>
+<li>Nested</li>
 <li>Field</li>
 <li><a href="#constructor-summary">Constr</a></li>
 <li><a href="#method-summary">Method</a></li>
@@ -57,7 +57,7 @@ loadScripts(document, 'script');</script>
 <div id="navbar-sub-list">
 <ul class="sub-nav-list">
 <li>Summary:&nbsp;</li>
-<li><a href="#nested-class-summary">Nested</a>&nbsp;|&nbsp;</li>
+<li>Nested&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
 <li><a href="#constructor-summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method-summary">Method</a></li>
@@ -91,7 +91,33 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">ByteboxExtension</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
-<div class="block">The <code>bytebox { }</code> block.</div>
+<div class="block">The <code>bytebox { }</code> block.
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-kotlin"> bytebox {
+ 	handlerClass = "com.example.MyWorker"
+
+ 	size {
+ 		module = ModuleType.AUTO
+ 		budget = "250KiB"
+ 	}
+
+ 	wrangler {
+ 		name = "my-worker"
+ 		compatibilityDate = "2026-08-22"
+ 		routes("example.com/*")
+ 		crons("*&amp;#47;5 * * * *")
+ 	}
+
+ 	bindings {
+ 		kv()
+ 		d1()
+ 	}
+ }
+</code></pre>
+</div>
+</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>
@@ -99,23 +125,6 @@ loadScripts(document, 'script');</script>
 </section>
 <section class="summary">
 <ul class="summary-list">
-<!-- ======== NESTED CLASS SUMMARY ======== -->
-<li>
-<section class="nested-class-summary" id="nested-class-summary">
-<h2>Nested Class Summary</h2>
-<div class="caption"><span>Nested Classes</span></div>
-<div class="summary-table three-column-summary">
-<div class="table-header col-first">Modifier and Type</div>
-<div class="table-header col-second">Class</div>
-<div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static enum&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="ByteboxExtension.ModuleType.html" class="type-name-link" title="enum class in dev.gmitch215.bytebox.gradle">ByteboxExtension.ModuleType</a></code></div>
-<div class="col-last even-row-color">
-<div class="block">How the compiled module is carried in the bundle.</div>
-</div>
-</div>
-</section>
-</li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <li>
 <section class="constructor-summary" id="constructor-summary">
@@ -124,7 +133,7 @@ loadScripts(document, 'script');</script>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">ByteboxExtension</a>()</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(org.gradle.api.model.ObjectFactory)" class="member-name-link">ByteboxExtension</a><wbr>(org.gradle.api.model.ObjectFactory&nbsp;objects)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 </div>
 </section>
@@ -134,41 +143,122 @@ loadScripts(document, 'script');</script>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getBindings()" class="member-name-link">getBindings</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bindings(dev.gmitch215.bytebox.gradle.BindingType...)" class="member-name-link">bindings</a><wbr>(<a href="BindingType.html" title="enum class in dev.gmitch215.bytebox.gradle">BindingType</a>...&nbsp;types)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Declares bindings by type, each taking its default name.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bindings(org.gradle.api.Action)" class="member-name-link">bindings</a><wbr>(org.gradle.api.Action&lt;<a href="Bindings.html" title="class in dev.gmitch215.bytebox.gradle">Bindings</a>&gt;&nbsp;action)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Declares bindings.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#durableObjects(java.lang.String...)" class="member-name-link">durableObjects</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;classes)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Exposes Java classes as Durable Objects.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="Bindings.html" title="class in dev.gmitch215.bytebox.gradle">Bindings</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBindings()" class="member-name-link">getBindings</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the declared bindings.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getCoreDependency()" class="member-name-link">getCoreDependency</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Returns binding declarations, in the order they were added.</div>
+<div class="block">Returns whether applying the plugin puts bytebox on the classpath, which it does by default.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getCompatibilityDate()" class="member-name-link">getCompatibilityDate</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getCoreVersion()" class="member-name-link">getCoreVersion</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Returns the compatibility date written into the generated Wrangler configuration.</div>
+<div class="block">Returns the version of <code>bytebox-core</code> to add, defaulting to the plugin's own.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getHandlerClass()" class="member-name-link">getHandlerClass</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getDurableObjectClasses()" class="member-name-link">getDurableObjectClasses</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the Java classes to expose as Durable Objects, fully qualified.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getHandlerClass()" class="member-name-link">getHandlerClass</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns the class implementing one or more of the trigger interfaces.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="ByteboxExtension.ModuleType.html" title="enum class in dev.gmitch215.bytebox.gradle">ByteboxExtension.ModuleType</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getModuleType()" class="member-name-link">getModuleType</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Returns how the compiled module is carried in the bundle.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Long.html" title="class or interface in java.lang" class="external-link">Long</a>&gt;</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getSizeBudget()" class="member-name-link">getSizeBudget</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getJSONTypes()" class="member-name-link">getJSONTypes</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Returns a size ceiling the build fails past, in bytes on wrangler's gzip meter.</div>
+<div class="block">Returns the types to generate JSON codecs for, fully qualified.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getWorkerName()" class="member-name-link">getWorkerName</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getNPMBindingPackages()" class="member-name-link">getNPMBindingPackages</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Returns the name written into the generated Wrangler configuration.</div>
+<div class="block">Returns the npm packages to generate Java bindings for.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getNPMIntrospection()" class="member-name-link">getNPMIntrospection</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns whether the generator may import a package to read exports no static analysis can see.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getNPMPackages()" class="member-name-link">getNPMPackages</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the npm packages the compiled program imports, as <code>name@range</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getRunner()" class="member-name-link">getRunner</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns which runtime runs the Wrangler CLI.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.ListProperty<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getSerialTypes()" class="member-name-link">getSerialTypes</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the types to generate <code>java.io</code> serialization codecs for, fully qualified.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="SizeSpec.html" title="class in dev.gmitch215.bytebox.gradle">SizeSpec</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSize()" class="member-name-link">getSize</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns how the compiled module is packed and how big it is allowed to get.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="WranglerSpec.html" title="class in dev.gmitch215.bytebox.gradle">WranglerSpec</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWrangler()" class="member-name-link">getWrangler</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns what goes into the generated Wrangler configuration.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#jsonTypes(java.lang.String...)" class="member-name-link">jsonTypes</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;types)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Adds types to generate JSON codecs for.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#npm(java.lang.String,java.lang.String)" class="member-name-link">npm</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;version)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Declares an npm package the compiled program imports.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#npmBindings(java.lang.String...)" class="member-name-link">npmBindings</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;packages)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Asks for generated Java bindings for packages already declared with <a href="#npm(java.lang.String,java.lang.String)"><code>npm(java.lang.String, java.lang.String)</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serialTypes(java.lang.String...)" class="member-name-link">serialTypes</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;types)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Adds types to generate serialization codecs for.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#size(org.gradle.api.Action)" class="member-name-link">size</a><wbr>(org.gradle.api.Action&lt;<a href="SizeSpec.html" title="class in dev.gmitch215.bytebox.gradle">SizeSpec</a>&gt;&nbsp;action)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Configures packing and the size budget.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#wrangler(org.gradle.api.Action)" class="member-name-link">wrangler</a><wbr>(org.gradle.api.Action&lt;<a href="WranglerSpec.html" title="class in dev.gmitch215.bytebox.gradle">WranglerSpec</a>&gt;&nbsp;action)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Configures the generated Wrangler configuration.</div>
 </div>
 </div>
 </div>
@@ -188,9 +278,14 @@ loadScripts(document, 'script');</script>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;()">
+<section class="detail" id="&lt;init&gt;(org.gradle.api.model.ObjectFactory)">
 <h3>ByteboxExtension</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">ByteboxExtension</span>()</div>
+<div class="member-signature"><span class="annotations">@Inject
+</span><span class="modifiers">public</span>&nbsp;<span class="element-name">ByteboxExtension</span><wbr><span class="parameters">(org.gradle.api.model.ObjectFactory&nbsp;objects)</span></div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>objects</code> - Gradle's factory, for the nested blocks</dd>
+</dl>
 </section>
 </li>
 </ul>
@@ -205,7 +300,11 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="getHandlerClass()">
 <h3>getHandlerClass</h3>
 <div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getHandlerClass</span>()</div>
-<div class="block">Returns the class implementing one or more of the trigger interfaces.</div>
+<div class="block">Returns the class implementing one or more of the trigger interfaces.
+
+ <p>Which interfaces it implements decides which handlers the generated Worker exports and which
+ trigger keys the generated Wrangler configuration carries. An unimplemented trigger produces
+ neither.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the class implementing one or more of the trigger interfaces</dd>
@@ -213,61 +312,311 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="getWorkerName()">
-<h3>getWorkerName</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getWorkerName</span>()</div>
-<div class="block">Returns the name written into the generated Wrangler configuration.</div>
-<dl class="notes">
-<dt>Returns:</dt>
-<dd>the name written into the generated Wrangler configuration</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="getCompatibilityDate()">
-<h3>getCompatibilityDate</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getCompatibilityDate</span>()</div>
-<div class="block">Returns the compatibility date written into the generated Wrangler configuration.
+<section class="detail" id="getCoreDependency()">
+<h3>getCoreDependency</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</span>&nbsp;<span class="element-name">getCoreDependency</span>()</div>
+<div class="block">Returns whether applying the plugin puts bytebox on the classpath, which it does by default.
 
- <p>Defaults to the build date. Dates from 2026-08-04 enable Node compatibility, which defines
- a <code>process</code> global; the generated scaffold disables it because TeaVM's runtime treats
- that global as proof it is running under Node.</div>
+ <p>Set this false for a project that resolves bytebox some other way: a composite build, a local
+ jar, or a version catalog entry it would rather own.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>the compatibility date written into the generated Wrangler configuration</dd>
+<dd>whether applying the plugin puts bytebox on the classpath, which it does by default</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="getModuleType()">
-<h3>getModuleType</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="ByteboxExtension.ModuleType.html" title="enum class in dev.gmitch215.bytebox.gradle">ByteboxExtension.ModuleType</a>&gt;</span>&nbsp;<span class="element-name">getModuleType</span>()</div>
-<div class="block">Returns how the compiled module is carried in the bundle.</div>
+<section class="detail" id="getCoreVersion()">
+<h3>getCoreVersion</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getCoreVersion</span>()</div>
+<div class="block">Returns the version of <code>bytebox-core</code> to add, defaulting to the plugin's own.
+
+ <p>The two are released together, so the default is the pair that was tested. A project that
+ pins something else is choosing to compile against a surface these generators may not write.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>how the compiled module is carried in the bundle</dd>
+<dd>the version of <code>bytebox-core</code> to add, defaulting to the plugin's own</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="getSizeBudget()">
-<h3>getSizeBudget</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Long.html" title="class or interface in java.lang" class="external-link">Long</a>&gt;</span>&nbsp;<span class="element-name">getSizeBudget</span>()</div>
-<div class="block">Returns a size ceiling the build fails past, in bytes on wrangler's gzip meter.</div>
+<section class="detail" id="getRunner()">
+<h3>getRunner</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getRunner</span>()</div>
+<div class="block">Returns which runtime runs the Wrangler CLI.
+
+ <p>Resolved once, in this order: a <code>wrangler</code> already on <code>PATH</code>, then
+ <code>bunx</code>, then <code>deno</code>, then <code>npx</code>. Set this to pin one.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>a size ceiling the build fails past, in bytes on wrangler's gzip meter</dd>
+<dd>which runtime runs the Wrangler CLI</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getJSONTypes()">
+<h3>getJSONTypes</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getJSONTypes</span>()</div>
+<div class="block">Returns the types to generate JSON codecs for, fully qualified.
+
+ <p>Only needed for a type the annotation cannot reach: one in a dependency, or one whose source
+ you do not control. Anything annotated <code>@JSONType</code> in this project is found on its own.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the types to generate JSON codecs for, fully qualified</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="jsonTypes(java.lang.String...)">
+<h3>jsonTypes</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">jsonTypes</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;types)</span></div>
+<div class="block">Adds types to generate JSON codecs for.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>types</code> - the fully qualified type names</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getDurableObjectClasses()">
+<h3>getDurableObjectClasses</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getDurableObjectClasses</span>()</div>
+<div class="block">Returns the Java classes to expose as Durable Objects, fully qualified.
+
+ <p>Which handlers each one gets is read from the interfaces it implements, so an object that takes
+ no alarm has no alarm handler in the generated JavaScript class.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the Java classes to expose as Durable Objects, fully qualified</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="durableObjects(java.lang.String...)">
+<h3>durableObjects</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">durableObjects</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;classes)</span></div>
+<div class="block">Exposes Java classes as Durable Objects.
+
+ <p>The build writes the JavaScript class the runtime instantiates, the binding, and the migration
+ that creates the class. One Java instance exists per Durable Object instance, so a field on it is
+ that object's memory.
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-kotlin"> bytebox {
+ 	durableObjects("com.example.Counter", "com.example.Room")
+ }
+</code></pre>
+</div>
+</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>classes</code> - the fully qualified class names</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getSerialTypes()">
+<h3>getSerialTypes</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getSerialTypes</span>()</div>
+<div class="block">Returns the types to generate <code>java.io</code> serialization codecs for, fully qualified.
+
+ <p>Only needed for a type the annotation cannot reach. Anything annotated <code>@SerialType</code> in
+ this project is found on its own.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the types to generate <code>java.io</code> serialization codecs for, fully qualified</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="serialTypes(java.lang.String...)">
+<h3>serialTypes</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">serialTypes</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;types)</span></div>
+<div class="block">Adds types to generate serialization codecs for.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>types</code> - the fully qualified type names</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getNPMPackages()">
+<h3>getNPMPackages</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getNPMPackages</span>()</div>
+<div class="block">Returns the npm packages the compiled program imports, as <code>name@range</code>.
+
+ <p>An npm package is JavaScript, so it never enters the WebAssembly. It stays on the JavaScript
+ side and costs bundle bytes rather than module bytes.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the npm packages the compiled program imports, as <code>name@range</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="npm(java.lang.String,java.lang.String)">
+<h3>npm</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">npm</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;name,
+ <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;version)</span></div>
+<div class="block">Declares an npm package the compiled program imports.
+
+ <p>Writes it into the generated <code>package.json</code> and emits a static import beside the
+ loader, which is what makes it resolvable: a package name reached only from inside the
+ WebAssembly lives in a custom section, and no bundler can follow that.
+
+ <p>Reach it from Java with <code>@JSBodyImport</code>:
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-java"> @JSBody(
+ 	params = "size",
+ 	imports = @JSBodyImport(alias = "nanoid", fromModule = "nanoid"),
+ 	script = "return nanoid.nanoid(size);"
+ )
+ private static native String id(int size);
+</code></pre>
+</div>
+</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>name</code> - the package name</dd>
+<dd><code>version</code> - the version range</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getNPMBindingPackages()">
+<h3>getNPMBindingPackages</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getNPMBindingPackages</span>()</div>
+<div class="block">Returns the npm packages to generate Java bindings for.
+
+ <p>A subset of <a href="#getNPMPackages()"><code>getNPMPackages()</code></a>, because generating needs the package installed and a
+ JavaScript runtime on <code>PATH</code> while merely depending on one does not.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the npm packages to generate Java bindings for</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="npmBindings(java.lang.String...)">
+<h3>npmBindings</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">npmBindings</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>...&nbsp;packages)</span></div>
+<div class="block">Asks for generated Java bindings for packages already declared with <a href="#npm(java.lang.String,java.lang.String)"><code>npm(java.lang.String, java.lang.String)</code></a>.
+
+ <p><code>generateNpmBindings</code> reads each package's TypeScript types and writes a class of
+ <code>@JSBody</code> methods onto the main source set, so the package is callable without a line of
+ hand-written interop. A subpath export is named the way an import names it:
+
+ 
+<div class="snippet-container"><button class="copy snippet-copy" aria-label="Copy snippet" onclick="copySnippet(this)"><span data-copied="Copied!">Copy</span><img src="../../../../copy.svg" alt="Copy snippet"></button>
+<pre class="snippet"><code class="language-kotlin"> bytebox {
+ 	npm("nanoid", "^5.0.9")
+ 	npmBindings("nanoid", "edgeport/smtp")
+ }
+</code></pre>
+</div>
+
+
+ <p>What a package's types cannot express becomes <code>TSObject</code>, and the task prints which
+ tier each package resolved on, so a thin binding is visible rather than a surprise.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>packages</code> - the package specifiers</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getNPMIntrospection()">
+<h3>getNPMIntrospection</h3>
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.Property&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Boolean.html" title="class or interface in java.lang" class="external-link">Boolean</a>&gt;</span>&nbsp;<span class="element-name">getNPMIntrospection</span>()</div>
+<div class="block">Returns whether the generator may import a package to read exports no static analysis can see.
+
+ <p>On by default. Installing a package already runs its own install scripts, so importing one is
+ not a new trust boundary — but it is the only tier that executes third-party code, and this is
+ how a build says it may not.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>whether the generator may import a package to read exports no static analysis can see</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getSize()">
+<h3>getSize</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="SizeSpec.html" title="class in dev.gmitch215.bytebox.gradle">SizeSpec</a></span>&nbsp;<span class="element-name">getSize</span>()</div>
+<div class="block">Returns how the compiled module is packed and how big it is allowed to get.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>how the compiled module is packed and how big it is allowed to get</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="size(org.gradle.api.Action)">
+<h3>size</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">size</span><wbr><span class="parameters">(org.gradle.api.Action&lt;<a href="SizeSpec.html" title="class in dev.gmitch215.bytebox.gradle">SizeSpec</a>&gt;&nbsp;action)</span></div>
+<div class="block">Configures packing and the size budget.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>action</code> - the configuration</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getWrangler()">
+<h3>getWrangler</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="WranglerSpec.html" title="class in dev.gmitch215.bytebox.gradle">WranglerSpec</a></span>&nbsp;<span class="element-name">getWrangler</span>()</div>
+<div class="block">Returns what goes into the generated Wrangler configuration.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>what goes into the generated Wrangler configuration</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="wrangler(org.gradle.api.Action)">
+<h3>wrangler</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">wrangler</span><wbr><span class="parameters">(org.gradle.api.Action&lt;<a href="WranglerSpec.html" title="class in dev.gmitch215.bytebox.gradle">WranglerSpec</a>&gt;&nbsp;action)</span></div>
+<div class="block">Configures the generated Wrangler configuration.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>action</code> - the configuration</dd>
 </dl>
 </section>
 </li>
 <li>
 <section class="detail" id="getBindings()">
 <h3>getBindings</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.provider.ListProperty&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</span>&nbsp;<span class="element-name">getBindings</span>()</div>
-<div class="block">Returns binding declarations, in the order they were added.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="Bindings.html" title="class in dev.gmitch215.bytebox.gradle">Bindings</a></span>&nbsp;<span class="element-name">getBindings</span>()</div>
+<div class="block">Returns the declared bindings.</div>
 <dl class="notes">
 <dt>Returns:</dt>
-<dd>binding declarations, in the order they were added</dd>
+<dd>the declared bindings</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bindings(org.gradle.api.Action)">
+<h3>bindings</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bindings</span><wbr><span class="parameters">(org.gradle.api.Action&lt;<a href="Bindings.html" title="class in dev.gmitch215.bytebox.gradle">Bindings</a>&gt;&nbsp;action)</span></div>
+<div class="block">Declares bindings.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>action</code> - the configuration</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bindings(dev.gmitch215.bytebox.gradle.BindingType...)">
+<h3>bindings</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bindings</span><wbr><span class="parameters">(<a href="BindingType.html" title="enum class in dev.gmitch215.bytebox.gradle">BindingType</a>...&nbsp;types)</span></div>
+<div class="block">Declares bindings by type, each taking its default name.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>types</code> - the types</dd>
 </dl>
 </section>
 </li>
