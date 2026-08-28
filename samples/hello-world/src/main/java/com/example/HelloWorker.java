@@ -7,10 +7,11 @@ import dev.gmitch215.bytebox.Request;
 import dev.gmitch215.bytebox.Response;
 import dev.gmitch215.bytebox.Worker;
 
+/** The smallest Worker: one handler, no bindings. */
 public class HelloWorker implements Worker {
 
 	@Override
 	public Response fetch(Request request, Env env, ExecutionCtx ctx) {
-		return Bytebox.response("hello from Java on " + request.getUrl());
+		return Bytebox.response("hello world!");
 	}
 }
