@@ -1,0 +1,20 @@
+# gradle
+.gradle
+build
+.kotlin
+
+# bun
+node_modules
+package-lock.json
+
+# npm package
+npm/typedoc
+npm/coverage
+npm/dist
+npm/tests/fixtures
+
+# generated worker output
+.wrangler
+size/ledger/*.json
+!size/ledger/.gitkeep
+.DS_Store
