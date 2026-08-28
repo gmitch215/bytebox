@@ -17,6 +17,10 @@ jobs:
       contents: write
 
     name: Deploy Documentation
+    env:
+      # bun install runs prepare, which installs the git hooks; the deploy scripts then commit and
+      # lint-staged rewrites generated documentation
+      HUSKY: 0
     steps:
       - uses: actions/checkout@v6
         with:
