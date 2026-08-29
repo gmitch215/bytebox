@@ -172,6 +172,7 @@ public abstract class GenerateSerialCodecsTask extends DefaultTask {
 					if (name.endsWith("package-info")) continue;
 					try {
 						Class<?> type = Class.forName(name, false, loader);
+						if (type.isSynthetic()) continue;
 						if (type.isAnnotationPresent(marker)) names.add(name);
 					} catch (ClassNotFoundException | NoClassDefFoundError skip) {
 						// a class whose dependencies are absent cannot be one of ours
@@ -363,10 +364,8 @@ public abstract class GenerateSerialCodecsTask extends DefaultTask {
 			for (Level level : levels.reversed()) {
 				for (Member member : level.members()) {
 					out.append("\t\tvalue.")
-						.append(member.setter())
-						.append("(source.")
-						.append(member.reader())
-						.append(");\n");
+						.append(member.assign("source." + member.reader()))
+						.append(";\n");
 				}
 			}
 			out.append("\t\treturn value;\n");
@@ -538,7 +537,7 @@ public abstract class GenerateSerialCodecsTask extends DefaultTask {
 					field.getName(),
 					field.getType(),
 					open ? field.getName() : getter(type, field),
-					open ? field.getName() : setter(type, field)
+					open ? null : setter(type, field)
 				)
 			);
 		}
@@ -670,6 +669,11 @@ public abstract class GenerateSerialCodecsTask extends DefaultTask {
 	) {
 		boolean primitive() {
 			return typeCode != 'L' && typeCode != '[';
+		}
+
+		/** A public field is assigned; anything else goes through the setter that reaches it. */
+		String assign(String value) {
+			return setter == null ? name + " = " + value : setter + "(" + value + ")";
 		}
 
 		String local() {

@@ -127,10 +127,12 @@ public abstract class GenerateCodecsTask extends DefaultTask {
 						.toString()
 						.replace(File.separatorChar, '.')
 						.replaceAll("\\.class$", "");
-					// a synthetic or anonymous class cannot carry the annotation anyway
-					if (name.contains("$") || name.endsWith("package-info")) continue;
+					if (name.endsWith("package-info")) continue;
 					try {
 						Class<?> type = Class.forName(name, false, loader);
+						// a nested class carries a dollar sign and can still be annotated; only a
+						// compiler-generated one cannot
+						if (type.isSynthetic()) continue;
 						if (type.isAnnotationPresent(marker)) names.add(name);
 					} catch (ClassNotFoundException | NoClassDefFoundError skip) {
 						// a class whose dependencies are absent cannot be one of ours
@@ -197,10 +199,8 @@ public abstract class GenerateCodecsTask extends DefaultTask {
 			out.append("\t\t").append(name).append(" decoded = new ").append(name).append("();\n");
 			for (Member member : members) {
 				out.append("\t\tdecoded.")
-					.append(member.setter())
-					.append("(")
-					.append(read(member))
-					.append(");\n");
+					.append(member.assign(read(member)))
+					.append(";\n");
 			}
 			out.append("\t\treturn decoded;\n");
 		}
@@ -336,17 +336,15 @@ public abstract class GenerateCodecsTask extends DefaultTask {
 		}
 		for (Field field : type.getDeclaredFields()) {
 			if (Modifier.isStatic(field.getModifiers()) || field.isSynthetic()) continue;
-			boolean readable = Modifier.isPublic(field.getModifiers());
-			String accessor = readable ? field.getName() : getter(type, field);
-			String setter = readable ? null : setter(type, field);
+			boolean open = Modifier.isPublic(field.getModifiers());
 			members.add(
 				new Member(
 					type.getName(),
 					field.getName(),
 					field.getType(),
 					elementOf(field.getGenericType()),
-					accessor,
-					setter == null ? field.getName() : setter
+					open ? field.getName() : getter(type, field),
+					open ? null : setter(type, field)
 				)
 			);
 		}
@@ -410,6 +408,11 @@ public abstract class GenerateCodecsTask extends DefaultTask {
 		String accessor,
 		String setter
 	) {
+		/** A public field is assigned; anything else goes through the setter that reaches it. */
+		String assign(String value) {
+			return setter == null ? name + " = " + value : setter + "(" + value + ")";
+		}
+
 		String describe() {
 			return elementType == null
 				? type.getSimpleName()

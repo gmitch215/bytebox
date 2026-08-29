@@ -250,6 +250,46 @@ class SerialCodecTest {
 		assertTrue(result.getOutput().contains("declares writeObject"), result.getOutput());
 	}
 
+	@Test
+	@DisplayName("assigns a public field rather than calling one, so the codec compiles")
+	void writesABeanCodec(@TempDir Path root) throws IOException {
+		Map<String, String> sources = new LinkedHashMap<>();
+		sources.put("fixture/Handler.java", HANDLER);
+		sources.put(
+			"fixture/Order.java",
+			"""
+			package fixture;
+
+			import dev.gmitch215.bytebox.io.SerialType;
+			import java.io.Serializable;
+
+			@SerialType
+			public class Order implements Serializable {
+				public String sku;
+				private int quantity;
+
+				public Order() {}
+
+				public int getQuantity() {
+					return quantity;
+				}
+
+				public void setQuantity(int quantity) {
+					this.quantity = quantity;
+				}
+			}
+			"""
+		);
+
+		Fixtures.runner(root(root, sources), "compileByteboxJava").build();
+
+		String codec = codec(root, "fixture_OrderSerial");
+		assertTrue(codec.contains("value.sku = source.readObject("), codec);
+		assertTrue(codec.contains("value.setQuantity(source.readInt());"), codec);
+		assertTrue(codec.contains("sink.writeObject(value.sku);"), codec);
+		assertTrue(codec.contains("sink.writeInt(value.getQuantity());"), codec);
+	}
+
 	private static Path root(Path root, Map<String, String> sources) throws IOException {
 		Fixtures.project(
 			root,

@@ -160,6 +160,45 @@ class CodecTest {
 		assertTrue(codec.contains("new fixture_AddressCodec().decode("), codec);
 	}
 
+	@Test
+	@DisplayName("assigns a public field rather than calling one, so the codec compiles")
+	void writesABeanCodec(@TempDir Path root) throws IOException {
+		Map<String, String> sources = new LinkedHashMap<>();
+		sources.put("fixture/Handler.java", HANDLER);
+		sources.put(
+			"fixture/Order.java",
+			"""
+			package fixture;
+
+			import dev.gmitch215.bytebox.json.JSONType;
+
+			@JSONType
+			public class Order {
+				public String sku;
+				private int quantity;
+
+				public int getQuantity() {
+					return quantity;
+				}
+
+				public void setQuantity(int quantity) {
+					this.quantity = quantity;
+				}
+			}
+			"""
+		);
+
+		Fixtures.runner(root(root, sources), "compileByteboxJava").build();
+
+		String codec = Files.readString(
+			root
+				.resolve("build/generated/sources/bytebox/java/dev/gmitch215/bytebox/generated")
+				.resolve("fixture_OrderCodec.java")
+		);
+		assertTrue(codec.contains("decoded.sku = "), codec);
+		assertTrue(codec.contains("decoded.setQuantity("), codec);
+	}
+
 	private static Path root(Path root, Map<String, String> sources) throws IOException {
 		Fixtures.project(
 			root,
