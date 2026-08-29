@@ -9,7 +9,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.gradle.api.GradleException;
 
@@ -39,18 +38,15 @@ public record DurableObjects(
 		return dot < 0 ? className : className.substring(dot + 1);
 	}
 
-	/** {@return the binding name, which is {@code DO_} and the class name upper-snaked} */
+	/**
+	 * {@return the binding name, which is {@code DO_} and the class name upper-snaked}
+	 *
+	 * <p>Derived by the same code the bindings block uses. The plugin declares a binding for any
+	 * Durable Object that has none, deciding by this name, so a second derivation that disagreed with
+	 * that one would declare the same binding twice.
+	 */
 	public String bindingName() {
-		StringBuilder out = new StringBuilder("DO_");
-		String simple = simpleName();
-		for (int i = 0; i < simple.length(); i++) {
-			char c = simple.charAt(i);
-			if (i > 0 && Character.isUpperCase(c) && !Character.isUpperCase(simple.charAt(i - 1))) {
-				out.append('_');
-			}
-			out.append(Character.toUpperCase(c));
-		}
-		return out.toString().toUpperCase(Locale.ROOT);
+		return "DO_" + Bindings.upperSnake(simpleName());
 	}
 
 	/**

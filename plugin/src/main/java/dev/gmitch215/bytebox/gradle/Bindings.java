@@ -315,16 +315,36 @@ public class Bindings {
 		return seen == 1 ? base : base + "_" + seen;
 	}
 
-	private static String upperSnake(String name) {
+	/**
+	 * The upper-snake form of a name, which is what a binding is called when none is given.
+	 *
+	 * <p>Package-private and used by {@link DurableObjects#bindingName()} too: the plugin compares the
+	 * name a Durable Object derives against the names already declared, so two derivations that
+	 * disagree would declare the same binding twice and fail the build.
+	 *
+	 * @param name the name to convert
+	 * @return the upper-snake form
+	 */
+	static String upperSnake(String name) {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < name.length(); i++) {
 			char c = name.charAt(i);
-			if (Character.isUpperCase(c) && i > 0 && !isBoundary(name.charAt(i - 1))) {
+			if (isBoundary(c)) {
 				out.append('_');
+				continue;
 			}
-			out.append(isBoundary(c) ? '_' : Character.toUpperCase(c));
+			if (i > 0 && Character.isUpperCase(c) && startsAWord(name, i)) out.append('_');
+			out.append(c);
 		}
-		return out.toString().replaceAll("_+", "_");
+		return out.toString().replaceAll("_+", "_").toUpperCase(Locale.ROOT);
+	}
+
+	/** An acronym is one word, so the break is where a run of capitals ends rather than inside it. */
+	private static boolean startsAWord(String name, int i) {
+		char previous = name.charAt(i - 1);
+		if (isBoundary(previous)) return false;
+		if (!Character.isUpperCase(previous)) return true;
+		return i + 1 < name.length() && Character.isLowerCase(name.charAt(i + 1));
 	}
 
 	private static boolean isBoundary(char c) {
@@ -443,10 +463,5 @@ public class Bindings {
 			if (jurisdiction != null) identifiers.put("jurisdiction", jurisdiction);
 			return identifiers;
 		}
-	}
-
-	/** {@return the locale-independent upper-snake form of a name, exposed for the tests} */
-	static String snake(String name) {
-		return upperSnake(name).toUpperCase(Locale.ROOT);
 	}
 }
