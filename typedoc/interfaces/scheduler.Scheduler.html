@@ -13,7 +13,7 @@
 <h1>Interface Scheduler</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">Scheduler</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#imports">imports</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{</span><br/>        <span class="tsd-kind-call-signature">kill</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">handle</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>        <span class="tsd-kind-call-signature">offer</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">arg</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">callback</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">arg</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">,</span> <span class="tsd-kind-parameter">due</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <span class="tsd-signature-symbol">}</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#clear-1">clear</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#drain-1">drain</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="scheduler.DrainOptions.html" class="tsd-signature-type tsd-kind-interface">DrainOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <a href="scheduler.DrainResult.html" class="tsd-signature-type tsd-kind-interface">DrainResult</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#drainasync-1">drainAsync</a><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?:</span> <a href="scheduler.DrainOptions.html" class="tsd-signature-type tsd-kind-interface">DrainOptions</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="scheduler.DrainResult.html" class="tsd-signature-type tsd-kind-interface">DrainResult</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#nextdue-1">nextDue</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#now-1">now</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-call-signature" href="#pending-1">pending</a><span class="tsd-signature-symbol">()</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L56">npm/src/scheduler.ts:56</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L56">npm/src/scheduler.ts:56</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -41,7 +41,7 @@
 <div class="tsd-comment tsd-typography"><p>Install as the module's <code>teavmAsync</code> import.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L58">npm/src/scheduler.ts:58</a></li></ul></aside></section></section></details>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L58">npm/src/scheduler.ts:58</a></li></ul></aside></section></section></details>
 <details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Methods"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
 <h2 class="tsd-anchor-link" id="methods-1">Methods<a href="#methods-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2></summary>
 <section>
@@ -55,7 +55,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L77">npm/src/scheduler.ts:77</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L77">npm/src/scheduler.ts:77</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="drain"><span>drain</span><a href="#drain" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -68,7 +68,7 @@
 <li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">options</span>: <a href="scheduler.DrainOptions.html" class="tsd-signature-type tsd-kind-interface">DrainOptions</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="scheduler.DrainResult.html" class="tsd-signature-type tsd-kind-interface">DrainResult</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L73">npm/src/scheduler.ts:73</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L73">npm/src/scheduler.ts:73</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="drainasync"><span>drain<wbr/>Async</span><a href="#drainasync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -83,7 +83,7 @@
 <li><span><code class="tsd-tag">Optional</code><span class="tsd-kind-parameter">options</span>: <a href="scheduler.DrainOptions.html" class="tsd-signature-type tsd-kind-interface">DrainOptions</a></span></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="scheduler.DrainResult.html" class="tsd-signature-type tsd-kind-interface">DrainResult</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L75">npm/src/scheduler.ts:75</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L75">npm/src/scheduler.ts:75</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="nextdue"><span>next<wbr/>Due</span><a href="#nextdue" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -94,7 +94,7 @@
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L72">npm/src/scheduler.ts:72</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L72">npm/src/scheduler.ts:72</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="now"><span>now</span><a href="#now" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -108,7 +108,7 @@ interval visible to Java rather than leaving its clock frozen behind the queue.<
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L69">npm/src/scheduler.ts:69</a></li></ul></aside></div></li></ul></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L69">npm/src/scheduler.ts:69</a></li></ul></aside></div></li></ul></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="pending"><span>pending</span><a href="#pending" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -117,7 +117,7 @@ interval visible to Java rather than leaving its clock frozen behind the queue.<
 <div class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/3af777fb33d0c976d40c1e62e1c976b5b714cbe0/npm/src/scheduler.ts#L70">npm/src/scheduler.ts:70</a></li></ul></aside></div></li></ul></section></section></details></div>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/4b81fbc64339354edbf4e34b037ff2b9a2e745c0/npm/src/scheduler.ts#L70">npm/src/scheduler.ts:70</a></li></ul></aside></div></li></ul></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
