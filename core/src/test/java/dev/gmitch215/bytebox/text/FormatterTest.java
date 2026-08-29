@@ -29,10 +29,17 @@ class FormatterTest {
 	/** What the platform answers for an English locale, so the comparison needs no platform. */
 	private static final Separators SEPARATORS = languageTag -> ".,";
 
-	/** Formatted by this class, in the same locale. */
+	/**
+	 * Formatted by this class, in the same locale.
+	 *
+	 * <p>Closed on the way out even when the format throws, which most of the refusal cases below do.
+	 */
 	private static String ours(String format, Object... args) {
 		StringBuilder into = new StringBuilder();
-		new Formatter(into, Locale.US, SEPARATORS).format(format, args);
+		try (Formatter formatter = new Formatter(into, Locale.US, SEPARATORS)) {
+			formatter.format(format, args);
+		}
+
 		return into.toString();
 	}
 
@@ -540,27 +547,30 @@ class FormatterTest {
 	@DisplayName("carries its destination, its locale and any failure the destination reported")
 	void carriesItsState() {
 		StringBuilder into = new StringBuilder();
-		Formatter formatter = new Formatter(into, Locale.US, SEPARATORS);
 
-		assertSame(into, formatter.out());
-		assertEquals(Locale.US, formatter.locale());
-		assertNull(formatter.ioException());
-		assertSame(formatter, formatter.format("%d", 1));
-		assertEquals("1", formatter.toString());
+		try (Formatter formatter = new Formatter(into, Locale.US, SEPARATORS)) {
+			assertSame(into, formatter.out());
+			assertEquals(Locale.US, formatter.locale());
+			assertNull(formatter.ioException());
+			assertSame(formatter, formatter.format("%d", 1));
+			assertEquals("1", formatter.toString());
+		}
 	}
 
 	@Test
 	@DisplayName("writes into a string when it was given nothing to write into")
 	void writesIntoAString() {
-		Formatter formatter = new Formatter(Locale.US);
-		formatter.format("%s", "a");
-		assertEquals("a", formatter.toString());
-		assertEquals(Locale.US, formatter.locale());
+		try (Formatter formatter = new Formatter(Locale.US)) {
+			formatter.format("%s", "a");
+			assertEquals("a", formatter.toString());
+			assertEquals(Locale.US, formatter.locale());
+		}
 
-		Formatter plain = new Formatter();
-		plain.format("%s", "b");
-		assertEquals("b", plain.toString());
-		assertNull(plain.locale());
+		try (Formatter plain = new Formatter()) {
+			plain.format("%s", "b");
+			assertEquals("b", plain.toString());
+			assertNull(plain.locale());
+		}
 	}
 
 	@Test
@@ -602,17 +612,20 @@ class FormatterTest {
 			SEPARATORS
 		);
 
-		formatter.format("%s", "a");
-		assertSame(broken, formatter.ioException());
+		try (formatter) {
+			formatter.format("%s", "a");
+			assertSame(broken, formatter.ioException());
+		}
 	}
 
 	@Test
 	@DisplayName("refuses a destination of null")
 	void refusesANullDestination() {
 		assertThrows(NullPointerException.class, () -> new Formatter((Appendable) null));
-		assertThrows(NullPointerException.class, () ->
-			new Formatter(new StringBuilder(), Locale.US, SEPARATORS).format(null, 1)
-		);
+
+		try (Formatter formatter = new Formatter(new StringBuilder(), Locale.US, SEPARATORS)) {
+			assertThrows(NullPointerException.class, () -> formatter.format(null, 1));
+		}
 	}
 
 	@Test
@@ -640,10 +653,15 @@ class FormatterTest {
 	void writesToAnAppendable() {
 		StringBuilder into = new StringBuilder();
 
-		new Formatter(into).format("%s-%d", "a", 1);
+		try (Formatter formatter = new Formatter(into)) {
+			formatter.format("%s-%d", "a", 1);
+		}
 
 		assertEquals("a-1", into.toString());
-		assertSame(into, new Formatter(into).out());
+
+		try (Formatter reopened = new Formatter(into)) {
+			assertSame(into, reopened.out());
+		}
 	}
 
 	@Test

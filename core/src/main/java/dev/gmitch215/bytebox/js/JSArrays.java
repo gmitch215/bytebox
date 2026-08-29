@@ -29,10 +29,13 @@ public final class JSArrays {
 	 * @param <T> the element type
 	 * @return the array
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T extends JSObject> JSArray<T> of(T[] items) {
 		JSObject array = empty();
 		for (T item : items) push(array, item);
-		return array.cast();
+		// cast here rather than declaring the natives generic, which is the specialisation this class
+		// exists to avoid; an overlay type carries no runtime identity, so this is a compile-time move
+		return (JSArray<T>) array;
 	}
 
 	@JSBody(script = "return [];")

@@ -16,7 +16,6 @@ import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.TaskProvider;
-import org.gradle.api.tasks.compile.JavaCompile;
 import org.teavm.gradle.api.OptimizationLevel;
 import org.teavm.gradle.api.TeaVMExtension;
 import org.teavm.gradle.api.TeaVMWasmGCConfiguration;

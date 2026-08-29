@@ -38,7 +38,6 @@ final class Translate {
 	private static final String VERTICAL = "\\n\\x0B\\f\\r\\u0085\\u2028\\u2029";
 
 	private final String pattern;
-	private final int flags;
 	private final boolean unixLines;
 	private final boolean multiline;
 	private final boolean dotAll;
@@ -50,7 +49,6 @@ final class Translate {
 
 	private Translate(String pattern, int flags) {
 		this.pattern = pattern;
-		this.flags = flags;
 		this.unixLines = (flags & Pattern.UNIX_LINES) != 0;
 		this.multiline = (flags & Pattern.MULTILINE) != 0;
 		this.dotAll = (flags & Pattern.DOTALL) != 0;
