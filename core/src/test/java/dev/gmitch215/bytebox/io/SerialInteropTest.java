@@ -15,6 +15,7 @@ import dev.gmitch215.bytebox.io.Wires.Blobs;
 import dev.gmitch215.bytebox.io.Wires.Boxed;
 import dev.gmitch215.bytebox.io.Wires.Node;
 import dev.gmitch215.bytebox.io.Wires.Order;
+import dev.gmitch215.bytebox.io.Wires.Scalars;
 import dev.gmitch215.bytebox.io.Wires.Status;
 import dev.gmitch215.bytebox.io.Wires.Tagged;
 import java.util.ArrayList;
@@ -209,4 +210,185 @@ class SerialInteropTest {
 	}
 
 	// #endregion
+
+	// #region every shape the format carries
+
+	@Test
+	void everyPrimitiveComesBackAsItself() {
+		Scalars scalars = new Scalars(
+			true,
+			(byte) -7,
+			'z',
+			(short) 1234,
+			-9,
+			1L << 40,
+			1.5f,
+			-2.25
+		);
+
+		assertEquals(scalars, Serial.decode(Serial.encode(scalars), Scalars.class));
+		assertEquals(scalars, Serial.decode(jvm(scalars), Scalars.class));
+	}
+
+	@Test
+	void everyBoxComesBackAsItself() {
+		assertEquals((byte) 7, Serial.decode(jvm((byte) 7), Byte.class));
+		assertEquals((short) 7, Serial.decode(jvm((short) 7), Short.class));
+		assertEquals(7, Serial.decode(jvm(7), Integer.class));
+		assertEquals(7L, Serial.decode(jvm(7L), Long.class));
+		assertEquals(1.5f, Serial.decode(jvm(1.5f), Float.class));
+		assertEquals(1.5, Serial.decode(jvm(1.5), Double.class));
+		assertEquals('c', Serial.decode(jvm('c'), Character.class));
+		assertEquals(true, Serial.decode(jvm(true), Boolean.class));
+	}
+
+	@Test
+	void everyArrayOfPrimitivesComesBackAsItself() {
+		assertArrayEquals(new byte[] { 1, -1 }, roundTrip(new byte[] { 1, -1 }, byte[].class));
+		assertArrayEquals(
+			new boolean[] { true, false },
+			roundTrip(new boolean[] { true, false }, boolean[].class)
+		);
+		assertArrayEquals(
+			new char[] { 'a', 'z' },
+			roundTrip(new char[] { 'a', 'z' }, char[].class)
+		);
+		assertArrayEquals(new short[] { 1, -2 }, roundTrip(new short[] { 1, -2 }, short[].class));
+		assertArrayEquals(new int[] { 1, -2 }, roundTrip(new int[] { 1, -2 }, int[].class));
+		assertArrayEquals(new long[] { 1L, -2L }, roundTrip(new long[] { 1L, -2L }, long[].class));
+		assertArrayEquals(
+			new float[] { 1.5f, -2.5f },
+			roundTrip(new float[] { 1.5f, -2.5f }, float[].class)
+		);
+		assertArrayEquals(
+			new double[] { 1.5, -2.5 },
+			roundTrip(new double[] { 1.5, -2.5 }, double[].class)
+		);
+		assertArrayEquals(
+			new String[] { "a", null },
+			roundTrip(new String[] { "a", null }, String[].class)
+		);
+	}
+
+	/**
+	 * A string is written in the modified UTF-8 the format uses, so a character outside ASCII takes
+	 * two or three bytes and the length prefix counts bytes rather than characters.
+	 */
+	@Test
+	void aStringOutsideAsciiComesBackWhole() {
+		Order order = new Order("café 日本語", 1, 1L);
+
+		assertArrayEquals(jvm(order), Serial.encode(order));
+		assertEquals(order, Serial.decode(Serial.encode(order), Order.class));
+		assertEquals(order, Serial.decode(jvm(order), Order.class));
+	}
+
+	/** Past 65535 bytes the format switches to a second string tag with a 64-bit length. */
+	@Test
+	void aStringPastTheShortLimitComesBackWhole() {
+		Order order = new Order("x".repeat(70_000), 1, 1L);
+
+		assertArrayEquals(jvm(order), Serial.encode(order));
+		assertEquals(order, Serial.decode(Serial.encode(order), Order.class));
+		assertEquals(order, Serial.decode(jvm(order), Order.class));
+	}
+
+	// #endregion
+
+	// #region streams that are wrong
+
+	@Test
+	void aTagThatIsNotAnObjectSays() {
+		byte[] wire = Serial.encode(new Order("abc", 2, 3L));
+		wire[4] = 0x7F;
+
+		SerialException refused = assertThrows(SerialException.class, () ->
+			Serial.decode(wire, Order.class)
+		);
+		assertTrue(refused.getMessage().contains("unexpected tag 0x7f"), refused.getMessage());
+	}
+
+	@Test
+	void somethingOtherThanAClassDescriptorSays() {
+		byte[] wire = Serial.encode(new Order("abc", 2, 3L));
+		wire[5] = 0x7F;
+
+		SerialException refused = assertThrows(SerialException.class, () ->
+			Serial.decode(wire, Order.class)
+		);
+		assertTrue(
+			refused.getMessage().contains("expected a class descriptor"),
+			refused.getMessage()
+		);
+	}
+
+	@Test
+	void aByteThatStartsNoUtfSequenceSays() {
+		byte[] wire = Serial.encode(new Order("abcdefgh", 2, 3L));
+		// the payload is the last thing written, so the final byte is inside the string
+		wire[wire.length - 1] = (byte) 0xF8;
+
+		SerialException refused = assertThrows(SerialException.class, () ->
+			Serial.decode(wire, Order.class)
+		);
+		assertTrue(
+			refused.getMessage().contains("does not start a UTF-8 sequence"),
+			refused.getMessage()
+		);
+	}
+
+	@Test
+	void aClassTheBuildNeverSawSays() {
+		SerialException refused = assertThrows(SerialException.class, () ->
+			Serial.decode(jvm(new Unregistered("a")), Unregistered.class)
+		);
+
+		assertTrue(refused.getMessage().contains("has no codec"), refused.getMessage());
+		assertTrue(refused.getMessage().contains("@SerialType"), refused.getMessage());
+	}
+
+	@Test
+	void anEnumTheBuildNeverSawSays() {
+		SerialException refused = assertThrows(SerialException.class, () ->
+			Serial.decode(jvm(Unregistered.Kind.ONE), Unregistered.Kind.class)
+		);
+
+		assertTrue(refused.getMessage().contains("constant of"), refused.getMessage());
+	}
+
+	@Test
+	void anEnumWithNoCodecCannotBeWrittenEither() {
+		SerialException refused = assertThrows(SerialException.class, () ->
+			Serial.encode(Unregistered.Kind.ONE)
+		);
+
+		assertTrue(refused.getMessage().contains("cannot be written"), refused.getMessage());
+	}
+
+	@Test
+	void claimingWithNothingBeingReadSays() {
+		SerialException refused = assertThrows(SerialException.class, () ->
+			new SerialReader(new byte[0]).claim("anything")
+		);
+
+		assertTrue(refused.getMessage().contains("no object being read"), refused.getMessage());
+	}
+
+	// #endregion
+
+	private static <T> T roundTrip(T value, Class<T> type) {
+		assertArrayEquals(jvm(value), Serial.encode(value), type.getSimpleName());
+		assertEquals(
+			type.cast(Serial.decode(jvm(value), type)).getClass(),
+			type,
+			"the runtime's own bytes read back as the same type"
+		);
+		return Serial.decode(Serial.encode(value), type);
+	}
+
+	private record Unregistered(String value) implements java.io.Serializable {
+		enum Kind {
+			ONE
+		}
+	}
 }

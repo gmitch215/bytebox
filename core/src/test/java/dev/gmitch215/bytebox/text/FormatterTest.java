@@ -632,4 +632,175 @@ class FormatterTest {
 	}
 
 	// #endregion
+
+	// #region the stream underneath
+
+	@Test
+	@DisplayName("writes into whatever Appendable it was given")
+	void writesToAnAppendable() {
+		StringBuilder into = new StringBuilder();
+
+		new Formatter(into).format("%s-%d", "a", 1);
+
+		assertEquals("a-1", into.toString());
+		assertSame(into, new Formatter(into).out());
+	}
+
+	@Test
+	@DisplayName("passes a flush and a close through to a destination that takes them")
+	void flushesAndCloses() {
+		Recorder recorder = new Recorder();
+		Formatter formatter = new Formatter(recorder);
+
+		formatter.format("a");
+		formatter.flush();
+		formatter.close();
+		formatter.close();
+
+		assertEquals("a", recorder.written.toString());
+		assertEquals(1, recorder.flushes);
+		assertEquals(1, recorder.closes);
+	}
+
+	@Test
+	@DisplayName("keeps the failure rather than throwing it, which is what the API promises")
+	void reportsAFailureRatherThanThrowing() {
+		Formatter formatter = new Formatter(new Broken());
+
+		formatter.flush();
+		assertTrue(formatter.ioException() instanceof IOException);
+
+		formatter.close();
+		assertTrue(formatter.ioException() instanceof IOException);
+	}
+
+	@Test
+	@DisplayName("refuses to be used after it is closed")
+	void refusesAfterClosing() {
+		Formatter formatter = new Formatter(new StringBuilder());
+		formatter.close();
+
+		assertThrows(java.util.FormatterClosedException.class, () -> formatter.format("a"));
+		assertThrows(java.util.FormatterClosedException.class, formatter::flush);
+		assertThrows(java.util.FormatterClosedException.class, formatter::out);
+		assertThrows(java.util.FormatterClosedException.class, formatter::toString);
+	}
+
+	@Test
+	@DisplayName("refuses a width or an index too large to be one")
+	void refusesANumberTooLarge() {
+		assertThrows(java.util.UnknownFormatConversionException.class, () ->
+			ours("%99999999999d", 1)
+		);
+		assertThrows(java.util.UnknownFormatConversionException.class, () ->
+			ours("%99999999999$d", 1)
+		);
+	}
+
+	@Test
+	@DisplayName("reads a number that writes itself with an exponent, and one that writes nonsense")
+	void oddNumbers() {
+		assertMatches("%s", new BigDecimal("1E+10"));
+		assertEquals(
+			String.format(Locale.US, "%f", new BigDecimal("1E+10")),
+			ours("%f", new BigDecimal("1E+10"))
+		);
+		assertEquals("1.2.3", ours("%s", new Odd()));
+	}
+
+	/** A {@link Number} whose text is not a number, which the decimal reader has to notice. */
+	private static final class Odd extends Number {
+
+		@Override
+		public String toString() {
+			return "1.2.3";
+		}
+
+		@Override
+		public int intValue() {
+			return 1;
+		}
+
+		@Override
+		public long longValue() {
+			return 1L;
+		}
+
+		@Override
+		public float floatValue() {
+			return 1f;
+		}
+
+		@Override
+		public double doubleValue() {
+			return 1d;
+		}
+	}
+
+	private static final class Recorder
+		implements Appendable, java.io.Flushable, java.io.Closeable
+	{
+
+		final StringBuilder written = new StringBuilder();
+		int flushes;
+		int closes;
+
+		@Override
+		public Appendable append(CharSequence text) {
+			written.append(text);
+			return this;
+		}
+
+		@Override
+		public Appendable append(CharSequence text, int start, int end) {
+			written.append(text, start, end);
+			return this;
+		}
+
+		@Override
+		public Appendable append(char character) {
+			written.append(character);
+			return this;
+		}
+
+		@Override
+		public void flush() {
+			flushes++;
+		}
+
+		@Override
+		public void close() {
+			closes++;
+		}
+	}
+
+	private static final class Broken implements Appendable, java.io.Flushable, java.io.Closeable {
+
+		@Override
+		public Appendable append(CharSequence text) {
+			return this;
+		}
+
+		@Override
+		public Appendable append(CharSequence text, int start, int end) {
+			return this;
+		}
+
+		@Override
+		public Appendable append(char character) {
+			return this;
+		}
+
+		@Override
+		public void flush() throws IOException {
+			throw new IOException("no");
+		}
+
+		@Override
+		public void close() throws IOException {
+			throw new IOException("no");
+		}
+	}
+
+	// #endregion
 }
