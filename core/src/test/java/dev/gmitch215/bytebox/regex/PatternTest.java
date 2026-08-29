@@ -615,4 +615,123 @@ class PatternTest {
 	}
 
 	// #endregion
+
+	// #region the escapes a JavaScript engine spells differently
+
+	@ParameterizedTest
+	@ValueSource(
+		strings = {
+			"\\a",
+			"\\e",
+			"[\\a]",
+			"[\\e]",
+			"[\\h]",
+			"[\\v]",
+			"a\\Zb",
+			"a\\Z",
+			"\\Qa+b\\E",
+			"[\\Qa-b\\E]"
+		}
+	)
+	@DisplayName("rewrites an escape a JavaScript engine spells differently, or not at all")
+	void escapes(String pattern) {
+		assertMatches(pattern, "a", "\u0007", "\u001B", "a+b", "a-b", "a\nb", "a b", "a\tb");
+	}
+
+	@ParameterizedTest
+	@ValueSource(
+		strings = {
+			"Alpha",
+			"Digit",
+			"Alnum",
+			"Punct",
+			"Graph",
+			"Print",
+			"Blank",
+			"Cntrl",
+			"XDigit",
+			"Space",
+			"Lower",
+			"Upper",
+			"ASCII"
+		}
+	)
+	@DisplayName("writes each POSIX class out as the range it stands for")
+	void posixClasses(String name) {
+		assertMatches("\\p{" + name + "}", "a", "Z", "7", "!", " ", "\t", "\u0000", "\u007F", "~");
+		assertMatches("[x\\p{" + name + "}]", "a", "Z", "7", "!", " ", "x");
+	}
+
+	@Test
+	@DisplayName("refuses a property it has no range for, rather than passing it through")
+	void unknownProperty() {
+		assertThrows(PatternSyntaxException.class, () -> ours("\\p{IsGreek}"));
+		assertThrows(PatternSyntaxException.class, () -> ours("[\\p{IsGreek}]"));
+	}
+
+	@Test
+	@DisplayName("refuses a quotation that never opened, and a backslash with nothing after it")
+	void danglingEscapes() {
+		assertThrows(PatternSyntaxException.class, () -> ours("a\\E"));
+		assertThrows(PatternSyntaxException.class, () -> ours("a\\"));
+		assertThrows(PatternSyntaxException.class, () -> ours("[a\\"));
+	}
+
+	@Test
+	@DisplayName("escapes a control character in a quoted run rather than writing it raw")
+	void quotedControlCharacters() {
+		assertMatches("\\Qa\nb\\E", "a\nb", "ab");
+		assertMatches("\\Qa\rb\\E", "a\rb");
+		assertMatches("\\Qa\u0001b\\E", "a\u0001b");
+		assertMatches("\\Qa\u007Fb\\E", "a\u007Fb");
+		assertMatches("\\Qa\u0010b\\E", "a\u0010b");
+	}
+
+	// #endregion
+
+	// #region named groups
+
+	@Test
+	@DisplayName("reads a group by the name the pattern gave it")
+	void namedGroups() {
+		Matcher matcher = ours("(?<year>\\d{4})-(?<month>\\d{2})").matcher("on 2026-08 ok");
+
+		assertTrue(matcher.find());
+		assertEquals("2026-08", matcher.group());
+		assertEquals("2026", matcher.group("year"));
+		assertEquals("08", matcher.group("month"));
+		assertEquals(3, matcher.start("year"));
+		assertEquals(7, matcher.end("year"));
+		assertEquals(8, matcher.start("month"));
+		assertEquals(10, matcher.end("month"));
+		assertEquals(Map.of("year", 1, "month", 2), matcher.namedGroups());
+	}
+
+	@Test
+	@DisplayName("names a group the pattern does not have")
+	void unknownGroupName() {
+		Matcher matcher = ours("(?<year>\\d{4})").matcher("2026");
+		assertTrue(matcher.find());
+
+		assertUnknownName(() -> matcher.group("month"));
+		assertUnknownName(() -> matcher.start("month"));
+		assertUnknownName(() -> matcher.end("month"));
+	}
+
+	private static void assertUnknownName(org.junit.jupiter.api.function.Executable call) {
+		IllegalArgumentException failure = assertThrows(IllegalArgumentException.class, call);
+
+		assertTrue(failure.getMessage().contains("no group called month"), failure.getMessage());
+	}
+
+	@Test
+	@DisplayName(
+		"counts the groups before anything has matched, which is when only the pattern knows"
+	)
+	void countsBeforeMatching() {
+		assertEquals(2, ours("(?<a>x)(?<b>y)").matcher("").groupCount());
+		assertEquals(0, ours("xy").matcher("").groupCount());
+	}
+
+	// #endregion
 }

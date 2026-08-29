@@ -512,7 +512,9 @@ final class Translate {
 	// #endregion
 
 	private static void escape(StringBuilder into, char character) {
-		if ("\\^$.|?*+()[]{}/".indexOf(character) >= 0) {
+		// the hyphen is here for the quoted run inside a character class, where a raw one would be
+		// read as a range; outside a class the escape is a legal identity escape and means the same
+		if ("\\^$.|?*+()[]{}/-".indexOf(character) >= 0) {
 			into.append('\\').append(character);
 		} else if (character == '\n') {
 			into.append("\\n");
