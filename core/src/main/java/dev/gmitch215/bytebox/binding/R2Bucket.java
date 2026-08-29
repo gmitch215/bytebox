@@ -2,6 +2,7 @@ package dev.gmitch215.bytebox.binding;
 
 import dev.gmitch215.bytebox.concurrent.Async;
 import dev.gmitch215.bytebox.js.Bytes;
+import dev.gmitch215.bytebox.js.JSArrays;
 import dev.gmitch215.bytebox.js.TSObject;
 import java.util.ArrayList;
 import java.util.List;
@@ -162,7 +163,7 @@ public interface R2Bucket extends JSObject {
 	default void delete(String... keys) {
 		JSString[] names = new JSString[keys.length];
 		for (int i = 0; i < keys.length; i++) names[i] = JSString.valueOf(keys[i]);
-		Async.awaitVoid(deleteObjects(JSArray.of(names)));
+		Async.awaitVoid(deleteObjects(JSArrays.of(names)));
 	}
 
 	/** {@return the first page of objects} */

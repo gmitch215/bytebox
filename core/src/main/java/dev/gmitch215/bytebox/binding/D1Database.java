@@ -1,6 +1,7 @@
 package dev.gmitch215.bytebox.binding;
 
 import dev.gmitch215.bytebox.concurrent.Async;
+import dev.gmitch215.bytebox.js.JSArrays;
 import dev.gmitch215.bytebox.js.TSObject;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public interface D1Database extends JSObject {
 	 * @return one result per statement, in order
 	 */
 	default List<D1Result> batch(D1Statement... statements) {
-		return list(Async.await(runBatch(JSArray.of(statements))));
+		return list(Async.await(runBatch(JSArrays.of(statements))));
 	}
 
 	@JSMethod("exec")
@@ -111,7 +112,7 @@ public interface D1Database extends JSObject {
 		default D1Statement bind(Object... values) {
 			JSObject[] bound = new JSObject[values.length];
 			for (int i = 0; i < values.length; i++) bound[i] = Values.toJs(values[i]);
-			return Options.bind(this, JSArray.of(bound));
+			return Options.bind(this, JSArrays.of(bound));
 		}
 
 		/** {@return every matching row} */

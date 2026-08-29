@@ -71,9 +71,12 @@ public interface DurableObjectNamespace extends JSObject {
 		@JSMethod("toString")
 		String asString();
 
-		/** {@return the name this id came from, when it came from one} */
-		@JSMethod("name")
-		String name();
+		// a property rather than a method on the platform, and the interop names a getter getX, so
+		// the read goes through a script instead of renaming this
+		/** {@return the name this id came from, or {@code null} when it came from none} */
+		default String name() {
+			return Ids.name(this);
+		}
 	}
 
 	/**

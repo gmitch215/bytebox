@@ -59,7 +59,7 @@ public interface KVNamespace extends JSObject {
 	 * @return the bytes, or {@code null} when the key is absent
 	 */
 	default ArrayBuffer getBytes(String key) {
-		return Async.await(getBuffer(key));
+		return Async.await(getBuffer(key, "arrayBuffer"));
 	}
 
 	/**
@@ -179,8 +179,10 @@ public interface KVNamespace extends JSObject {
 	@JSMethod("get")
 	JSPromise<TSObject> getWithType(String key, String type);
 
+	// the type argument is not optional here; without it the platform answers text and the buffer
+	// this is declared to return is a string
 	@JSMethod("get")
-	JSPromise<ArrayBuffer> getBuffer(String key);
+	JSPromise<ArrayBuffer> getBuffer(String key, String type);
 
 	@JSMethod("getWithMetadata")
 	JSPromise<Entry> getMetadata(String key, String type);
