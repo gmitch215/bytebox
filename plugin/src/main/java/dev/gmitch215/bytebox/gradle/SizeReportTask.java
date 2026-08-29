@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
@@ -48,32 +50,48 @@ public abstract class SizeReportTask extends DefaultTask {
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
+		for (String row : rows(wasm.getFileName().toString(), raw, getBudget().getOrElse(-1L))) {
+			getLogger().lifecycle("{}", row);
+		}
+	}
 
+	/**
+	 * The report itself, apart from the log it is written to.
+	 *
+	 * @param name the module's file name
+	 * @param raw the module
+	 * @param budget the ceiling, or -1 for none
+	 * @return one line per row
+	 */
+	static List<String> rows(String name, byte[] raw, long budget) {
 		int gzipped = Compression.gzip(raw).length;
-		getLogger().lifecycle("{}", wasm.getFileName());
-		getLogger().lifecycle("  raw              {}", raw.length);
-		getLogger().lifecycle("  gzip -6          {}   <- the meter Cloudflare enforces", gzipped);
-		getLogger().lifecycle("  gzip -9          {}", Compression.gzip(raw, 9).length);
-		getLogger().lifecycle(
-			"  carried as       {}",
-			raw.length < Compression.COMPRESSION_CROSSOVER
-				? "raw bytes, which measure smaller below " +
+		List<String> rows = new ArrayList<>();
+		rows.add(name);
+		rows.add("  raw              " + raw.length);
+		rows.add("  gzip -6          " + gzipped + "   <- the meter Cloudflare enforces");
+		rows.add("  gzip -9          " + Compression.gzip(raw, 9).length);
+		rows.add(
+			"  carried as       " +
+				(raw.length < Compression.COMPRESSION_CROSSOVER
+					? "raw bytes, which measure smaller below " +
 						Compression.COMPRESSION_CROSSOVER +
 						" raw"
-				: "a compressed frame, which now saves more than its decoder costs"
+					: "a compressed frame, which now saves more than its decoder costs")
 		);
-
-		long budget = getBudget().getOrElse(-1L);
 		if (budget > 0) {
 			long headroom = budget - gzipped;
-			getLogger().lifecycle(
-				"  budget           {} ({} {})",
-				budget,
-				Math.abs(headroom),
-				headroom >= 0 ? "to spare" : "over"
+			rows.add(
+				"  budget           " +
+					budget +
+					" (" +
+					Math.abs(headroom) +
+					" " +
+					(headroom >= 0 ? "to spare" : "over") +
+					")"
 			);
 		}
-		getLogger().lifecycle("  free plan        3145728");
-		getLogger().lifecycle("  paid plan        10485760");
+		rows.add("  free plan        3145728");
+		rows.add("  paid plan        10485760");
+		return rows;
 	}
 }

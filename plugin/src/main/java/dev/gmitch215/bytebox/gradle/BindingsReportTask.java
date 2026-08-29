@@ -30,16 +30,22 @@ public abstract class BindingsReportTask extends DefaultTask {
 	/** Prints the report. */
 	@TaskAction
 	public void report() {
-		List<Binding> bindings = getBindings().get();
-		if (bindings.isEmpty()) {
-			getLogger().lifecycle("bytebox: no bindings are declared");
-			return;
-		}
+		for (String row : rows(getBindings().get())) getLogger().lifecycle("{}", row);
+	}
 
-		List<String[]> rows = new ArrayList<>();
-		rows.add(new String[] { "NAME", "TYPE", "POINTS AT" });
+	/**
+	 * The report itself, apart from the log it is written to.
+	 *
+	 * @param bindings the declared bindings
+	 * @return one line per binding, under a header
+	 */
+	static List<String> rows(List<Binding> bindings) {
+		if (bindings.isEmpty()) return List.of("bytebox: no bindings are declared");
+
+		List<String[]> cells = new ArrayList<>();
+		cells.add(new String[] { "NAME", "TYPE", "POINTS AT" });
 		for (Binding binding : bindings) {
-			rows.add(new String[] {
+			cells.add(new String[] {
 				binding.name(),
 				binding.type().name().toLowerCase(Locale.ROOT),
 				binding.identifiers().isEmpty()
@@ -49,17 +55,14 @@ public abstract class BindingsReportTask extends DefaultTask {
 		}
 
 		int[] widths = new int[3];
-		for (String[] row : rows) {
+		for (String[] row : cells) {
 			for (int i = 0; i < 3; i++) widths[i] = Math.max(widths[i], row[i].length());
 		}
-		for (String[] row : rows) {
-			getLogger().lifecycle(
-				"  {}  {}  {}",
-				pad(row[0], widths[0]),
-				pad(row[1], widths[1]),
-				row[2]
-			);
+		List<String> rows = new ArrayList<>();
+		for (String[] row : cells) {
+			rows.add("  " + pad(row[0], widths[0]) + "  " + pad(row[1], widths[1]) + "  " + row[2]);
 		}
+		return rows;
 	}
 
 	private static String describe(Map<String, String> identifiers) {

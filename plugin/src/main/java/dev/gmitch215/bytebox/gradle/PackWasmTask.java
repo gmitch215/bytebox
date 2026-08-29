@@ -109,7 +109,7 @@ public abstract class PackWasmTask extends DefaultTask {
 	 * @param rawSize the module's size
 	 * @return the resolved type
 	 */
-	private SizeSpec.ModuleType resolve(long rawSize) {
+	SizeSpec.ModuleType resolve(long rawSize) {
 		SizeSpec.ModuleType declared = getModuleType().get();
 		if (declared != SizeSpec.ModuleType.AUTO) return declared;
 		return rawSize < Compression.COMPRESSION_CROSSOVER
