@@ -19,6 +19,14 @@ npm/tests/workers/*.build.mjs
 
 # a real compiled module is committed under npm/tests/fixtures as a test input
 
+# the instrumented module and what it records, both built by the coverage lane
+npm/tests/fixtures/core-coverage.wasm
+npm/coverage
+npm/tests/coverage/*.build.mjs
+
+# the self-signed certificate the tls container generates on startup
+docker/certs
+
 # generated worker output
 .wrangler
 size/ledger/*.json
