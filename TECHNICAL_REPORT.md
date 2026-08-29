@@ -20,7 +20,7 @@ for reasons that are properties of the platform rather than defects in TeaVM.
 | Worker Startup Time, deployed                      | **8 ms** of a 1 second limit               |
 | `cpuTime` per request, deployed                    | **0-1 ms** of a 10 ms free-plan limit, n=6 |
 | Declared linear memory, default                    | 2,162,688 bytes                            |
-| Declared linear memory, `minDirectBuffersSize = 0` | 65,536 bytes                               |
+| Declared linear memory, `minDirectBuffersSize = 1` | 1,114,112 bytes                            |
 
 The deployed figures come from one Worker uploaded to an empty account, driven six times, and
 deleted; the account was verified back to zero Workers afterwards. Startup time is Cloudflare's own
@@ -448,8 +448,25 @@ and only a program that reaches linear memory ever notices.
 `ByteBuffer.allocateDirect` does not work on this target. A program allocating a 64-byte direct
 buffer throws a Java exception whose message the runtime cannot retrieve, and the same program fails
 identically under TeaVM's own generated loader, so the limitation is upstream rather than a property
-of any particular host. `minDirectBuffersSize` does not change the recorded memory requirement at any
-value tested.
+of any particular host.
+
+That name covers more than direct buffers. `minDirectBuffersSize` sizes the linear-memory heap the
+interop stages a Java array through on its way to a typed array: converting a `byte[]` copies it 4,096
+bytes at a time into a buffer taken from that heap, so the heap is on the path of every array crossing
+the boundary whether or not the program ever allocates a direct buffer. It is measured in **megabytes**,
+and the compiler's Gradle plugin multiplies the value by 1,048,576 before passing it on, so anything at
+or above 2,048 overflows a 32-bit int and lands back on zero.
+
+Zero initialises the heap with a negative-sized root record. The first array conversion then walks the
+free list forever: no exception, no trap, a module that stops answering. Measured on `core.wasm`
+(26,652 bytes of data segment) by calling the module's own `teavm.malloc` export, which never returns
+at zero and answers 26,888 at one megabyte.
+
+| `minDirectBuffersSize`         | Declared linear memory | 4,096-byte allocation |
+| ------------------------------ | ---------------------- | --------------------- |
+| 0                              | 65,536 bytes           | never returns         |
+| 1                              | 1,114,112 bytes        | succeeds              |
+| 2 (the compiler's own default) | 2,162,688 bytes        | succeeds              |
 
 ## Java Exceptions Crossing Into JavaScript
 
@@ -601,6 +618,45 @@ that is `AutoCloseable`, or `Iterable`, or `Comparable` — has to be a class wr
 interface rather than the interface itself. So a socket is a final class holding the platform object,
 and try-with-resources works because of that split.
 
+## A Rejected Promise
+
+Waiting on a promise that rejects does not resume the waiting fiber. The compiler's helper reads the
+rejection reason, asks its runtime for the Java throwable behind it, and passes that to the waiter's
+callback. For a rejection that did not come from Java the runtime answers `undefined`, and the import
+is declared to return a `Throwable`, so the conversion throws inside the callback. Nothing resumes.
+The invocation stops answering until the platform kills it.
+
+Every binding waits the same way, so this reached the whole surface: a KV read that failed, a
+subrequest that was refused, a stream that broke. The rejection shape decides it, which is why it went
+unseen — a rejection carrying a Java exception works, and that is the one a Java test produces.
+
+| Rejected with                      | Before             | After                         |
+| ---------------------------------- | ------------------ | ----------------------------- |
+| `new Error('...')`                 | never returns      | `JSRejection` with the stack  |
+| a string                           | `RuntimeException` | `JSRejection` with the string |
+| `undefined`                        | `RuntimeException` | `JSRejection`                 |
+| an error carrying a Java throwable | the original       | the original                  |
+
+The fix settles the promise in JavaScript before Java waits on it. `promise.then(value => ({failed:
+false, value}), reason => ({failed: true, reason, message}))` cannot reject, so what crosses the
+boundary is a value the Java side reads rather than an outcome the boundary has to throw.
+
+## Generic Interop Helpers Do Not Scale
+
+`JSArray.of` builds a JavaScript array from a Java one. Its body is generic, the compiler specialises
+it per call site, and past some number of specialisations the WasmGC backend emits
+
+```text
+local.set[0] expected type externref, found array.get of type (ref null 2)
+```
+
+and the module does not compile. The error names whichever method called the helper, so it reads as a
+fault in that method. Two different call sites produced it while being made reachable for the first
+time, on code that had not changed.
+
+A replacement whose scripts take and return `JSObject` has one shape to compile however many element
+types call through, and the failure does not recur.
+
 ## A Long In JSON
 
 `JSON.stringify` refuses a `BigInt` outright: `TypeError: Do not know how to serialize a BigInt`.
@@ -646,7 +702,7 @@ figure attributable to a change rather than to the build.
 
 | Setting                    | Effect                                                                                      |
 | -------------------------- | ------------------------------------------------------------------------------------------- |
-| `minDirectBuffersSize = 0` | declared linear memory 2,162,688 to 65,536 bytes; wasm size unchanged                       |
+| `minDirectBuffersSize = 1` | declared linear memory 2,162,688 to 1,114,112 bytes; wasm size unchanged                    |
 | `modularRuntime = true`    | runtime JavaScript 17,268 to 16,425 bytes, and an ES module rather than a global assignment |
 
 ## Not Yet Measured
