@@ -1,8 +1,8 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
-import { parse } from '../src/bin/bindgen.js';
+import { afterAll, describe, expect, it, vi } from 'vitest';
+import { main, parse } from '../src/bin/bindgen.js';
 import { aliasOf, classNameOf, generateBindings, writeBindings } from '../src/bindgen.js';
 
 const roots: string[] = [];
@@ -208,6 +208,165 @@ describe('the resolution ladder', () => {
 		expect(bound?.tier).toBe(1);
 		expect(bound?.className).toBe('MultiSmtp');
 		expect(bound?.source).toContain('fromModule = "multi/smtp"');
+	});
+
+	it('substitutes a wildcard subpath rather than matching it loosely', async () => {
+		const where = root();
+		pkg(
+			where,
+			'starred',
+			{ exports: { './*': { types: './types/*.d.ts' } } },
+			{ 'types/imap.d.ts': 'export declare function fetchMail(box: string): void;\n' }
+		);
+
+		const [bound] = await bind(where, 'starred/imap');
+		expect(bound?.tier).toBe(1);
+		expect(bound?.source).toContain('void fetchMail(String box);');
+	});
+
+	it('reads an export map that names conditions and no subpaths at all', async () => {
+		const where = root();
+		pkg(
+			where,
+			'conditional',
+			{ exports: { types: './index.d.ts', import: './index.js' } },
+			{ 'index.d.ts': 'export declare const version: string;\n' }
+		);
+
+		const [bound] = await bind(where, 'conditional');
+		expect(bound?.tier).toBe(1);
+		expect(bound?.source).toContain('getVersion()');
+	});
+
+	it('walks past a package whose manifest is not JSON', async () => {
+		const where = root();
+		const directory = join(where, 'node_modules', 'broken');
+		mkdirSync(directory, { recursive: true });
+		writeFileSync(join(directory, 'package.json'), '{ not json');
+
+		const [bound] = await bind(where, 'broken');
+		expect(bound?.tier).toBe(7);
+	});
+
+	it('reads a declaration file that assigns the whole module', async () => {
+		const where = root();
+		pkg(
+			where,
+			'assigns',
+			{ types: 'index.d.ts', main: 'index.js' },
+			{
+				'index.d.ts':
+					'declare function run(input: string): string;\n' +
+					'declare namespace run {\n\tfunction twice(input: string): string;\n}\n' +
+					'export = run;\n',
+				'index.js': 'module.exports = function () {};\n'
+			}
+		);
+
+		const [bound] = await bind(where, 'assigns');
+		expect(bound?.tier).toBe(1);
+		expect(bound?.source).toContain('twice(String input)');
+	});
+});
+
+describe('the syntax tree tier', () => {
+	/** Inside a wrapper the checker infers nothing, which is the shape a bundled module has. */
+	it('binds every shape a CommonJS module assigns its exports through', async () => {
+		const where = root();
+		pkg(
+			where,
+			'shapes',
+			{ main: 'index.js' },
+			{
+				'index.js':
+					'const shorthand = function () {};\n' +
+					'Object.assign(module.exports, {\n' +
+					'\tmethod(a, b, c) { return c; },\n' +
+					'\tnamed: function (a) { return a; },\n' +
+					'\tvalue: 42,\n' +
+					'\tshorthand,\n' +
+					'\t...{}\n' +
+					'});\n'
+			}
+		);
+
+		const [bound] = await bind(where, 'shapes');
+		expect(bound?.tier).toBe(5);
+		expect(bound?.source).toContain('method(TSObject arg0, TSObject arg1, TSObject arg2)');
+		expect(bound?.source).toContain('named(TSObject arg0)');
+		expect(bound?.source).toContain('getValue()');
+		expect(bound?.source).toContain('getShorthand()');
+	});
+
+	it('binds a function, a class and a constant declared inside a wrapper', async () => {
+		const where = root();
+		pkg(
+			where,
+			'declared',
+			{ main: 'index.js' },
+			{
+				'index.js':
+					'(function () {\n' +
+					'\texport function go(a) { return a; }\n' +
+					'\texport class Box {}\n' +
+					'\texport const size = 3;\n' +
+					'\texport const make = (a, b) => a + b;\n' +
+					'})();\n'
+			}
+		);
+
+		const [bound] = await bind(where, 'declared');
+		expect(bound?.tier).toBe(5);
+		expect(bound?.source).toContain('go(TSObject arg0)');
+		expect(bound?.source).toContain('getBox()');
+		expect(bound?.source).toContain('getSize()');
+		expect(bound?.source).toContain('make(TSObject arg0, TSObject arg1)');
+	});
+});
+
+describe('the introspection tier', () => {
+	it('binds a name whose getter throws, and one that is not a function', async () => {
+		const where = root();
+		pkg(
+			where,
+			'awkward',
+			{ main: 'index.js' },
+			{
+				'index.js':
+					'const target = Object(exports);\n' +
+					"for (const name of ['built']) target[name] = function () {};\n" +
+					"Object.defineProperty(target, 'angry', {\n" +
+					'\tenumerable: true,\n' +
+					"\tget() { throw new Error('no'); }\n" +
+					'});\n' +
+					'target.count = 7;\n'
+			}
+		);
+
+		const [bound] = await bind(where, 'awkward');
+		expect(bound?.tier).toBe(6);
+		expect(bound?.source).toContain('built()');
+		expect(bound?.source).toContain('getAngry()');
+		expect(bound?.source).toContain('getCount()');
+	});
+
+	it('binds a module that is itself a function as its default export', async () => {
+		const where = root();
+		pkg(
+			where,
+			'callable',
+			{ main: 'index.js' },
+			{
+				'index.js':
+					'const run = function (a) { return a; };\n' +
+					'const target = module;\n' +
+					'target.exports = run;\n'
+			}
+		);
+
+		const [bound] = await bind(where, 'callable');
+		expect(bound?.tier).toBe(6);
+		expect(bound?.source).toContain('defaultExport(TSObject arg0)');
 	});
 });
 
@@ -545,6 +704,55 @@ describe('the command line', () => {
 		expect(parsed.javaPackage).toBe('com.example');
 		expect(parsed.introspect).toBe(false);
 		expect(parsed.packages).toEqual(['nanoid', '@noble/hashes']);
+	});
+
+	it('writes the bindings and reports what it bound', async () => {
+		const where = root();
+		pkg(
+			where,
+			'reported',
+			{ types: 'index.d.ts' },
+			{ 'index.d.ts': 'export declare function greet(name: string): string;\n' }
+		);
+		const out = join(where, 'generated');
+
+		const written: string[] = [];
+		const stdout = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation((chunk) => (written.push(String(chunk)), true));
+		const argv = process.argv;
+		process.argv = ['node', 'bindgen', '--out', out, '--root', where, 'reported'];
+		try {
+			await main();
+		} finally {
+			process.argv = argv;
+			stdout.mockRestore();
+		}
+
+		expect(written.join('')).toContain('bytebox: reported -> Reported (tier 1, 1 member)');
+		expect(
+			readFileSync(join(out, 'dev/gmitch215/bytebox/npm/Reported.java'), 'utf8')
+		).toContain('greet');
+	});
+
+	it('reports a bad command line on standard error and fails', async () => {
+		const written: string[] = [];
+		const stderr = vi
+			.spyOn(process.stderr, 'write')
+			.mockImplementation((chunk) => (written.push(String(chunk)), true));
+		const argv = process.argv;
+		const code = process.exitCode;
+		process.argv = ['node', 'bindgen', 'no-out-directory'];
+		try {
+			await main();
+		} finally {
+			process.argv = argv;
+			stderr.mockRestore();
+		}
+
+		expect(written.join('')).toContain('--out is required');
+		expect(process.exitCode).toBe(2);
+		process.exitCode = code;
 	});
 
 	it('prints its usage on request', () => {
