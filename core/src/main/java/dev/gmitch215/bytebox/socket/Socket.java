@@ -77,7 +77,7 @@ public final class Socket implements AutoCloseable {
 	 * @return the encrypted socket
 	 */
 	public Socket startTLS() {
-		return new Socket(socket.startTLS());
+		return new Socket(socket.startTls());
 	}
 
 	/** {@return a promise that settles when the connection closes, for {@code ctx.waitUntil}} */

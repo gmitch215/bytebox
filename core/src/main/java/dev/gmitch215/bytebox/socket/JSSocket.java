@@ -27,7 +27,7 @@ interface JSSocket extends JSObject {
 	JSPromise<JSObject> getClosed();
 
 	/** {@return an encrypted socket, leaving this one unusable} */
-	JSSocket startTLS();
+	JSSocket startTls();
 
 	/** {@return a promise that settles once the connection is closed} */
 	JSPromise<JSObject> close();

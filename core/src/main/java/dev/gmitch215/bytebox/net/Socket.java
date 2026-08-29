@@ -100,6 +100,20 @@ public class Socket implements java.io.Closeable {
 		return host;
 	}
 
+	/**
+	 * {@return the address this socket was opened to}
+	 *
+	 * <p>Built from the host rather than resolved: the platform connects by name and never hands back
+	 * a peer address, so a reverse lookup would have nothing to look up.
+	 */
+	public InetAddress getInetAddress() {
+		try {
+			return InetAddress.getByName(host);
+		} catch (UnknownHostException unresolvable) {
+			return null;
+		}
+	}
+
 	/** {@return the port this socket was opened to} */
 	public int getPort() {
 		return port;
