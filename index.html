@@ -7,6 +7,10 @@
 			content="width=device-width, initial-scale=1"
 		/>
 		<title>bytebox</title>
+		<meta
+			name="description"
+			content="Java on Cloudflare Workers."
+		/>
 		<style>
 			:root {
 				color-scheme: light dark;
@@ -15,6 +19,8 @@
 				--bg: #fbfbfc;
 				--card: #ffffff;
 				--line: #e3e5ea;
+				--accent: #d97706;
+				--code-bg: #f5f6f8;
 			}
 			@media (prefers-color-scheme: dark) {
 				:root {
@@ -23,6 +29,8 @@
 					--bg: #101216;
 					--card: #171a20;
 					--line: #262a33;
+					--accent: #f0a12e;
+					--code-bg: #1b1f27;
 				}
 			}
 			* {
@@ -30,11 +38,11 @@
 			}
 			body {
 				margin: 0;
-				padding: 4rem 1.5rem;
+				padding: 4rem 1.5rem 6rem;
 				background: var(--bg);
 				color: var(--fg);
 				font:
-					16px/1.6 ui-sans-serif,
+					16px/1.7 ui-sans-serif,
 					system-ui,
 					-apple-system,
 					Segoe UI,
@@ -42,12 +50,12 @@
 					sans-serif;
 			}
 			main {
-				max-width: 44rem;
+				max-width: 48rem;
 				margin: 0 auto;
 			}
 			h1 {
 				margin: 0 0 0.25rem;
-				font-size: 2.5rem;
+				font-size: 2.75rem;
 				letter-spacing: -0.02em;
 			}
 			p.lead {
@@ -59,6 +67,7 @@
 				display: grid;
 				gap: 1rem;
 				grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+				margin-bottom: 3rem;
 			}
 			a.card {
 				display: block;
@@ -70,7 +79,7 @@
 				text-decoration: none;
 			}
 			a.card:hover {
-				border-color: var(--muted);
+				border-color: var(--accent);
 			}
 			a.card strong {
 				display: block;
@@ -80,8 +89,103 @@
 				color: var(--muted);
 				font-size: 0.9rem;
 			}
+
+			.readme h2 {
+				margin: 3rem 0 1rem;
+				font-size: 1.5rem;
+				letter-spacing: -0.01em;
+			}
+			.readme h3 {
+				margin: 2rem 0 0.75rem;
+				font-size: 1.15rem;
+			}
+			.readme a {
+				color: var(--accent);
+			}
+			.readme hr {
+				margin: 3rem 0;
+				border: 0;
+				border-top: 1px solid var(--line);
+			}
+			.readme blockquote {
+				margin: 1.5rem 0;
+				padding: 0.25rem 0 0.25rem 1.25rem;
+				border-left: 3px solid var(--line);
+				color: var(--muted);
+			}
+			.readme ul {
+				padding-left: 1.25rem;
+			}
+			.readme li {
+				margin: 0.35rem 0;
+			}
+			.readme :not(pre) > code {
+				padding: 0.15em 0.4em;
+				border-radius: 0.35rem;
+				background: var(--code-bg);
+				font-size: 0.875em;
+			}
+			.readme pre {
+				margin: 1.25rem 0;
+				padding: 1rem 1.25rem;
+				border: 1px solid var(--line);
+				border-radius: 0.75rem;
+				overflow-x: auto;
+				font-size: 0.875rem;
+				line-height: 1.6;
+			}
+			.readme pre code {
+				display: block;
+			}
+
+			/* shiki writes both palettes onto every token, and this picks the one in use */
+			.readme .shiki,
+			.readme .shiki span {
+				color: var(--shiki-light);
+				background-color: var(--shiki-light-bg);
+			}
+			@media (prefers-color-scheme: dark) {
+				.readme .shiki,
+				.readme .shiki span {
+					color: var(--shiki-dark);
+					background-color: var(--shiki-dark-bg);
+				}
+			}
+
+			.readme .table {
+				overflow-x: auto;
+				margin: 1.25rem 0;
+			}
+			.readme table {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: 0.925rem;
+			}
+			.readme th,
+			.readme td {
+				padding: 0.5rem 0.85rem;
+				border-bottom: 1px solid var(--line);
+				text-align: left;
+				vertical-align: top;
+			}
+			.readme th {
+				font-weight: 600;
+				white-space: nowrap;
+			}
+			.readme tbody tr:last-child td {
+				border-bottom: 0;
+			}
+
+			/* the badge row, which markdown gives as a paragraph of links */
+			.readme p img {
+				vertical-align: middle;
+			}
+
 			footer {
-				margin-top: 2.5rem;
+				max-width: 48rem;
+				margin: 4rem auto 0;
+				padding-top: 1.5rem;
+				border-top: 1px solid var(--line);
 				color: var(--muted);
 				font-size: 0.9rem;
 			}
@@ -92,7 +196,7 @@
 	</head>
 	<body>
 		<main>
-			<h1>bytebox</h1>
+			<h1>☕ bytebox</h1>
 			<p class="lead">Java on Cloudflare Workers.</p>
 			<div class="links">
 				<a
@@ -110,9 +214,350 @@
 					<span>The loader that runs a compiled module on Workers</span>
 				</a>
 			</div>
-			<footer>
-				<a href="https://github.com/gmitch215/bytebox">github.com/gmitch215/bytebox</a>
-			</footer>
+			<div class="readme">
+				<p><a href="https://github.com/gmitch215/bytebox/actions/workflows/build.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+<a href="https://github.com/gmitch215/bytebox/actions/workflows/coverage.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/coverage.yml/badge.svg" alt="Coverage"></a>
+<a href="https://github.com/gmitch215/bytebox/actions/workflows/e2e.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/e2e.yml/badge.svg" alt="End-to-End"></a>
+<a href="https://github.com/gmitch215/bytebox/actions/workflows/prettier.yml"><img src="https://github.com/gmitch215/bytebox/actions/workflows/prettier.yml/badge.svg" alt="Prettier"></a>
+<a href="https://codecov.io/gh/gmitch215/bytebox"><img src="https://codecov.io/gh/gmitch215/bytebox/branch/master/graph/badge.svg" alt="codecov"></a>
+<a href="https://github.com/gmitch215/bytebox/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a></p>
+<p>bytebox compiles a Java workspace into a Cloudflare Worker. Write a class, apply the Gradle plugin,
+and deploy WebAssembly that runs on Cloudflare&#39;s edge.</p>
+<p>A hello world Worker compiles to <strong>25,330 bytes</strong> of WebAssembly against a 3 MB ceiling, starts in
+<strong>8 ms</strong> of a 1 second budget, and answers a request in under a millisecond of CPU.</p>
+<hr>
+<h2 id="-table-of-contents">📋 Table of Contents</h2>
+<ul>
+<li><a href="#-why-bytebox">Why bytebox</a></li>
+<li><a href="#-install">Install</a></li>
+<li><a href="#-quick-start">Quick Start</a></li>
+<li><a href="#-triggers">Triggers</a></li>
+<li><a href="#-bindings">Bindings</a></li>
+<li><a href="#-json">JSON</a></li>
+<li><a href="#-standard-library">Standard Library</a></li>
+<li><a href="#-serialization">Serialization</a></li>
+<li><a href="#-npm-packages">npm Packages</a></li>
+<li><a href="#-size">Size</a></li>
+<li><a href="#-concurrency">Concurrency</a></li>
+<li><a href="#-platform-limits">Platform Limits</a></li>
+<li><a href="#-out-of-scope">Out of Scope</a></li>
+<li><a href="#-license">License</a></li>
+</ul>
+<hr>
+<h2 id="-why-bytebox">🎯 Why bytebox</h2>
+<p>Cloudflare Workers run JavaScript and WebAssembly. Java compiles to WebAssembly through TeaVM, but
+the gap between a compiled module and a deployable Worker is wide enough that nothing crossed it:
+TeaVM publishes no npm artifact, and its generated loader cannot run on Workers at all. Compilation
+from bytes is refused inside a request; the asynchronous form never settles during module evaluation;
+streaming compilation is unavailable in both places.</p>
+<p>bytebox supplies the loader that does work, the bindings a Worker needs, and the build that ties them
+together.</p>
+<hr>
+<h2 id="-install">📥 Install</h2>
+<p>The Gradle plugin:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">plugins</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	java</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215.bytebox"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) version </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"1.0.0"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">dependencies</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">implementation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215:bytebox-core:1.0.0"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) }</span></span></code></pre><p>The loader, for a Worker assembled by hand:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bun</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> add</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> bytebox</span></span></code></pre><hr>
+<h2 id="-quick-start">🚀 Quick Start</h2>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">package</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> com.example;</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> dev.gmitch215.bytebox.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">public</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> class</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> HelloWorker</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> implements</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> Worker</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	@</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">Override</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	public</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Response </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">fetch</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(Request </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">request</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, Env </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, ExecutionCtx </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">ctx</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Bytebox.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">response</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"hello from Java"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	handlerClass </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "com.example.HelloWorker"</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	wrangler</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		name </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "hello-world"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		compatibilityDate </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "2026-08-22"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">./gradlew</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> buildWorker</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">./gradlew</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> workerDeploy</span></span></code></pre><p><code>buildWorker</code> writes a complete Worker into <code>build/bytebox/worker</code>: the module, a <code>wrangler.jsonc</code>,
+a JavaScript entry point and a package manifest. Nothing there is hand-written.</p>
+<p><a href="https://github.com/gmitch215/bytebox/tree/master/samples">samples/</a> has nine of these, one per feature, and
+<a href="https://github.com/gmitch215/bytebox/blob/master/samples/ADVANCED_USAGE.md">samples/ADVANCED_USAGE.md</a> is the design document behind them.</p>
+<hr>
+<h2 id="-triggers">🎛 Triggers</h2>
+<p>One interface per trigger, each optional. The build derives which handlers to export and which
+Wrangler keys to write from the interfaces a class implements, so an unhandled trigger costs nothing.</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Handles</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Worker</code></td>
+<td>HTTP requests</td>
+</tr>
+<tr>
+<td><code>Scheduled</code></td>
+<td>Cron Triggers</td>
+</tr>
+<tr>
+<td><code>Mail</code></td>
+<td>Incoming email</td>
+</tr>
+<tr>
+<td><code>Consumer&lt;T&gt;</code></td>
+<td>Queue messages</td>
+</tr>
+<tr>
+<td><code>Tail</code></td>
+<td>Trace events from another Worker</td>
+</tr>
+<tr>
+<td><code>Alarm</code></td>
+<td>Durable Object alarms</td>
+</tr>
+</tbody></table></div>
+<p><code>InboundMail</code> records its own disposition, because a message a handler returns without acting on is
+dropped by the platform. Call <code>forward</code>, <code>reply</code> or <code>reject</code> at any point and carry on working;
+<code>drop()</code> states that discarding it was the intent.</p>
+<hr>
+<h2 id="-bindings">🔌 Bindings</h2>
+<p>Binding names are optional. Each type has a default, and repeats take a numeric suffix: the first KV
+namespace is <code>KV</code> and the second <code>KV_2</code>, the first D1 database is <code>DB</code>, the first R2 bucket is <code>BLOB</code>,
+and a Durable Object binding is <code>DO_</code> followed by the class name.</p>
+<p>Remote identifiers are supported wherever Wrangler accepts one, and omitting them lets Wrangler
+provision the resource.</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	bindings</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">		kv</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()                             </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// KV</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">		kv</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"SESSIONS"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) { id </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "abc123"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> } </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// an explicit name and a remote id</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">		d1</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()                             </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// DB</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">		r2</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()                             </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// BLOB</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">		durableObject</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Counter"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)         </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// DO_COUNTER</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p>Or, when every binding takes its default name:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	bindings</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(KV, D1, D1, KV) </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// KV, DB, DB_2, KV_2</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p><code>bindingsReport</code> prints every declared binding and the resource it points at, which is where a name
+that drifted shows up.</p>
+<hr>
+<h2 id="-json">🧾 JSON</h2>
+<p>Annotate a type and the build writes its codec:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">@</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">JsonType</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">public</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> record</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> Order</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(String sku, </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> quantity, </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">long</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> total, List</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&#x3C;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">String</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">></span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> tags) {}</span></span></code></pre><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">Order order </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> request.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">json</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(Order.class);</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Bytebox.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">json</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(order, Order.class);</span></span></code></pre><p>Generated rather than reflective, because a reflective decoder needs field metadata for every type
+that could arrive through an <code>Object</code>-typed field — the closure dead-code elimination exists to prune.
+<code>request.json(mapper)</code> takes a function instead, for a type with no codec.</p>
+<p>A <code>long</code> serialises to a JSON string. <code>JSON.stringify</code> refuses a <code>BigInt</code> outright, and a number would
+lose precision above 2^53, which is the range a <code>long</code> exists for.</p>
+<hr>
+<h2 id="-standard-library">📚 Standard Library</h2>
+<p>Write <code>java.time</code>, <code>java.net</code> and <code>java.util.regex</code> the way you write them anywhere. The compiler
+points each reference at an implementation that works on this runtime, so a library that never heard
+of Cloudflare Workers compiles unchanged.</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">ZonedDateTime local </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Instant.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">now</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">().</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">atZone</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(ZoneId.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">of</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"America/New_York"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">));</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">HttpResponse&#x3C;</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">String</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">> answer </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> HttpClient.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">newHttpClient</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">send</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(HttpRequest.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">newBuilder</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(URI.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">create</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"https://example.com"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)).</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">build</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(), </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">ofString</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">());</span></span></code></pre><div class="table"><table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Runs on</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>java.time</code></td>
+<td>ThreeTen-Backport, with zone rules from <code>Intl</code></td>
+</tr>
+<tr>
+<td><code>java.net.URL</code></td>
+<td><code>fetch</code></td>
+</tr>
+<tr>
+<td><code>java.net.http</code></td>
+<td><code>fetch</code>, without <code>sendAsync</code></td>
+</tr>
+<tr>
+<td><code>java.net.Socket</code></td>
+<td><code>cloudflare:sockets</code></td>
+</tr>
+<tr>
+<td><code>java.net.InetAddress</code></td>
+<td>DNS over HTTPS</td>
+</tr>
+<tr>
+<td><code>java.util.regex</code></td>
+<td>the platform&#39;s own engine</td>
+</tr>
+<tr>
+<td><code>java.util.Formatter</code></td>
+<td>digits computed in Java, separators from <code>Intl</code></td>
+</tr>
+</tbody></table></div>
+<p>Each one either matches a JVM or refuses while you are building. A pattern using an atomic group, a
+possessive quantifier or a flag written inside it will not compile, and <code>Pattern.compile</code> names what
+it refused. <code>String.format</code> refuses <code>%t</code> and <code>%a</code>. <code>ServerSocket</code> and <code>DatagramSocket</code> are left
+unresolved, because the platform accepts no inbound connection and speaks no UDP.</p>
+<p>Nothing about this is free of consequences, and they are written down. The clock is pinned between
+I/O, so <code>Instant.now()</code> gives the time the invocation began. <code>CASE_INSENSITIVE</code> folds the whole of
+Unicode here where a JVM folds ASCII. A timezone&#39;s recorded history is not available, because the
+rules are derived from the offsets <code>Intl</code> reports rather than read from a table.</p>
+<p><a href="https://github.com/gmitch215/bytebox/blob/master/samples/ADVANCED_USAGE.md">samples/ADVANCED_USAGE.md</a> covers the rest, with the measured cost of each.</p>
+<hr>
+<h2 id="-serialization">💾 Serialization</h2>
+<p><code>java.io</code> serialization writes the bytes a JVM writes, checked byte for byte against a real
+<code>ObjectOutputStream</code>:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">byte</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">[] wire </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Serial.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">encode</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(order);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">Order back </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Serial.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">decode</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(wire, Order.class);</span></span></code></pre><p>Generated at build time, including <code>serialVersionUID</code> computed the way the specification defines it,
+so a stream written here is read by a JVM and the other way round. The generator refuses at build time
+what the format cannot carry: a JDK collection field, a class with no no-argument constructor, and a
+custom <code>writeObject</code>.</p>
+<hr>
+<h2 id="-npm-packages">📦 npm Packages</h2>
+<p>An npm package is JavaScript, so it never enters the WebAssembly. Declaring it puts it in the
+generated manifest and emits the static import that makes it resolvable — the package name otherwise
+lives in a wasm custom section that no bundler can follow.</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	npm</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"nanoid"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"^5.0.9"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	npmBindings</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"nanoid"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p><code>npmBindings</code> reads the package&#39;s TypeScript declarations and writes the Java to call it, so the
+functions arrive typed and documented instead of hand-written. A package with no types still binds:
+the generator drops through published declarations, DefinitelyTyped, JSDoc, inference, the AST, and
+runtime introspection, and reports which of those it landed on. The floor is the module itself as a
+<code>TSObject</code>, which never fails.</p>
+<p>Written by hand, the same call is three lines:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">@</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">JSBody</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">	params</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "size"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">,</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">	imports</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> @</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">JSBodyImport</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">alias</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "nanoid"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">fromModule</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "nanoid"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">),</span></span>
+<span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">	script</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "return nanoid.nanoid(size);"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> native</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> String </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> size);</span></span></code></pre><hr>
+<h2 id="-size">📏 Size</h2>
+<p>Cloudflare enforces its ceiling after applying its own gzip, so the gzip figure is the one that binds.</p>
+<p>Each feature is measured on its own against a hello world compiled with the same settings:</p>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Added, gzipped</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>streams, collections, reflection</td>
+<td>3.0 to 3.8 KB each</td>
+</tr>
+<tr>
+<td>threads</td>
+<td>6.8 KB</td>
+</tr>
+<tr>
+<td><code>java.net.Socket</code></td>
+<td>9.8 KB</td>
+</tr>
+<tr>
+<td><code>BigDecimal</code></td>
+<td>12.7 KB</td>
+</tr>
+<tr>
+<td><code>java.util.regex</code></td>
+<td>13.3 KB</td>
+</tr>
+<tr>
+<td><code>java.net.URL</code> and <code>HttpURLConnection</code></td>
+<td>13.3 KB</td>
+</tr>
+<tr>
+<td><code>java.time</code> with zones</td>
+<td>23.8 KB</td>
+</tr>
+<tr>
+<td><code>String.format</code></td>
+<td>33.0 KB</td>
+</tr>
+<tr>
+<td><code>java.net.http</code></td>
+<td>54.1 KB</td>
+</tr>
+</tbody></table></div>
+<p>Reflection, collections and streams are inexpensive. The rows that were costly are the ones the
+retargeting below fixed: <code>java.util.regex</code> was 65.3 KB and <code>String.format</code> 86.0 KB when they came from
+the class library.</p>
+<p><code>sizeReport</code> prints the compiled module on every compression axis against your budget and the two
+plan ceilings. <code>size { budget = &quot;250KiB&quot; }</code> fails the build past a figure of your choosing.</p>
+<hr>
+<h2 id="-concurrency">🧵 Concurrency</h2>
+<p>Cloudflare Workers run in a single thread and the Web Worker API is unavailable, so there is no
+parallelism to be had. A Java thread is a fiber scheduled on the host&#39;s queue.</p>
+<p>That makes a blocking API the honest one. <code>env</code> calls look synchronous and suspend underneath, which
+is what a compiled continuation gives you. <code>Future</code> is the escape hatch when work needs to overlap or
+outlive a response — <code>java.util.concurrent.CompletableFuture</code> does not exist on this platform, and a
+thread pool cannot.</p>
+<p>Workers freeze the clock between I/O, so a <code>Thread.sleep</code> would never come due. bytebox advances its
+own clock to cover one and gives the compiled program the same clock to read, which is what makes a
+sleep terminate. Absolute timestamps are sound; a duration taken from two readings is not, and no
+CPU meter is readable from inside a request.</p>
+<hr>
+<h2 id="-platform-limits">🚧 Platform Limits</h2>
+<div class="table"><table>
+<thead>
+<tr>
+<th>Limit</th>
+<th>Free</th>
+<th>Paid</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Worker size, after gzip</td>
+<td>3 MB</td>
+<td>10 MB</td>
+</tr>
+<tr>
+<td>Startup</td>
+<td>1 second</td>
+<td>1 second</td>
+</tr>
+<tr>
+<td>CPU per request</td>
+<td>10 ms</td>
+<td>5 min</td>
+</tr>
+<tr>
+<td>Memory per isolate</td>
+<td>128 MB</td>
+<td>128 MB</td>
+</tr>
+<tr>
+<td>Subrequests per request</td>
+<td>50</td>
+<td>10,000</td>
+</tr>
+<tr>
+<td>Cron Triggers per account</td>
+<td>5</td>
+<td>250</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="-out-of-scope">🛑 Out of Scope</h2>
+<ul>
+<li><strong>Subprocesses.</strong> <code>Process</code> and <code>ProcessBuilder</code> do not exist, and Workers have no equivalent.</li>
+<li><strong>Threads.</strong> Fibers are real; parallelism is not.</li>
+<li><strong>Dynamic class loading.</strong> Compilation is closed-world, so reflection resolves against classes
+registered at build time.</li>
+<li><strong>Listening.</strong> <code>ServerSocket</code> and <code>DatagramSocket</code> are left unresolved, because the platform accepts
+no inbound connection and speaks no UDP.</li>
+<li><strong><code>%t</code> and <code>%a</code>, atomic groups, possessive quantifiers.</strong> Anything a retargeted API cannot render
+exactly is refused where you can see it rather than approximated where you cannot.</li>
+</ul>
+<hr>
+<h2 id="-license">📄 License</h2>
+<p><a href="https://github.com/gmitch215/bytebox/blob/master/LICENSE">MIT</a></p>
+			</div>
 		</main>
+		<footer>
+			<a href="https://github.com/gmitch215/bytebox">github.com/gmitch215/bytebox</a>
+		</footer>
 	</body>
 </html>
