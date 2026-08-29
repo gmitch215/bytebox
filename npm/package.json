@@ -1,12 +1,12 @@
 {
-	"name": "bytebox",
+	"name": "@gmitch215/bytebox",
 	"version": "1.0.0",
 	"type": "module",
 	"description": "Run Java on Cloudflare Workers",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"bin": {
-		"bytebox-bindgen": "./dist/bin/bindgen.js"
+		"bytebox-bindgen": "dist/bin/bindgen.js"
 	},
 	"exports": {
 		".": {

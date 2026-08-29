@@ -65,7 +65,7 @@ dependencies { implementation("dev.gmitch215:bytebox-core:1.0.0") }
 The loader, for a Worker assembled by hand:
 
 ```sh
-bun add bytebox
+bun add @gmitch215/bytebox
 ```
 
 ---

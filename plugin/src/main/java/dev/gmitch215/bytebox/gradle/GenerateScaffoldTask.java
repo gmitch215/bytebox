@@ -32,6 +32,9 @@ import org.gradle.api.tasks.TaskAction;
 @CacheableTask
 public abstract class GenerateScaffoldTask extends DefaultTask {
 
+	/** The npm package the generated Worker imports the loader from. */
+	private static final String PACKAGE = "@gmitch215/bytebox";
+
 	/** {@return the Worker's name} */
 	@Input
 	public abstract Property<String> getWorkerName();
@@ -228,7 +231,7 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 		}
 
 		StringBuilder out = new StringBuilder();
-		out.append("import { createGate, load } from 'bytebox';\n");
+		out.append("import { createGate, load } from '" + PACKAGE + "';\n");
 		if (!getDurableObjects().get().isEmpty()) {
 			out.append("import { DurableObject } from 'cloudflare:workers';\n");
 		}
@@ -436,7 +439,9 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 		out.string("private", "true");
 		out.string("type", "module");
 		List<String> dependencies = new ArrayList<>();
-		dependencies.add("\t\t\"bytebox\": " + JSON.quote(getByteboxVersion().get()));
+		dependencies.add(
+			"\t\t" + JSON.quote(PACKAGE) + ": " + JSON.quote(getByteboxVersion().get())
+		);
 		if (getDecoder().isPresent()) {
 			dependencies.add(
 				"\t\t" +

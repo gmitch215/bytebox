@@ -130,6 +130,7 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
+          scope: '@gmitch215'
       - name: Upgrade NPM
         run: npm install -g npm@latest
       - name: Install Dependencies
@@ -154,11 +155,7 @@ jobs:
         if: ${{ !inputs.skip_github_packages }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # GitHub Packages only accepts scoped names, so the scope is added for this publish only
-          npm pkg set name="@gmitch215/bytebox"
-          npm publish --access public
-          npm pkg set name="bytebox"
+        run: npm publish --access public
 
   release:
     runs-on: ubuntu-latest

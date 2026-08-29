@@ -175,7 +175,7 @@ class GenerateScaffoldTaskTest {
 	void moduleScope() {
 		String index = index(task());
 
-		assertTrue(index.contains("import { createGate, load } from 'bytebox';"), index);
+		assertTrue(index.contains("import { createGate, load } from '@gmitch215/bytebox';"), index);
 		assertTrue(index.contains("import bytes from './app.wasmbin';"), index);
 		assertTrue(index.contains("const java = load({ runtime, bytes });"), index);
 		assertTrue(index.contains("java.call('main', []);"), index);
@@ -235,7 +235,7 @@ class GenerateScaffoldTaskTest {
 		task.generate();
 
 		String manifest = Projects.read(directory.resolve("package.json"));
-		assertTrue(manifest.contains("\"bytebox\": \"^1.0.0\""), manifest);
+		assertTrue(manifest.contains("\"@gmitch215/bytebox\": \"^1.0.0\""), manifest);
 		assertTrue(manifest.contains("\"fzstd\": \"^0.1.1\""), manifest);
 		assertTrue(manifest.contains("\"@noble/hashes\": \"^1.4.0\""), manifest);
 		assertTrue(manifest.contains("\"type\": \"module\""), manifest);

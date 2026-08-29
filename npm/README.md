@@ -3,7 +3,7 @@
 > The Cloudflare Workers loader for Java compiled to WebAssembly
 
 ```sh
-bun add bytebox
+bun add @gmitch215/bytebox
 ```
 
 This is the JavaScript half of [bytebox](https://github.com/gmitch215/bytebox). The Gradle plugin
@@ -20,7 +20,7 @@ of a string read from a wasm custom section, which no bundler can follow.
 ## Loading A Module
 
 ```ts
-import { load } from 'bytebox';
+import { load } from '@gmitch215/bytebox';
 import * as runtime from './app.wasm-runtime.js';
 import bytes from './app.wasmbin';
 
@@ -36,7 +36,7 @@ One instance serves every request in the isolate, and a Java fiber that suspends
 loop, so a second request can arrive while the first is parked. The gate serialises entry:
 
 ```ts
-import { createGate, load } from 'bytebox';
+import { createGate, load } from '@gmitch215/bytebox';
 
 const instance = await load({ runtime, bytes });
 const gate = createGate(instance);
@@ -59,22 +59,22 @@ readable from inside a request. `FIBER_BUDGET` carries the defaults.
 
 ## Exports
 
-| Import              | Provides                                                     |
-| ------------------- | ------------------------------------------------------------ |
-| `bytebox`           | `load`, `createGate`, `createScheduler`, the error types     |
-| `bytebox/loader`    | `load`, `requiredModules`                                    |
-| `bytebox/gate`      | `createGate`                                                 |
-| `bytebox/scheduler` | `createScheduler`, `FIBER_BUDGET`                            |
-| `bytebox/errors`    | `LoadError`, `EntryPointError`, `ImportError`, `BudgetError` |
-| `bytebox/bundler`   | an esbuild plugin that stubs the `node:*` imports out        |
-| `bytebox/bindgen`   | generates Java bindings from a package's TypeScript types    |
+| Import                         | Provides                                                     |
+| ------------------------------ | ------------------------------------------------------------ |
+| `@gmitch215/bytebox`           | `load`, `createGate`, `createScheduler`, the error types     |
+| `@gmitch215/bytebox/loader`    | `load`, `requiredModules`                                    |
+| `@gmitch215/bytebox/gate`      | `createGate`                                                 |
+| `@gmitch215/bytebox/scheduler` | `createScheduler`, `FIBER_BUDGET`                            |
+| `@gmitch215/bytebox/errors`    | `LoadError`, `EntryPointError`, `ImportError`, `BudgetError` |
+| `@gmitch215/bytebox/bundler`   | an esbuild plugin that stubs the `node:*` imports out        |
+| `@gmitch215/bytebox/bindgen`   | generates Java bindings from a package's TypeScript types    |
 
-`esbuild` and `typescript` are optional peers, needed only by `bytebox/bundler` and
-`bytebox/bindgen`. A Worker at runtime needs neither.
+`esbuild` and `typescript` are optional peers, needed only by `@gmitch215/bytebox/bundler` and
+`@gmitch215/bytebox/bindgen`. A Worker at runtime needs neither.
 
-`bytebox/bindgen` also installs a command. The two are the same tool: `bytebox-bindgen` parses
-arguments and calls `writeBindings`, which is the function `bytebox/bindgen` exports. The Gradle
-plugin runs the command; a TypeScript caller imports the function.
+`@gmitch215/bytebox/bindgen` also installs a command. The two are the same tool: `bytebox-bindgen`
+parses arguments and calls `writeBindings`, which is the function `@gmitch215/bytebox/bindgen`
+exports. The Gradle plugin runs the command; a TypeScript caller imports the function.
 
 ```sh
 bunx bytebox-bindgen --out src/generated nanoid @noble/hashes
