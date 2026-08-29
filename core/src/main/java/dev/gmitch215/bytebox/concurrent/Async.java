@@ -1,10 +1,12 @@
 package dev.gmitch215.bytebox.concurrent;
 
+import dev.gmitch215.bytebox.js.JSArrays;
 import java.util.List;
 import java.util.function.Supplier;
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSExceptions;
 import org.teavm.jso.JSObject;
+import org.teavm.jso.JSProperty;
 import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSArrayReader;
 import org.teavm.jso.core.JSObjects;
@@ -41,7 +43,13 @@ public final class Async {
 	 * @return the resolved value
 	 */
 	public static <T extends JSObject> T await(JSPromise<T> promise) {
-		return promise.await();
+		Settled<T> settled = settle(promise).await();
+		if (!settled.isFailed()) return settled.getValue();
+		Throwable java = carriesJava(settled.getReason())
+			? JSExceptions.getJavaException(settled.getReason())
+			: null;
+		if (java != null) throw raise(java);
+		throw new JSRejection(settled.getMessage());
 	}
 
 	/**
@@ -52,7 +60,7 @@ public final class Async {
 	public static void awaitVoid(JSPromise<?> promise) {
 		@SuppressWarnings("unchecked")
 		JSPromise<JSObject> typed = (JSPromise<JSObject>) promise;
-		typed.await();
+		await(typed);
 	}
 
 	/**
@@ -68,7 +76,7 @@ public final class Async {
 	@SafeVarargs
 	@SuppressWarnings("varargs")
 	public static <T extends JSObject> List<T> all(JSPromise<T>... promises) {
-		JSArrayReader<T> settled = JSPromise.all(JSArray.of(promises)).await();
+		JSArrayReader<T> settled = await(JSPromise.all(JSArrays.of(promises)));
 		List<T> values = new java.util.ArrayList<>(settled.getLength());
 		for (int i = 0; i < settled.getLength(); i++) values.add(settled.get(i));
 		return values;
@@ -84,7 +92,7 @@ public final class Async {
 	@SafeVarargs
 	@SuppressWarnings("varargs")
 	public static <T extends JSObject> T race(JSPromise<T>... promises) {
-		return JSPromise.race(JSArray.of(promises)).await();
+		return await(JSPromise.race(JSArrays.of(promises)));
 	}
 
 	/**
@@ -156,4 +164,64 @@ public final class Async {
 
 	@JSBody(params = "message", script = "return new Error(message);")
 	private static native JSObject error(String message);
+
+	/**
+	 * Turns a promise that can reject into one that cannot.
+	 *
+	 * <p>Waiting on a rejection directly does not work: the compiler's own helper asks the runtime
+	 * for the Java exception behind the reason, the runtime answers {@code undefined} when there is
+	 * none, and a JavaScript {@code undefined} is not a value the import's return type accepts. The
+	 * conversion throws inside the callback, so nothing ever resumes the waiting fiber and the
+	 * invocation hangs until the platform kills it. Settling in JavaScript means the value Java waits
+	 * on has already been decided and the outcome is read rather than thrown across the boundary.
+	 */
+	@JSBody(
+		params = "promise",
+		script = "return promise.then(" +
+			" function (value) { return { failed: false, value: value }; }," +
+			" function (reason) {" +
+			"   return { failed: true, reason: reason," +
+			"     message: String(reason && reason.stack ? reason.stack : reason) };" +
+			" });"
+	)
+	private static native <T extends JSObject> JSPromise<Settled<T>> settle(JSPromise<T> promise);
+
+	/**
+	 * Whether a rejection reason is one of the runtime's wrappers around a Java throwable.
+	 *
+	 * <p>Asked before unwrapping rather than after, because unwrapping something that is not one is
+	 * the failure this whole path exists to avoid. The runtime marks its wrappers with a symbol it
+	 * does not export, so the description is what identifies it; a runtime that stopped using that
+	 * description would cost the original exception type and nothing else.
+	 */
+	@JSBody(
+		params = "reason",
+		script = "if (reason === null || typeof reason !== 'object') return false;" +
+			" var marks = Object.getOwnPropertySymbols(reason);" +
+			" for (var i = 0; i < marks.length; i++) {" +
+			"   if (String(marks[i]) === 'Symbol(javaException)') return true;" +
+			" }" +
+			" return false;"
+	)
+	private static native boolean carriesJava(JSObject reason);
+
+	@SuppressWarnings("unchecked")
+	private static <E extends Throwable> RuntimeException raise(Throwable failure) throws E {
+		throw (E) failure;
+	}
+
+	/** What a settled promise carries, so the outcome crosses as a value rather than as a throw. */
+	private interface Settled<T extends JSObject> extends JSObject {
+		@JSProperty
+		boolean isFailed();
+
+		@JSProperty
+		T getValue();
+
+		@JSProperty
+		JSObject getReason();
+
+		@JSProperty
+		String getMessage();
+	}
 }

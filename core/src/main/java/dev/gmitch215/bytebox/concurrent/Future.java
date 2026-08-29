@@ -82,7 +82,7 @@ public final class Future<T extends JSObject> {
 	 * @return the value
 	 */
 	public T join() {
-		return promise.await();
+		return Async.await(promise);
 	}
 
 	/**
