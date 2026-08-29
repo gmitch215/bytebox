@@ -11,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.teavm.extension.spi.substitution.ClassSubstitutionPolicy;
 import org.teavm.extension.spi.substitution.SubstitutionPolicy;
-import org.teavm.extension.spi.substitution.SubstitutionSink;
 
 /**
  * Which class names each policy claims, and what it rewrites them to.

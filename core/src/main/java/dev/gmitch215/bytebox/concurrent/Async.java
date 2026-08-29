@@ -7,7 +7,6 @@ import org.teavm.jso.JSBody;
 import org.teavm.jso.JSExceptions;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.JSProperty;
-import org.teavm.jso.core.JSArray;
 import org.teavm.jso.core.JSArrayReader;
 import org.teavm.jso.core.JSObjects;
 import org.teavm.jso.core.JSPromise;
