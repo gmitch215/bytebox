@@ -65,22 +65,24 @@ final class SerialVersionUID {
 		return computed(type, classFile != null && hasStaticInitializer(classFile));
 	}
 
-	/** A {@code private static final long serialVersionUID} on the class itself, if there is one. */
+	/**
+	 * A {@code static final serialVersionUID} on the class itself, if there is one.
+	 *
+	 * <p>Read the way the runtime reads it rather than the way the specification words it: the field
+	 * has to be {@code static final}, and any type a {@code long} widens from is accepted, because
+	 * that is what {@code Field.getLong} does. A field that is not one of those is not the identifier
+	 * at all, and the runtime hashes the class instead of failing — so this does too, or the two would
+	 * disagree about a class neither of them refuses.
+	 */
 	static Long declared(Class<?> type) {
 		try {
 			Field field = type.getDeclaredField("serialVersionUID");
-			if (!Modifier.isStatic(field.getModifiers()) || field.getType() != long.class) {
-				return null;
-			}
+			int required = Modifier.STATIC | Modifier.FINAL;
+			if ((field.getModifiers() & required) != required) return null;
 			field.setAccessible(true);
 			return field.getLong(null);
-		} catch (NoSuchFieldException none) {
+		} catch (NoSuchFieldException | IllegalAccessException | RuntimeException notTheField) {
 			return null;
-		} catch (IllegalAccessException | RuntimeException unreadable) {
-			throw new GradleException(
-				"could not read " + type.getName() + ".serialVersionUID",
-				unreadable
-			);
 		}
 	}
 

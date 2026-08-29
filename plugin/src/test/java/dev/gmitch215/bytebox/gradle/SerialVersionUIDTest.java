@@ -83,6 +83,46 @@ class SerialVersionUIDTest {
 
 	record Component(String sku, int quantity) implements Serializable {}
 
+	/** A lambda and a wide constant, which put the tags a naive pool walker trips over in the pool. */
+	static class Wide implements Serializable {
+
+		static final long BIG = 0x0102030405060708L;
+		static final double PRECISE = 1.0 / 3.0;
+		static final Runnable WORK = () -> {};
+
+		public int value;
+
+		public Wide() {}
+
+		public void overloaded(int a) {}
+
+		public void overloaded(String a) {}
+	}
+
+	/** Typed as an int, which the runtime widens rather than ignores. */
+	static class WidenedIdentifier implements Serializable {
+
+		static final int serialVersionUID = 3;
+
+		public int value;
+	}
+
+	/** Not final, so it is not the identifier and the class is hashed instead. */
+	static class MutableIdentifier implements Serializable {
+
+		static long serialVersionUID = 5;
+
+		public int value;
+	}
+
+	/** Not a number, so reading it as one fails and the class is hashed instead. */
+	static class TextIdentifier implements Serializable {
+
+		static final String serialVersionUID = "5";
+
+		public int value;
+	}
+
 	enum Flag implements Serializable {
 		ON,
 		OFF
@@ -158,6 +198,51 @@ class SerialVersionUIDTest {
 	void refusesBytesThatAreNotAClassFile() {
 		assertFalse(SerialVersionUID.hasStaticInitializer(new byte[] { 1, 2, 3 }));
 		assertFalse(SerialVersionUID.hasStaticInitializer(new byte[0]));
+	}
+
+	/**
+	 * A long or a double takes two constant pool entries and a method handle takes three bytes, so a
+	 * walker that treated every entry alike would read the rest of the pool at the wrong offset.
+	 */
+	@Test
+	void walksAPoolHoldingEveryAwkwardConstant() {
+		assertTrue(SerialVersionUID.hasStaticInitializer(classFile(Wide.class)));
+		assertMatches(Wide.class);
+	}
+
+	@Test
+	void refusesAPoolEntryItDoesNotKnow() {
+		byte[] pretend = {
+			(byte) 0xCA,
+			(byte) 0xFE,
+			(byte) 0xBA,
+			(byte) 0xBE,
+			0,
+			0,
+			0,
+			65,
+			0,
+			2,
+			99
+		};
+
+		assertFalse(SerialVersionUID.hasStaticInitializer(pretend));
+	}
+
+	/**
+	 * The runtime reads the field with {@code Field.getLong}, so it takes any type a long widens from
+	 * and ignores one that is not {@code static final} at all. Agreeing with it is the whole contract.
+	 */
+	@Test
+	void readsTheFieldTheWayTheRuntimeReadsIt() {
+		assertEquals(3L, SerialVersionUID.declared(WidenedIdentifier.class));
+		assertMatches(WidenedIdentifier.class);
+
+		assertNull(SerialVersionUID.declared(MutableIdentifier.class));
+		assertMatches(MutableIdentifier.class);
+
+		assertNull(SerialVersionUID.declared(TextIdentifier.class));
+		assertMatches(TextIdentifier.class);
 	}
 
 	@Test
