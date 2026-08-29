@@ -152,7 +152,8 @@ class ByteboxPluginTest {
 		TeaVMExtension teavm = project.getExtensions().getByType(TeaVMExtension.class);
 
 		assertTrue(teavm.getWasmGC().getModularRuntime().get());
-		assertEquals(0, teavm.getWasmGC().getMinDirectBuffersSize().get());
+		// zero leaves the interop's staging heap empty and the first byte[] crossing never returns
+		assertTrue(teavm.getWasmGC().getMinDirectBuffersSize().get() >= 1);
 		assertTrue(teavm.getWasmGC().getObfuscated().get());
 		assertFalse(teavm.getWasmGC().getDebugInformation().get());
 		assertFalse(teavm.getWasmGC().getSourceMap().get());
@@ -178,15 +179,19 @@ class ByteboxPluginTest {
 	@Test
 	@DisplayName("puts the npm bindings on the main source set, because a project calls them")
 	void bindingsOnMain() {
-		boolean generated = project
-			.getExtensions()
-			.getByType(JavaPluginExtension.class)
-			.getSourceSets()
-			.getByName("main")
-			.getJava()
-			.getSrcDirs()
-			.stream()
-			.anyMatch(directory -> directory.getPath().endsWith("generated/sources/bytebox/npm"));
+		boolean generated =
+			project
+				.getExtensions()
+				.getByType(JavaPluginExtension.class)
+				.getSourceSets()
+				.getByName("main")
+				.getJava()
+				.getSrcDirs()
+				.stream()
+				// compared as path elements rather than as text, because a separator is the host's
+				.anyMatch(directory ->
+					directory.toPath().endsWith(Path.of("generated", "sources", "bytebox", "npm"))
+				);
 
 		assertTrue(generated, "the generated bindings are not a main source directory");
 	}

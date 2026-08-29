@@ -60,6 +60,14 @@ public class ByteboxPlugin implements Plugin<Project> {
 	/** The Java package generated npm bindings live in. */
 	public static final String NPM_PACKAGE = "dev.gmitch215.bytebox.npm";
 
+	/**
+	 * Megabytes of linear memory the interop stages arrays through, which cannot be zero.
+	 *
+	 * <p>TeaVM's own default is two. One is enough for the staging buffer, which is four kilobytes,
+	 * and the heap grows from there when a program needs more.
+	 */
+	public static final int BUFFER_HEAP_MEGABYTES = 1;
+
 	@Override
 	public void apply(Project project) {
 		project.getPluginManager().apply("java");
@@ -173,9 +181,11 @@ public class ByteboxPlugin implements Plugin<Project> {
 	 * Sets the compiler options a Worker always wants, so a project does not carry them.
 	 *
 	 * <p>{@code modularRuntime} is not a preference: the loader imports the generated runtime as an ES
-	 * module, and without it the runtime is a global assignment instead. Direct buffers get no
-	 * declared memory because {@code ByteBuffer.allocateDirect} does not work on this target anyway,
-	 * and the default reserves 2 MB of linear memory for it.
+	 * module, and without it the runtime is a global assignment instead. Neither is
+	 * {@code minDirectBuffersSize}, which is measured in megabytes and names more than direct byte
+	 * buffers: it sizes the linear-memory heap the interop stages every {@code byte[]} through on its
+	 * way to a typed array. At zero the heap is initialised empty and the first such conversion spins
+	 * inside the allocator forever, so one megabyte is the floor rather than a budget.
 	 *
 	 * <p>The rest are conventions a project can override.
 	 */
@@ -185,7 +195,7 @@ public class ByteboxPlugin implements Plugin<Project> {
 			.getByType(TeaVMExtension.class)
 			.getWasmGC();
 		wasm.getModularRuntime().set(true);
-		wasm.getMinDirectBuffersSize().convention(0);
+		wasm.getMinDirectBuffersSize().convention(BUFFER_HEAP_MEGABYTES);
 		wasm.getObfuscated().convention(true);
 		wasm.getDebugInformation().convention(false);
 		wasm.getSourceMap().convention(false);

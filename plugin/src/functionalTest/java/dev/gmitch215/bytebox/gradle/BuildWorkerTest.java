@@ -44,7 +44,7 @@ class BuildWorkerTest {
 			teavm {
 				wasmGC {
 					modularRuntime = true
-					minDirectBuffersSize = 0
+					minDirectBuffersSize = 1
 					obfuscated = true
 				}
 			}
