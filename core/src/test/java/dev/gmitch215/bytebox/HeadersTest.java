@@ -60,4 +60,21 @@ class HeadersTest {
 
 		assertFalse(headers.has("x-trace"));
 	}
+
+	/**
+	 * Every other header collapses to one comma-joined value, so cookies get their own reader. The
+	 * platform leaves it absent rather than empty when there are none.
+	 */
+	@Test
+	@DisplayName("reads no cookies as an empty list rather than failing")
+	void noCookies() {
+		Headers headers = new StubHeaders() {
+			@Override
+			public org.teavm.jso.core.JSArrayReader<org.teavm.jso.core.JSString> getSetCookie() {
+				return null;
+			}
+		};
+
+		assertTrue(headers.setCookies().isEmpty());
+	}
 }

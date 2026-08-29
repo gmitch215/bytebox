@@ -103,6 +103,42 @@ final class Stubs {
 		}
 
 		@Override
+		public boolean isString() {
+			return value instanceof String;
+		}
+
+		@Override
+		public boolean isNumber() {
+			return value instanceof Number;
+		}
+
+		@Override
+		public boolean isBoolean() {
+			return value instanceof Boolean;
+		}
+
+		@Override
+		public boolean isBigInt() {
+			return value instanceof Long;
+		}
+
+		@Override
+		public boolean isFunction() {
+			return false;
+		}
+
+		/** A plain object rather than a real {@code Map}, which is the shape JSON uses. */
+		@Override
+		public boolean isMap() {
+			return false;
+		}
+
+		@Override
+		public boolean isSet() {
+			return false;
+		}
+
+		@Override
 		public String asString() {
 			return String.valueOf(value);
 		}
@@ -154,7 +190,7 @@ final class Stubs {
 	}
 
 	/** Headers backed by a map, matching the case-insensitive comparison the platform uses. */
-	static final class StubHeaders implements Headers {
+	static class StubHeaders implements Headers {
 
 		private final Map<String, String> values = new LinkedHashMap<>();
 
@@ -196,6 +232,8 @@ final class Stubs {
 		private final String url;
 		private final String method;
 		private final Headers headers;
+		private final Map<String, String> query = new LinkedHashMap<>();
+		private TSObject cf = Value.object();
 
 		StubRequest(String url) {
 			this(url, "GET", new StubHeaders());
@@ -205,6 +243,17 @@ final class Stubs {
 			this.url = url;
 			this.method = method;
 			this.headers = headers;
+		}
+
+		/** Cloudflare's own request properties, which the platform attaches rather than the URL. */
+		StubRequest withCf(TSObject value) {
+			cf = value;
+			return this;
+		}
+
+		StubRequest withQuery(String name, String value) {
+			query.put(name, value);
+			return this;
 		}
 
 		@Override
@@ -229,7 +278,7 @@ final class Stubs {
 
 		@Override
 		public TSObject getCf() {
-			return Value.object();
+			return cf;
 		}
 
 		@Override
@@ -247,9 +296,10 @@ final class Stubs {
 			throw new UnsupportedOperationException("reading a body needs a real promise");
 		}
 
+		/** The platform's own URL parser does this, so the stub answers from what it was given. */
 		@Override
 		public String query(String name) {
-			throw new UnsupportedOperationException("query parsing uses the platform URL parser");
+			return query.get(name);
 		}
 	}
 
