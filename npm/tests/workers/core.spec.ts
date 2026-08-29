@@ -66,7 +66,7 @@ describe('reading the environment', () => {
 	it('names an undeclared binding instead of failing further along', async () => {
 		const result = await route<{ message: string }>('/missing');
 
-		expect(result.message).toContain('VECTORIZE');
+		expect(result.message).toContain('NOT_DECLARED');
 		expect(result.message).toContain('bindings block');
 	});
 });
@@ -153,6 +153,307 @@ describe('the platform builtins', () => {
 		expect(result.timeZone).toBe('UTC');
 		expect(result.zoneSupported).toBe('true');
 		expect(result.dateTime).toContain('1970');
+	});
+});
+
+describe('futures', () => {
+	it('builds from a value, a failure and a promise, and transforms each', async () => {
+		const result = await route<Record<string, string>>('/futures');
+
+		expect(result.ready).toBe('ready');
+		expect(result.wrapped).toBe('ready');
+		expect(result.mapped).toBe('ready mapped');
+		expect(result.chained).toBe('then');
+		expect(result.recovered).toBe('recovered IllegalStateException');
+		expect(result.fallback).toBe('supplied');
+	});
+
+	it('waits on several at once, and on whichever settles first', async () => {
+		const result = await route<Record<string, string>>('/futures');
+
+		expect(result.all).toBe('first,second');
+		expect(result.race).toBe('won');
+		expect(result.ran).toBe('side effect');
+	});
+});
+
+describe('the triggers other than fetch', () => {
+	it('runs every handler the class implements, and records what each was given', async () => {
+		for (const trigger of ['scheduled', 'email', 'queue', 'tail', 'alarm']) {
+			const answer = await env.CORE.fetch(`https://bytebox.test/__trigger/${trigger}`);
+			expect(await answer.text(), trigger).toBe(`${trigger} ran`);
+		}
+
+		const fired = await (await env.CORE.fetch('https://bytebox.test/fired')).text();
+
+		expect(fired).toContain('cron:*/5 * * * *@1700000000000');
+		expect(fired).toContain('mail:sender@example.com->inbox@example.com');
+		// forwarding records the disposition on the message, which is what makes the handler void
+		expect(fired).toContain('disposition:FORWARD');
+		expect(fired).toContain('queue:fixture-queue:m-1=7#1');
+		expect(fired).toContain('tail:1:ok');
+		expect(fired).toContain('alarm|');
+	});
+});
+
+describe('the conveniences layered over each binding', () => {
+	it('hashes and encodes through every overload', async () => {
+		const result = await route<Record<string, string>>('/overloads');
+
+		expect(result.md5).toBe('ok');
+		// SHA-1 of "a"
+		expect(result.sha1).toBe('86f7e437');
+		expect(result.sha512).toBe('128');
+		expect(result.sha512Bytes).toBe('128');
+		expect(result.md5Bytes).toBe('32');
+		expect(result.sha1Bytes).toBe('40');
+		expect(result.digest).toBe('64');
+		expect(result.hmacBytes).toBe('64');
+		expect(result.sameText).toBe('true');
+		expect(result.randomBytes).toBe('32');
+		expect(result.decoded).toBe('signed');
+		expect(result.base64).toBe('AQID');
+		expect(result.cookies).toBe('0');
+	});
+
+	it('reads and writes KV, R2 and D1 through their siblings', async () => {
+		const result = await route<Record<string, string>>('/overloads');
+
+		expect(result.kvJson).toBe('true');
+		expect(result.kvTag).toBe('a');
+		expect(result.kvListed).toBe('true');
+		expect(result.r2Range).toBe('eight');
+		expect(result.r2Listed).toBe('true');
+		expect(result.r2Names).toBe('true');
+		// SQLite has no boolean, so a bound true is stored and read back as 1
+		expect(result.d1Flag).toBe('1');
+		expect(result.d1Column).toBe('1');
+		expect(result.d1Batch).toBe('2');
+	});
+});
+
+describe('a Durable Object', () => {
+	it('derives a stable id from a name and a fresh one on request', async () => {
+		const result = await route<Record<string, string>>('/durable');
+
+		expect(result.name).toBe('global');
+		expect(result.stable).toBe('true');
+		expect(result.unique).toBe('true');
+		expect(result.stubId).toBe('true');
+	});
+
+	it('reads and writes the instance storage, keeping types across the boundary', async () => {
+		const result = await route<Record<string, string>>('/durable');
+
+		expect(result.count).toBe('42');
+		expect(result.nested).toBe('true');
+		expect(result.removed).toBe('true');
+		// a second delete of the same key reports that there was nothing to remove
+		expect(result.again).toBe('false');
+	});
+
+	it('queries the instance SQL store', async () => {
+		const result = await route<Record<string, string>>('/durable');
+
+		expect(result.rows).toBe('2');
+		expect(result.first).toBe('core');
+		expect(result.seen).toBe('2');
+	});
+
+	it('sets and clears an alarm', async () => {
+		const result = await route<Record<string, string>>('/durable');
+
+		expect(result.alarmSet).toBe('true');
+		expect(result.alarmCleared).toBe('0');
+	});
+
+	it('accepts a websocket and answers on it', async () => {
+		const upgraded = await env.CORE.fetch('https://bytebox.test/durablesocket', {
+			headers: { upgrade: 'websocket' }
+		});
+		const socket = upgraded.webSocket;
+
+		expect(upgraded.status).toBe(101);
+		expect(socket).toBeTruthy();
+		socket!.accept();
+
+		const answers: string[] = [];
+		const heard = new Promise<void>((resolve) => {
+			socket!.addEventListener('message', (event) => {
+				answers.push(String(event.data));
+				if (answers.length === 3) resolve();
+			});
+		});
+		socket!.send('count');
+		await heard;
+
+		expect(answers[0]).toBe('echo count');
+		expect(answers[1]).toBe('sockets 1');
+		expect(answers[2]).toBe('broadcast');
+	});
+
+	it('carries bytes over the socket and records the close', async () => {
+		const upgraded = await env.CORE.fetch('https://bytebox.test/durablesocket', {
+			headers: { upgrade: 'websocket' }
+		});
+		const socket = upgraded.webSocket!;
+		socket.accept();
+
+		const echoed = new Promise<Blob | ArrayBuffer>((resolve) => {
+			socket.addEventListener('message', (event) => resolve(event.data as Blob));
+		});
+		socket.send(new Uint8Array([1, 2, 3, 4]));
+		// a binary frame reaches a client socket as a Blob, not as the buffer that was sent
+		const back = await echoed;
+		const bytes = back instanceof ArrayBuffer ? back : await (back as Blob).arrayBuffer();
+		socket.close(1000, 'done');
+
+		expect(new Uint8Array(bytes)).toEqual(new Uint8Array([1, 2, 3, 4]));
+
+		// the close is delivered after the response, so the record is read on a later request
+		const seen = await (await env.CORE.fetch('https://bytebox.test/durableseen')).text();
+		expect(seen).toContain('bytes:4');
+		expect(seen).toContain('closed:1000');
+	});
+});
+
+describe('a promise that rejects', () => {
+	// awaiting an Error rejection used to hang the fiber, and every binding goes through the same
+	// wait, so a service that refused took the whole invocation with it
+	it('throws rather than hanging, whatever JavaScript rejected with', async () => {
+		const result = await route<Record<string, string>>('/rejects');
+
+		expect(result.error).toBe('JSRejection');
+		expect(result.string).toBe('JSRejection');
+		expect(result.nothing).toBe('JSRejection');
+	});
+
+	it('rethrows the original exception when the rejection carries one', async () => {
+		const result = await route<Record<string, string>>('/reject');
+
+		expect(result.outcome).toBe('caught IllegalStateException');
+	});
+
+	it('surfaces a refused subrequest as a throw', async () => {
+		const result = await route<Record<string, string>>('/fetch');
+
+		expect(result.refusedOutright).toBe('JSRejection');
+	});
+});
+
+describe('outbound HTTP', () => {
+	it('fetches, and reads the answer as text, JSON and bytes', async () => {
+		const result = await route<Record<string, string>>('/fetch');
+
+		expect(result.method).toBe('GET');
+		expect(result.query).toBe('?q=1');
+		expect(result.echoed).toBe('seen');
+		expect(result.posted).toBe('sent with options');
+		expect(Number(result.rawLength)).toBeGreaterThan(0);
+	});
+
+	it('refuses a failing response by status rather than by parsing it', async () => {
+		const result = await route<Record<string, string>>('/fetch');
+
+		expect(result.refused).toContain('503');
+	});
+
+	it('builds a response from bytes, from a JavaScript value and from a codec', async () => {
+		const result = await route<Record<string, string>>('/fetch');
+
+		expect(result.builtType).toBe('application/octet-stream');
+		expect(result.builtStatus).toBe('200');
+		expect(result.codec).toContain('"sku":"A-1"');
+	});
+
+	it('drives HttpURLConnection, which is what an older library reaches for', async () => {
+		const result = await route<Record<string, string>>('/urlconnection');
+
+		expect(result.status).toBe('200');
+		expect(result.host).toBe('echo.test');
+		expect(result.path).toBe('/echo');
+		expect(result.query).toBe('from=urlconnection');
+		expect(result.protocol).toBe('http');
+		expect(result.seen).toBe('seen');
+		expect(result.body).toContain('"method":"POST"');
+	});
+
+	it('reads a failing response off the error stream rather than throwing it away', async () => {
+		const result = await route<Record<string, string>>('/urlconnection');
+
+		expect(result.failed).toBe('404');
+		expect(result.error).toBe('the server said 404');
+	});
+
+	it('drives java.net.http.HttpClient, which is what a current one reaches for', async () => {
+		const result = await route<Record<string, string>>('/httpclient');
+
+		expect(result.status).toBe('200');
+		expect(result.method).toBe('POST');
+		expect(result.body).toContain('"fixture":"httpclient"');
+		expect(result.header).toBe('seen');
+		expect(result.redirects).toBe('NORMAL');
+		expect(Number(result.byteLength)).toBeGreaterThan(0);
+		expect(result.discarded).toBe('204');
+	});
+});
+
+describe('the bindings that are a service rather than a store', () => {
+	it('calls a service binding, an mTLS one and browser rendering', async () => {
+		const result = await route<Record<string, string>>('/services');
+
+		expect(result.service).toBe('/echo');
+		expect(result.mtls).toBe('/echo');
+		expect(result.browser).toBe('/echo');
+		expect(result.method).toBe('PUT');
+		expect(result.byRequest).toBe('/echo');
+		expect(result.rpc).toBe('true');
+	});
+
+	it('reads an image and runs a transformation', async () => {
+		const result = await route<Record<string, string>>('/services');
+
+		expect(result.aiOptions).toBe('a fixture answer');
+		expect(result.embedded).toBe('a fixture answer');
+		expect(result.format).toBe('image/png');
+		expect(result.width).toBe('4');
+		expect(result.rendered).toBe('true');
+	});
+
+	it('starts, signals and stops a container', async () => {
+		const result = await route<Record<string, string>>('/services');
+
+		expect(result.running).toBe('false');
+		expect(result.port).toBe('8080');
+	});
+});
+
+describe('Java arrays crossing into JavaScript', () => {
+	// the interop copies a byte[] through a staging buffer in linear memory, and that heap is sized
+	// by `minDirectBuffersSize`. At zero it is initialised empty and the copy loops forever, so this
+	// route stops answering rather than failing.
+	it('round-trips bytes through a buffer and through a view', async () => {
+		const result = await route<Record<string, string>>('/bytes');
+
+		expect(result.roundTrip).toBe('007f80ff2a');
+		expect(result.windowed).toBe('007f80ff2a');
+		expect(result.decoded).toBe('héllo');
+	});
+
+	it('feeds the byte[] overloads of the builtins', async () => {
+		const result = await route<Record<string, string>>('/bytes');
+
+		// SHA-256 of 00 7f 80 ff 2a
+		expect(result.digest).toBe('aac52de78671d4ea');
+		expect(result.equal).toBe('true');
+		expect(result.differ).toBe('false');
+	});
+
+	it('writes and reads bytes through KV and R2', async () => {
+		const result = await route<Record<string, string>>('/bytes');
+
+		expect(result.fromKv).toBe('007f80ff2a');
+		expect(result.fromR2).toBe('007f80ff2a');
 	});
 });
 

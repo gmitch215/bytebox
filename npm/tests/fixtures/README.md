@@ -18,9 +18,15 @@ compiled from.
 `hello.wasm-runtime.js` is TeaVM's generated runtime. It carries no per-module content, so one copy
 serves every fixture. `hello.wasm-runtime.d.ts` declares the one member bytebox drives.
 
-`core.wasm` is the one that matters most: a handler implementing `Worker`, resolving KV, R2 and D1
-from `Env`, suspending on promises, and reaching the platform builtins. The workers lane drives it
-against miniflare's own KV, R2 and D1.
+`core.wasm` is the one that matters most, and it carries three classes. `CoreWorker.java` implements
+every trigger and answers one route per thing being proved. `Counter.java` is a Durable Object with
+storage, SQL, an alarm and websockets. `Entry.java` is what the plugin's generator would write for
+both: one export per trigger, and one per method the runtime calls on a Durable Object.
+
+The lanes differ in what they can reach. The gate drives it against miniflare's own KV, R2, D1 and
+Durable Objects, with an echo Worker on `outboundService` for the HTTP surfaces. The coverage lane
+adds the containers in `docker/compose.yml` — a mail server for sockets, a TLS endpoint, and a
+database the Hyperdrive route dials for real.
 
 ## Rebuilding
 
@@ -31,7 +37,7 @@ teavm {
 	all { mainClass = "fixture.Hello" }
 	wasmGC {
 		modularRuntime = true
-		minDirectBuffersSize = 0
+		minDirectBuffersSize = 1
 		obfuscated = true
 		debugInformation = false
 		sourceMap = false

@@ -2,7 +2,7 @@ package fixture;
 
 import dev.gmitch215.bytebox.js.TSObject;
 import dev.gmitch215.bytebox.json.Codec;
-import dev.gmitch215.bytebox.json.JsonType;
+import dev.gmitch215.bytebox.json.JSONType;
 import java.util.List;
 
 /**
@@ -13,7 +13,7 @@ import java.util.List;
  * plugin. The generator's own output is checked where it is written, in the plugin's functional
  * tests.
  */
-@JsonType
+@JSONType
 public record Order(
 	String sku,
 	int quantity,

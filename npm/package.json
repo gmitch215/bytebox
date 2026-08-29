@@ -54,6 +54,7 @@
 		"typecheck": "tsc -p ./tsconfig.json --noEmit && tsc -p ./tsconfig.test.json --noEmit",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
+		"test:java": "BYTEBOX_COVERAGE=1 NODE_EXTRA_CA_CERTS=../docker/certs/server.crt vitest run --project coverage",
 		"docs:build": "typedoc",
 		"prepack": "cp ../LICENSE ./LICENSE",
 		"prepublishOnly": "npm run build"

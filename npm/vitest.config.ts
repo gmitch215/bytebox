@@ -1,6 +1,7 @@
 import { cloudflareTest } from '@cloudflare/vitest-pool-workers';
 import { join } from 'node:path';
 import { defineConfig } from 'vitest/config';
+import { ECHO_WORKER } from './tests/fixtures/echo.js';
 import { wasmBytes } from './vite-wasm-bytes.js';
 
 const workers = join(import.meta.dirname, 'tests/workers');
@@ -37,6 +38,30 @@ function auxiliary(name: string, bundle: string, extra: Record<string, unknown> 
 	};
 }
 
+/**
+ * The lane that records Java coverage from inside workerd, registered only when it was asked for.
+ *
+ * It drives an instrumented build that Gradle produces, so it cannot run from a checkout with no
+ * Java toolchain. Registering it conditionally rather than skipping it keeps a lane that did not run
+ * from reading as a lane that passed.
+ */
+const coverage =
+	process.env.BYTEBOX_COVERAGE === '1'
+		? [
+				{
+					test: {
+						name: 'coverage',
+						include: ['tests/coverage/*.spec.ts'],
+						environment: 'node',
+						// an instrumented module is twice the size and the socket route dials a
+						// real server, so this lane is nothing like the gate's budget
+						testTimeout: 60_000,
+						execArgv: ['--experimental-wasm-exnref']
+					}
+				}
+			]
+		: [];
+
 export default defineConfig({
 	test: {
 		coverage: {
@@ -49,6 +74,7 @@ export default defineConfig({
 			exclude: ['**/*.d.ts']
 		},
 		projects: [
+			...coverage,
 			{
 				plugins: [wasmBytes()],
 				test: {
@@ -78,8 +104,34 @@ export default defineConfig({
 									bindings: { GREETING: 'hello from the environment' },
 									kvNamespaces: ['KV'],
 									r2Buckets: ['BLOB'],
-									d1Databases: ['DB']
-								})
+									d1Databases: ['DB'],
+									durableObjects: {
+										DO_COUNTER: {
+											className: 'Counter',
+											scriptName: 'bytebox-counter'
+										}
+									},
+									serviceBindings: {
+										SERVICE: 'bytebox-echo',
+										MTLS: 'bytebox-echo',
+										BROWSER: 'bytebox-echo'
+									},
+									// everything the fixture fetches lands here rather than on the
+									// internet, which is what makes the HTTP surfaces gate-testable
+									outboundService: 'bytebox-echo'
+								}),
+								auxiliary('bytebox-counter', 'counter-worker.build.mjs', {
+									// the hosting worker declares the namespace; the caller references it by script
+									durableObjects: {
+										DO_COUNTER: { className: 'Counter', useSQLite: true }
+									}
+								}),
+								{
+									name: 'bytebox-echo',
+									compatibilityDate: '2026-08-22',
+									modules: true,
+									script: ECHO_WORKER
+								}
 							]
 						}
 					})

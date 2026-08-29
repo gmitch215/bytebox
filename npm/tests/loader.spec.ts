@@ -117,8 +117,7 @@ describe('loading a compiled module', () => {
 
 	it('cannot run a program that allocates a direct ByteBuffer, which is upstream', () => {
 		// reproduced against TeaVM 0.15.0's own generated loader as well, so this pins an upstream
-		// limitation rather than a bytebox defect. `minDirectBuffersSize` does not move the
-		// recorded requirement either.
+		// limitation rather than a bytebox defect
 		const module = load({ runtime, bytes: directBytes });
 
 		expect(() => module.call('main', [])).toThrow(JavaError);

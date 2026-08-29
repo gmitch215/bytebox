@@ -19,7 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  */
 export default async function setup(): Promise<void> {
 	await Promise.all(
-		['worker', 'core-worker'].map((name) =>
+		['worker', 'core-worker', 'counter-worker'].map((name) =>
 			build({
 				entryPoints: [join(here, `${name}.ts`)],
 				outfile: join(here, `${name}.build.mjs`),
@@ -27,7 +27,8 @@ export default async function setup(): Promise<void> {
 				format: 'esm',
 				target: 'esnext',
 				platform: 'neutral',
-				external: ['*.wasm'],
+				// the platform supplies the wasm as a Data module and `cloudflare:*` at runtime
+				external: ['*.wasm', 'cloudflare:*'],
 				plugins: [teavmStubs()],
 				logLevel: 'warning'
 			})
