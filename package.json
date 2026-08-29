@@ -14,15 +14,19 @@
 		"test": "bun run --cwd npm test",
 		"test:coverage": "bun run --cwd npm test:coverage",
 		"docs:build": "bun run --cwd npm docs:build",
+		"docs:site": "bun docs/render.ts",
 		"prepare": "husky"
 	},
 	"devDependencies": {
 		"husky": "^9.1.7",
 		"lint-staged": "^17.3.0",
+		"marked": "^18.0.11",
+		"marked-gfm-heading-id": "^4.1.4",
 		"prettier": "^3.9.6",
 		"prettier-plugin-java": "^2.10.3",
 		"prettier-plugin-organize-imports": "^4.3.0",
-		"prettier-plugin-sh": "^0.19.0"
+		"prettier-plugin-sh": "^0.19.0",
+		"shiki": "^4.4.3"
 	},
 	"lint-staged": {
 		"*.{html,java,ts,mjs,json,jsonc,yml,yaml,md,sh}": "prettier --write"

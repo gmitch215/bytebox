@@ -10,6 +10,11 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"; git switch -f -q "$start" 2> /dev/null || true' EXIT
 
 cp -R build/docs/javadoc/. "$tmpdir/javadoc"
+if [ ! -f docs/index.html ]; then
+	echo "docs/index.html is generated from README.md; run bun run docs:site first." >&2
+	exit 1
+fi
+
 # staged before the branch switch, because these only exist on the source branch
 cp docs/index.html "$tmpdir/index.html"
 cp docs/CNAME "$tmpdir/CNAME"

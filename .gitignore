@@ -27,6 +27,9 @@ npm/tests/coverage/*.build.mjs
 # the self-signed certificate the tls container generates on startup
 docker/certs
 
+# the landing page, rendered from README.md by docs/render.ts
+docs/index.html
+
 # generated worker output
 .wrangler
 size/ledger/*.json

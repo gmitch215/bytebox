@@ -5,6 +5,7 @@ build/
 node_modules/
 .husky/
 docs/CNAME
+docs/index.html
 npm/dist/
 npm/typedoc/
 npm/coverage/
