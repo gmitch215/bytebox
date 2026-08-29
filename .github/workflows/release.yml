@@ -22,9 +22,13 @@ on:
         type: boolean
         description: 'Skip npmjs'
         default: false
-      skip_github_packages:
+      skip_github_maven:
         type: boolean
-        description: 'Skip GitHub Packages'
+        description: 'Skip GitHub Packages (Maven)'
+        default: false
+      skip_github_npm:
+        type: boolean
+        description: 'Skip GitHub Packages (npm)'
         default: false
 
 concurrency:
@@ -90,7 +94,7 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNING_PASSWORD }}
         run: ./gradlew publishAndReleaseToMavenCentral
       - name: Publish to GitHub Packages
-        if: ${{ !inputs.skip_github_packages }}
+        if: ${{ !inputs.skip_github_maven }}
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -144,7 +148,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --provenance --access public
       - name: Set up Node for GitHub Packages
-        if: ${{ !inputs.skip_github_packages }}
+        if: ${{ !inputs.skip_github_npm }}
         uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -152,7 +156,7 @@ jobs:
           scope: '@gmitch215'
       - name: Publish to GitHub Packages
         working-directory: npm
-        if: ${{ !inputs.skip_github_packages }}
+        if: ${{ !inputs.skip_github_npm }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm publish --access public
