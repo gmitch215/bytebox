@@ -132,24 +132,29 @@ implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#GENERATED_SOURCE_SET" class="member-name-link">GENERATED_SOURCE_SET</a></code></div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#BUFFER_HEAP_MEGABYTES" class="member-name-link">BUFFER_HEAP_MEGABYTES</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">Megabytes of linear memory the interop stages arrays through, which cannot be zero.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#GENERATED_SOURCE_SET" class="member-name-link">GENERATED_SOURCE_SET</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">The source set the generated entry point and codecs are compiled in.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#GROUP" class="member-name-link">GROUP</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#GROUP" class="member-name-link">GROUP</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The task group every task this plugin registers belongs to.</div>
 </div>
-<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color"><code><a href="#NPM_PACKAGE" class="member-name-link">NPM_PACKAGE</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#NPM_PACKAGE" class="member-name-link">NPM_PACKAGE</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">The Java package generated npm bindings live in.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#WORKER_DIRECTORY" class="member-name-link">WORKER_DIRECTORY</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#WORKER_DIRECTORY" class="member-name-link">WORKER_DIRECTORY</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">Where the generated Worker project is written, under the build directory.</div>
 </div>
 </div>
@@ -254,6 +259,24 @@ implements org.gradle.api.Plugin&lt;org.gradle.api.Project&gt;</span></div>
 <dd>
 <ul class="tag-list">
 <li><a href="../../../../constant-values.html#dev.gmitch215.bytebox.gradle.ByteboxPlugin.NPM_PACKAGE">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="BUFFER_HEAP_MEGABYTES">
+<h3>BUFFER_HEAP_MEGABYTES</h3>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">BUFFER_HEAP_MEGABYTES</span></div>
+<div class="block">Megabytes of linear memory the interop stages arrays through, which cannot be zero.
+
+ <p>TeaVM's own default is two. One is enough for the staging buffer, which is four kilobytes,
+ and the heap grows from there when a program needs more.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../constant-values.html#dev.gmitch215.bytebox.gradle.ByteboxPlugin.BUFFER_HEAP_MEGABYTES">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>

@@ -473,6 +473,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">The budget in bytes, or -1 when none is set.</div>
 </dd>
+<dt><a href="dev/gmitch215/bytebox/gradle/ByteboxPlugin.html#BUFFER_HEAP_MEGABYTES" class="member-name-link">BUFFER_HEAP_MEGABYTES</a> - Static variable in class dev.gmitch215.bytebox.gradle.<a href="dev/gmitch215/bytebox/gradle/ByteboxPlugin.html" title="class in dev.gmitch215.bytebox.gradle">ByteboxPlugin</a></dt>
+<dd>
+<div class="block">Megabytes of linear memory the interop stages arrays through, which cannot be zero.</div>
+</dd>
 <dt><a href="dev/gmitch215/bytebox/net/http/HttpClient.Builder.html#build()" class="member-name-link">build()</a> - Method in class dev.gmitch215.bytebox.net.http.<a href="dev/gmitch215/bytebox/net/http/HttpClient.Builder.html" title="class in dev.gmitch215.bytebox.net.http">HttpClient.Builder</a></dt>
 <dd>
 <div class="block">Returns the client.</div>
@@ -1611,7 +1615,7 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Returns a ceiling the build fails past, measured on Wrangler's gzip meter.</div>
 </dd>
-<dt><a href="dev/gmitch215/bytebox/binding/KVNamespace.html#getBuffer(java.lang.String)" class="member-name-link">getBuffer(String)</a> - Method in interface dev.gmitch215.bytebox.binding.<a href="dev/gmitch215/bytebox/binding/KVNamespace.html" title="interface in dev.gmitch215.bytebox.binding">KVNamespace</a></dt>
+<dt><a href="dev/gmitch215/bytebox/binding/KVNamespace.html#getBuffer(java.lang.String,java.lang.String)" class="member-name-link">getBuffer(String, String)</a> - Method in interface dev.gmitch215.bytebox.binding.<a href="dev/gmitch215/bytebox/binding/KVNamespace.html" title="interface in dev.gmitch215.bytebox.binding">KVNamespace</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="dev/gmitch215/bytebox/net/InetAddress.html#getByAddress(byte%5B%5D)" class="member-name-link">getByAddress(byte[])</a> - Static method in class dev.gmitch215.bytebox.net.<a href="dev/gmitch215/bytebox/net/InetAddress.html" title="class in dev.gmitch215.bytebox.net">InetAddress</a></dt>
 <dd>
@@ -1934,6 +1938,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="dev/gmitch215/bytebox/QueueBatch.QueueMessage.html#getId()" class="member-name-link">getId()</a> - Method in interface dev.gmitch215.bytebox.<a href="dev/gmitch215/bytebox/QueueBatch.QueueMessage.html" title="interface in dev.gmitch215.bytebox">QueueBatch.QueueMessage</a></dt>
 <dd>
 <div class="block">Returns the system-generated message id.</div>
+</dd>
+<dt><a href="dev/gmitch215/bytebox/net/Socket.html#getInetAddress()" class="member-name-link">getInetAddress()</a> - Method in class dev.gmitch215.bytebox.net.<a href="dev/gmitch215/bytebox/net/Socket.html" title="class in dev.gmitch215.bytebox.net">Socket</a></dt>
+<dd>
+<div class="block">Returns the address this socket was opened to.</div>
 </dd>
 <dt><a href="dev/gmitch215/bytebox/net/HttpURLConnection.html#getInputStream()" class="member-name-link">getInputStream()</a> - Method in class dev.gmitch215.bytebox.net.<a href="dev/gmitch215/bytebox/net/HttpURLConnection.html" title="class in dev.gmitch215.bytebox.net">HttpURLConnection</a></dt>
 <dd>&nbsp;</dd>
@@ -2969,6 +2977,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Waits for the value.</div>
 </dd>
+<dt><a href="dev/gmitch215/bytebox/js/JSArrays.html" class="type-name-link" title="class in dev.gmitch215.bytebox.js">JSArrays</a> - Class in <a href="dev/gmitch215/bytebox/js/package-summary.html">dev.gmitch215.bytebox.js</a></dt>
+<dd>
+<div class="block">Builds a JavaScript array from a Java one.</div>
+</dd>
 <dt><a href="dev/gmitch215/bytebox/binding/R2Bucket.R2ObjectBody.html#json()" class="member-name-link">json()</a> - Method in interface dev.gmitch215.bytebox.binding.<a href="dev/gmitch215/bytebox/binding/R2Bucket.R2ObjectBody.html" title="interface in dev.gmitch215.bytebox.binding">R2Bucket.R2ObjectBody</a></dt>
 <dd>
 <div class="block">Returns the body, parsed as JSON.</div>
@@ -3025,6 +3037,12 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Adds types to generate JSON codecs for.</div>
 </dd>
+<dt><a href="dev/gmitch215/bytebox/concurrent/JSRejection.html" class="type-name-link" title="class in dev.gmitch215.bytebox.concurrent">JSRejection</a> - Exception Class in <a href="dev/gmitch215/bytebox/concurrent/package-summary.html">dev.gmitch215.bytebox.concurrent</a></dt>
+<dd>
+<div class="block">A JavaScript promise rejected with something that is not a Java throwable.</div>
+</dd>
+<dt><a href="dev/gmitch215/bytebox/concurrent/JSRejection.html#%3Cinit%3E(java.lang.String)" class="member-name-link">JSRejection(String)</a> - Constructor for exception class dev.gmitch215.bytebox.concurrent.<a href="dev/gmitch215/bytebox/concurrent/JSRejection.html" title="class in dev.gmitch215.bytebox.concurrent">JSRejection</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:K">K</h2>
 <dl class="index">
@@ -3256,7 +3274,7 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="dev/gmitch215/bytebox/binding/DurableObjectNamespace.DurableObjectId.html#name()" class="member-name-link">name()</a> - Method in interface dev.gmitch215.bytebox.binding.<a href="dev/gmitch215/bytebox/binding/DurableObjectNamespace.DurableObjectId.html" title="interface in dev.gmitch215.bytebox.binding">DurableObjectNamespace.DurableObjectId</a></dt>
 <dd>
-<div class="block">Returns the name this id came from, when it came from one.</div>
+<div class="block">Returns the name this id came from, or <code>null</code> when it came from none.</div>
 </dd>
 <dt><a href="dev/gmitch215/bytebox/gradle/Binding.html#name()" class="member-name-link">name()</a> - Method in record class dev.gmitch215.bytebox.gradle.<a href="dev/gmitch215/bytebox/gradle/Binding.html" title="class in dev.gmitch215.bytebox.gradle">Binding</a></dt>
 <dd>
@@ -3441,6 +3459,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="dev/gmitch215/bytebox/js/TSObject.html#of(org.teavm.jso.JSObject)" class="member-name-link">of(JSObject)</a> - Static method in interface dev.gmitch215.bytebox.js.<a href="dev/gmitch215/bytebox/js/TSObject.html" title="interface in dev.gmitch215.bytebox.js">TSObject</a></dt>
 <dd>
 <div class="block">Wraps any JavaScript value.</div>
+</dd>
+<dt><a href="dev/gmitch215/bytebox/js/JSArrays.html#of(T%5B%5D)" class="member-name-link">of(T[])</a> - Static method in class dev.gmitch215.bytebox.js.<a href="dev/gmitch215/bytebox/js/JSArrays.html" title="class in dev.gmitch215.bytebox.js">JSArrays</a></dt>
+<dd>
+<div class="block">A JavaScript array holding the same values, in the same order.</div>
 </dd>
 <dt><a href="dev/gmitch215/bytebox/net/http/HttpResponse.BodyHandlers.html#ofByteArray()" class="member-name-link">ofByteArray()</a> - Static method in class dev.gmitch215.bytebox.net.http.<a href="dev/gmitch215/bytebox/net/http/HttpResponse.BodyHandlers.html" title="class in dev.gmitch215.bytebox.net.http">HttpResponse.BodyHandlers</a></dt>
 <dd>
