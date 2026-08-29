@@ -1305,6 +1305,7 @@ function methodSource(
 	].join('\n');
 }
 
+/** A getter and no setter: a module's own binding is read, and writing one is not a thing to bind. */
 function propertySource(
 	specifier: string,
 	alias_: string,
@@ -1312,29 +1313,12 @@ function propertySource(
 	access: string,
 	imports: Set<string>
 ): string {
-	const parts: string[] = [];
-	parts.push(
-		[
-			`\t/** {@return {@code ${property.jsName}}, declared {@code ${property.ts}}} */`,
-			annotation(specifier, alias_, [], `return ${access};`, '\t'),
-			`\tpublic static native ${property.java} ${getterName(property)}();`
-		].join('\n')
-	);
-	if (!property.readonly) {
-		parts.push(
-			[
-				`\t/**`,
-				`\t * Sets {@code ${property.jsName}}, declared {@code ${property.ts}}.`,
-				`\t *`,
-				`\t * @param value the value`,
-				`\t */`,
-				annotation(specifier, alias_, ['value'], `${access} = value;`, '\t'),
-				`\tpublic static native void set${capitalise(property.javaName)}(${property.java} value);`
-			].join('\n')
-		);
-	}
 	if (property.java === 'TSObject') imports.add('dev.gmitch215.bytebox.js.TSObject');
-	return parts.join('\n\n');
+	return [
+		`\t/** {@return {@code ${property.jsName}}, declared {@code ${property.ts}}} */`,
+		annotation(specifier, alias_, [], `return ${access};`, '\t'),
+		`\tpublic static native ${property.java} ${getterName(property)}();`
+	].join('\n');
 }
 
 function nestedSource(

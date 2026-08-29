@@ -76,7 +76,12 @@ export function parse(argv: string[]): Parsed {
 	return { out, root, packages, javaPackage, introspect };
 }
 
-async function main(): Promise<void> {
+/**
+ * Runs the generator and reports what it bound.
+ *
+ * @internal exported so the tests can drive it without spawning a process
+ */
+export async function main(): Promise<void> {
 	let parsed: Parsed;
 	try {
 		parsed = parse(process.argv.slice(2));
