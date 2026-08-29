@@ -1,6 +1,7 @@
 package dev.gmitch215.bytebox.binding;
 
 import dev.gmitch215.bytebox.concurrent.Async;
+import dev.gmitch215.bytebox.js.JSArrays;
 import dev.gmitch215.bytebox.js.TSObject;
 import org.teavm.jso.JSMethod;
 import org.teavm.jso.JSObject;
@@ -21,7 +22,7 @@ public interface Pipeline extends JSObject {
 	 * @param records the records
 	 */
 	default void send(TSObject... records) {
-		Async.awaitVoid(sendRecords(JSArray.of(records)));
+		Async.awaitVoid(sendRecords(JSArrays.of(records)));
 	}
 
 	/**

@@ -1,5 +1,6 @@
 package dev.gmitch215.bytebox.binding;
 
+import dev.gmitch215.bytebox.js.JSArrays;
 import dev.gmitch215.bytebox.js.TSObject;
 import org.teavm.jso.JSBody;
 import org.teavm.jso.JSObject;
@@ -18,7 +19,7 @@ final class Rpc {
 	private Rpc() {}
 
 	static JSPromise<TSObject> invoke(JSObject target, String method, TSObject[] args) {
-		return apply(target, method, JSArray.of(args));
+		return apply(target, method, JSArrays.of(args));
 	}
 
 	@JSBody(

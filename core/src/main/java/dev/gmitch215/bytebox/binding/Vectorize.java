@@ -1,6 +1,7 @@
 package dev.gmitch215.bytebox.binding;
 
 import dev.gmitch215.bytebox.concurrent.Async;
+import dev.gmitch215.bytebox.js.JSArrays;
 import dev.gmitch215.bytebox.js.TSObject;
 import org.teavm.jso.JSMethod;
 import org.teavm.jso.JSObject;
@@ -48,7 +49,7 @@ public interface Vectorize extends JSObject {
 	 * @return the write's outcome
 	 */
 	default TSObject insert(TSObject... vectors) {
-		return Async.await(insertVectors(JSArray.of(vectors)));
+		return Async.await(insertVectors(JSArrays.of(vectors)));
 	}
 
 	/**
@@ -58,7 +59,7 @@ public interface Vectorize extends JSObject {
 	 * @return the write's outcome
 	 */
 	default TSObject upsert(TSObject... vectors) {
-		return Async.await(upsertVectors(JSArray.of(vectors)));
+		return Async.await(upsertVectors(JSArrays.of(vectors)));
 	}
 
 	/**
@@ -107,12 +108,12 @@ public interface Vectorize extends JSObject {
 	private static JSArray<TSObject> numbers(double[] values) {
 		TSObject[] wrapped = new TSObject[values.length];
 		for (int i = 0; i < values.length; i++) wrapped[i] = TSObject.of(values[i]);
-		return JSArray.of(wrapped);
+		return JSArrays.of(wrapped);
 	}
 
 	private static JSArray<TSObject> strings(String... values) {
 		TSObject[] wrapped = new TSObject[values.length];
 		for (int i = 0; i < values.length; i++) wrapped[i] = TSObject.of(values[i]);
-		return JSArray.of(wrapped);
+		return JSArrays.of(wrapped);
 	}
 }

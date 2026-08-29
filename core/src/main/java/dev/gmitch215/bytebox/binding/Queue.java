@@ -1,6 +1,7 @@
 package dev.gmitch215.bytebox.binding;
 
 import dev.gmitch215.bytebox.concurrent.Async;
+import dev.gmitch215.bytebox.js.JSArrays;
 import dev.gmitch215.bytebox.js.TSObject;
 import org.teavm.jso.JSMethod;
 import org.teavm.jso.JSObject;
@@ -57,7 +58,7 @@ public interface Queue extends JSObject {
 			message.set("body", bodies[i]);
 			messages[i] = message;
 		}
-		Async.awaitVoid(sendMessages(JSArray.of(messages)));
+		Async.awaitVoid(sendMessages(JSArrays.of(messages)));
 	}
 
 	@JSMethod("send")

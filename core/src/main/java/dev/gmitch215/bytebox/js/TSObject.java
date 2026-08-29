@@ -341,7 +341,7 @@ public interface TSObject extends JSObject {
 	 * @return what the method returned
 	 */
 	default TSObject call(String method, TSObject... args) {
-		return JS.apply(this, method, JSArray.of(args));
+		return JS.apply(this, method, JSArrays.of(args));
 	}
 
 	// #region factories
