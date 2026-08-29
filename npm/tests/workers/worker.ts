@@ -1,8 +1,6 @@
-import { createInterpreter } from '../../src/cartridge.js';
 import { ImportError, isByteboxError } from '../../src/errors.js';
 import { createGate } from '../../src/gate.js';
 import { load, requiredModules } from '../../src/loader.js';
-import argvBytes from '../fixtures/argv.wasm';
 import helloBytes from '../fixtures/hello.wasm';
 import * as runtime from '../fixtures/hello.wasm-runtime.js';
 import importedBytes from '../fixtures/imported.wasm';
@@ -24,9 +22,6 @@ const imported = load({
 	print: collect,
 	modules: { 'bytebox-test-module': { twice: (n: number) => n * 2 } }
 });
-
-const java = createInterpreter({ runtime, bytes: argvBytes });
-const interpreter = java.instantiate({ print: collect, printErr: collect });
 
 // each fixture gets its own instance per policy, because a drained queue cannot be re-armed
 // without re-entering main
@@ -119,14 +114,6 @@ const routes: Record<string, () => unknown | Promise<unknown>> = {
 		} catch (error) {
 			return { refused: true, code: isByteboxError(error) ? error.code : null };
 		}
-	},
-
-	'/cartridge'() {
-		out.length = 0;
-		java.fs.mkdir('/cartridge');
-		java.fs.writeFile('/cartridge/main.txt', 'from the cartridge');
-		const status = interpreter.callMain(['java', '/cartridge/main.txt']);
-		return { status, out: [...out], files: java.fs.list() };
 	},
 
 	async '/gate'() {

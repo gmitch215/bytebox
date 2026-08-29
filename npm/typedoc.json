@@ -7,8 +7,7 @@
 		"src/gate.ts",
 		"src/errors.ts",
 		"src/bindgen.ts",
-		"src/bundler.ts",
-		"src/cartridge.ts"
+		"src/bundler.ts"
 	],
 	"out": "typedoc",
 	"name": "bytebox",

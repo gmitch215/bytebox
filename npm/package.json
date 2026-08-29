@@ -21,10 +21,6 @@
 			"types": "./dist/bundler.d.ts",
 			"import": "./dist/bundler.js"
 		},
-		"./cartridge": {
-			"types": "./dist/cartridge.d.ts",
-			"import": "./dist/cartridge.js"
-		},
 		"./errors": {
 			"types": "./dist/errors.d.ts",
 			"import": "./dist/errors.js"
@@ -74,7 +70,6 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.22.0",
 		"@cloudflare/workers-types": "^5.20260811.1",
-		"@drupflare/cartridge": "^0.1.3",
 		"@types/node": "^26.4.0",
 		"@vitest/coverage-istanbul": "^4.1.11",
 		"esbuild": "^0.28.2",

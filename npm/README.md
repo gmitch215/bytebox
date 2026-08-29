@@ -67,7 +67,6 @@ readable from inside a request. `FIBER_BUDGET` carries the defaults.
 | `bytebox/scheduler` | `createScheduler`, `FIBER_BUDGET`                            |
 | `bytebox/errors`    | `LoadError`, `EntryPointError`, `ImportError`, `BudgetError` |
 | `bytebox/bundler`   | an esbuild plugin that stubs the `node:*` imports out        |
-| `bytebox/cartridge` | the `@drupflare/cartridge` interpreter adapter               |
 | `bytebox/bindgen`   | generates Java bindings from a package's TypeScript types    |
 
 `esbuild` and `typescript` are optional peers, needed only by `bytebox/bundler` and
