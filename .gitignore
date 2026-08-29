@@ -2,6 +2,8 @@
 .gradle
 build
 .kotlin
+bin
+*.class
 
 # bun
 node_modules
