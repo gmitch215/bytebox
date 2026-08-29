@@ -36,6 +36,9 @@ dependencies {
 	testImplementation(libs.junit.api)
 	testImplementation(libs.junit.params)
 	testRuntimeOnly(libs.junit.engine)
+	// the generators read a handler's own interfaces and annotations, so the tests need real classes
+	// implementing them rather than names; this is the same surface a consumer compiles against
+	testImplementation(project(":bytebox-core"))
 
 	"functionalTestImplementation"(gradleTestKit())
 	"functionalTestImplementation"(libs.junit.api)

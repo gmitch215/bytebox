@@ -18,6 +18,8 @@ dependencies {
 	testImplementation(libs.junit.api)
 	testImplementation(libs.junit.params)
 	testRuntimeOnly(libs.junit.engine)
+	// the substitution policies are ordinary classes, so which names they select is checkable here
+	testImplementation(libs.teavm.extension.spi)
 }
 
 // the same suite again with a carriage-return line separator. %n is the platform's separator rather
