@@ -13,7 +13,7 @@
 <h1>Interface LoadOptions</h1></div>
 <div class="tsd-signature"><span class="tsd-signature-keyword">interface</span> <span class="tsd-kind-interface">LoadOptions</span> <span class="tsd-signature-symbol">{</span><br/>    <a class="tsd-kind-property" href="#bytes">bytes</a><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">ArrayBuffer</span> <span class="tsd-signature-symbol">|</span> <span class="tsd-signature-type">Uint8Array</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ArrayBufferLike</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#imports">imports</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#modules">modules</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#print">print</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">line</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#printerr">printErr</a><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">line</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#runtime">runtime</a><span class="tsd-signature-symbol">:</span> <a href="loader.TeaVMRuntime.html" class="tsd-signature-type tsd-kind-interface">TeaVMRuntime</a><span class="tsd-signature-symbol">;</span><br/>    <a class="tsd-kind-property" href="#time">time</a><span class="tsd-signature-symbol">?:</span> <a href="../types/scheduler.TimePolicy.html" class="tsd-signature-type tsd-kind-type-alias">TimePolicy</a><span class="tsd-signature-symbol">;</span><br/><span class="tsd-signature-symbol">}</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L36">npm/src/loader.ts:36</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L36">npm/src/loader.ts:36</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-accordion" open><summary class="tsd-accordion-summary tsd-index-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>
@@ -38,14 +38,14 @@
 <div class="tsd-comment tsd-typography"><p>The compiled module's bytes, imported as a wrangler <code>Data</code> module.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L40">npm/src/loader.ts:40</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L40">npm/src/loader.ts:40</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="imports"><code class="tsd-tag">Optional</code><span>imports</span><a href="#imports" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">imports</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Extra or replacement wasm imports, merged after everything else is installed.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L62">npm/src/loader.ts:62</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L62">npm/src/loader.ts:62</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="modules"><code class="tsd-tag">Optional</code><span>modules</span><a href="#modules" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">modules</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">,</span> <span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></div>
@@ -60,35 +60,35 @@ find out which specifiers a binary asks for.</p>
 
 </div></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L54">npm/src/loader.ts:54</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L54">npm/src/loader.ts:54</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="print"><code class="tsd-tag">Optional</code><span>print</span><a href="#print" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">print</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">line</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
 <div class="tsd-comment tsd-typography"><p>Called once per line written to Java's <code>System.out</code>.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L56">npm/src/loader.ts:56</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L56">npm/src/loader.ts:56</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="printerr"><code class="tsd-tag">Optional</code><span>print<wbr/>Err</span><a href="#printerr" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">printErr</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">line</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span> <span class="tsd-signature-symbol">=&gt;</span> <span class="tsd-signature-type">void</span></div>
 <div class="tsd-comment tsd-typography"><p>Called once per line written to Java's <code>System.err</code>.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L58">npm/src/loader.ts:58</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L58">npm/src/loader.ts:58</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="runtime"><span>runtime</span><a href="#runtime" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">runtime</span><span class="tsd-signature-symbol">:</span> <a href="loader.TeaVMRuntime.html" class="tsd-signature-type tsd-kind-interface">TeaVMRuntime</a></div>
 <div class="tsd-comment tsd-typography"><p>TeaVM's generated runtime module, imported by the caller.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L38">npm/src/loader.ts:38</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L38">npm/src/loader.ts:38</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member">
 <h3 class="tsd-anchor-link" id="time"><code class="tsd-tag">Optional</code><span>time</span><a href="#time" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">time</span><span class="tsd-signature-symbol">?:</span> <a href="../types/scheduler.TimePolicy.html" class="tsd-signature-type tsd-kind-type-alias">TimePolicy</a></div>
 <div class="tsd-comment tsd-typography"><p>How a fiber scheduled for the future is treated. Defaults to <code>virtual</code>.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/5a21a46e055c4a183a0ce0889c4b7b3ef37f18b3/npm/src/loader.ts#L60">npm/src/loader.ts:60</a></li></ul></aside></section></section></details></div>
+<li>Defined in <a href="https://github.com/gmitch215/bytebox/blob/f07aefd2383ad090356cb8c8d28d765a5e0e63b1/npm/src/loader.ts#L60">npm/src/loader.ts:60</a></li></ul></aside></section></section></details></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
