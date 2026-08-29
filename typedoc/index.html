@@ -12,7 +12,7 @@
 <blockquote>
 <p>The Cloudflare Workers loader for Java compiled to WebAssembly</p>
 </blockquote>
-<pre><code class="sh"><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">bytebox</span>
+<pre><code class="sh"><span class="hl-0">bun</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">@gmitch215/bytebox</span>
 </code><button type="button">Copy</button></pre>
 
 <p>This is the JavaScript half of <a href="https://github.com/gmitch215/bytebox">bytebox</a>. The Gradle plugin
@@ -24,7 +24,7 @@ the runtime refuses outside module evaluation; it takes the Node branch whenever
 defined, which <code>nodejs_compat</code> makes true; and it resolves npm imports through a dynamic <code>import()</code>
 of a string read from a wasm custom section, which no bundler can follow.</p>
 <h2 id="loading-a-module" class="tsd-anchor-link">Loading A Module<a href="#loading-a-module" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
-<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">load</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;bytebox&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> </span><span class="hl-5">*</span><span class="hl-1"> </span><span class="hl-3">as</span><span class="hl-1"> </span><span class="hl-4">runtime</span><span class="hl-1"> </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./app.wasm-runtime.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./app.wasmbin&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">instance</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">load</span><span class="hl-1">({ </span><span class="hl-4">runtime</span><span class="hl-1">, </span><span class="hl-4">bytes</span><span class="hl-1"> });</span>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">load</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@gmitch215/bytebox&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> </span><span class="hl-5">*</span><span class="hl-1"> </span><span class="hl-3">as</span><span class="hl-1"> </span><span class="hl-4">runtime</span><span class="hl-1"> </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./app.wasm-runtime.js&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> </span><span class="hl-4">bytes</span><span class="hl-1"> </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;./app.wasmbin&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">instance</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">load</span><span class="hl-1">({ </span><span class="hl-4">runtime</span><span class="hl-1">, </span><span class="hl-4">bytes</span><span class="hl-1"> });</span>
 </code><button type="button">Copy</button></pre>
 
 <p><code>load</code> must be called during module evaluation. Workers allows WebAssembly compilation at startup
@@ -32,7 +32,7 @@ and forbids it inside a request, so a module compiled lazily on the first reques
 <h2 id="handling-requests" class="tsd-anchor-link">Handling Requests<a href="#handling-requests" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
 <p>One instance serves every request in the isolate, and a Java fiber that suspends yields to the event
 loop, so a second request can arrive while the first is parked. The gate serialises entry:</p>
-<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">createGate</span><span class="hl-1">, </span><span class="hl-4">load</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;bytebox&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">instance</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">load</span><span class="hl-1">({ </span><span class="hl-4">runtime</span><span class="hl-1">, </span><span class="hl-4">bytes</span><span class="hl-1"> });</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">gate</span><span class="hl-1"> = </span><span class="hl-0">createGate</span><span class="hl-1">(</span><span class="hl-4">instance</span><span class="hl-1">);</span><br/><br/><span class="hl-3">export</span><span class="hl-1"> </span><span class="hl-3">default</span><span class="hl-1"> {</span><br/><span class="hl-1">	</span><span class="hl-5">async</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-4">request</span><span class="hl-1">, </span><span class="hl-4">env</span><span class="hl-1">, </span><span class="hl-4">ctx</span><span class="hl-1">) {</span><br/><span class="hl-1">		</span><span class="hl-3">return</span><span class="hl-1"> </span><span class="hl-4">gate</span><span class="hl-1">.</span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-4">request</span><span class="hl-1">, </span><span class="hl-4">env</span><span class="hl-1">, </span><span class="hl-4">ctx</span><span class="hl-1">);</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">};</span>
+<pre><code class="ts"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">createGate</span><span class="hl-1">, </span><span class="hl-4">load</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@gmitch215/bytebox&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">instance</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-0">load</span><span class="hl-1">({ </span><span class="hl-4">runtime</span><span class="hl-1">, </span><span class="hl-4">bytes</span><span class="hl-1"> });</span><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">gate</span><span class="hl-1"> = </span><span class="hl-0">createGate</span><span class="hl-1">(</span><span class="hl-4">instance</span><span class="hl-1">);</span><br/><br/><span class="hl-3">export</span><span class="hl-1"> </span><span class="hl-3">default</span><span class="hl-1"> {</span><br/><span class="hl-1">	</span><span class="hl-5">async</span><span class="hl-1"> </span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-4">request</span><span class="hl-1">, </span><span class="hl-4">env</span><span class="hl-1">, </span><span class="hl-4">ctx</span><span class="hl-1">) {</span><br/><span class="hl-1">		</span><span class="hl-3">return</span><span class="hl-1"> </span><span class="hl-4">gate</span><span class="hl-1">.</span><span class="hl-0">fetch</span><span class="hl-1">(</span><span class="hl-4">request</span><span class="hl-1">, </span><span class="hl-4">env</span><span class="hl-1">, </span><span class="hl-4">ctx</span><span class="hl-1">);</span><br/><span class="hl-1">	}</span><br/><span class="hl-1">};</span>
 </code><button type="button">Copy</button></pre>
 
 <h2 id="timers" class="tsd-anchor-link">Timers<a href="#timers" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
@@ -51,40 +51,40 @@ readable from inside a request. <code>FIBER_BUDGET</code> carries the defaults.<
 </thead>
 <tbody>
 <tr>
-<td><code>bytebox</code></td>
+<td><code>@gmitch215/bytebox</code></td>
 <td><code>load</code>, <code>createGate</code>, <code>createScheduler</code>, the error types</td>
 </tr>
 <tr>
-<td><code>bytebox/loader</code></td>
+<td><code>@gmitch215/bytebox/loader</code></td>
 <td><code>load</code>, <code>requiredModules</code></td>
 </tr>
 <tr>
-<td><code>bytebox/gate</code></td>
+<td><code>@gmitch215/bytebox/gate</code></td>
 <td><code>createGate</code></td>
 </tr>
 <tr>
-<td><code>bytebox/scheduler</code></td>
+<td><code>@gmitch215/bytebox/scheduler</code></td>
 <td><code>createScheduler</code>, <code>FIBER_BUDGET</code></td>
 </tr>
 <tr>
-<td><code>bytebox/errors</code></td>
+<td><code>@gmitch215/bytebox/errors</code></td>
 <td><code>LoadError</code>, <code>EntryPointError</code>, <code>ImportError</code>, <code>BudgetError</code></td>
 </tr>
 <tr>
-<td><code>bytebox/bundler</code></td>
+<td><code>@gmitch215/bytebox/bundler</code></td>
 <td>an esbuild plugin that stubs the <code>node:*</code> imports out</td>
 </tr>
 <tr>
-<td><code>bytebox/bindgen</code></td>
+<td><code>@gmitch215/bytebox/bindgen</code></td>
 <td>generates Java bindings from a package's TypeScript types</td>
 </tr>
 </tbody>
 </table>
-<p><code>esbuild</code> and <code>typescript</code> are optional peers, needed only by <code>bytebox/bundler</code> and
-<code>bytebox/bindgen</code>. A Worker at runtime needs neither.</p>
-<p><code>bytebox/bindgen</code> also installs a command. The two are the same tool: <code>bytebox-bindgen</code> parses
-arguments and calls <code>writeBindings</code>, which is the function <code>bytebox/bindgen</code> exports. The Gradle
-plugin runs the command; a TypeScript caller imports the function.</p>
+<p><code>esbuild</code> and <code>typescript</code> are optional peers, needed only by <code>@gmitch215/bytebox/bundler</code> and
+<code>@gmitch215/bytebox/bindgen</code>. A Worker at runtime needs neither.</p>
+<p><code>@gmitch215/bytebox/bindgen</code> also installs a command. The two are the same tool: <code>bytebox-bindgen</code>
+parses arguments and calls <code>writeBindings</code>, which is the function <code>@gmitch215/bytebox/bindgen</code>
+exports. The Gradle plugin runs the command; a TypeScript caller imports the function.</p>
 <pre><code class="sh"><span class="hl-0">bunx</span><span class="hl-1"> </span><span class="hl-2">bytebox-bindgen</span><span class="hl-1"> </span><span class="hl-5">--out</span><span class="hl-1"> </span><span class="hl-2">src/generated</span><span class="hl-1"> </span><span class="hl-2">nanoid</span><span class="hl-1"> </span><span class="hl-2">@noble/hashes</span>
 </code><button type="button">Copy</button></pre>
 
