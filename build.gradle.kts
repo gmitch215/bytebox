@@ -22,10 +22,11 @@ subprojects {
 	apply(plugin = "java-library")
 	apply(plugin = "jacoco")
 
+	// no withJavadocJar() here: the two publishing plugins add their own, and a second task writing
+	// the same -javadoc.jar fails the publish on an implicit dependency rather than on a conflict
 	configure<JavaPluginExtension> {
 		toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
 		withSourcesJar()
-		withJavadocJar()
 	}
 
 	tasks.withType<JavaCompile>().configureEach {

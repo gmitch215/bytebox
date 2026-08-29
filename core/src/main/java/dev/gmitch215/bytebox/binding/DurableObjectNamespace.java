@@ -33,7 +33,7 @@ public interface DurableObjectNamespace extends JSObject {
 	DurableObjectId idFromName(String name);
 
 	/**
-	 * Parses an id previously produced by {@link DurableObjectId#toString()}.
+	 * Parses an id previously produced by {@link DurableObjectId#asString()}.
 	 *
 	 * @param hex the id as hexadecimal
 	 * @return the id
