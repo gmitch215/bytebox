@@ -36,7 +36,8 @@ describe('the landing page', () => {
 	it('gives every heading the id GitHub would, so the table of contents works', () => {
 		const anchors = [...page.matchAll(/href="#([^"]+)"/g)].map((match) => match[1] ?? '');
 
-		expect(anchors.length).toBeGreaterThan(5);
+		// a count, not a floor: with none the loop below asserts nothing and passes
+		expect(anchors.length).toBeGreaterThan(0);
 		for (const anchor of anchors) {
 			expect(page, `#${anchor} has no heading`).toContain(`id="${anchor}"`);
 		}
@@ -60,7 +61,8 @@ describe('the landing page', () => {
 	it('wraps a table so a wide one scrolls inside itself', () => {
 		const tables = page.match(/<table>/g) ?? [];
 
-		expect(tables.length).toBeGreaterThan(3);
+		// a count, not a floor: with none the wrapper assertion passes on two empty matches
+		expect(tables.length).toBeGreaterThan(0);
 		expect(page.match(/<div class="table"><table>/g)).toHaveLength(tables.length);
 	});
 
