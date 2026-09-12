@@ -69,24 +69,24 @@ own class library registers through.
 
 What is retargeted today:
 
-| Written in the project              | Where it goes                                           | What it costs, gzipped                         |
-| ----------------------------------- | ------------------------------------------------------- | ---------------------------------------------- |
-| `java.time.*`                       | ThreeTen-Backport, with the zone rules read from `Intl` | +24 KB with zones, +73 KB with the formatter   |
-| `java.net.URL`, `HttpURLConnection` | `fetch`                                                 | +13 KB                                         |
-| `java.net.http.HttpClient`          | `fetch`                                                 | +54 KB, mostly `java.time` through `Duration`  |
-| `java.net.Socket`                   | `cloudflare:sockets`                                    | +10 KB                                         |
-| `java.net.InetAddress`              | DNS over HTTPS through `fetch`                          | included in the client above                   |
-| `java.util.regex`                   | the platform's own engine                               | +13 KB, against +68 KB for the class library's |
-| `java.util.Formatter`               | digits worked out in Java, separators from `Intl`       | +33 KB, against +86 KB                         |
-| `java.io.ObjectOutputStream`        | codecs generated at build time                          | varies with the types registered               |
+| Written in the project              | Where it goes                                           | What it pulls in                             |
+| ----------------------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| `java.time.*`                       | ThreeTen-Backport, with the zone rules read from `Intl` | three times as much once a formatter is used |
+| `java.net.URL`, `HttpURLConnection` | `fetch`                                                 | the client below shares most of it           |
+| `java.net.http.HttpClient`          | `fetch`                                                 | `java.time`, through `Duration`              |
+| `java.net.Socket`                   | `cloudflare:sockets`                                    | nothing beyond the stream plumbing           |
+| `java.net.InetAddress`              | DNS over HTTPS through `fetch`                          | included in the client above                 |
+| `java.util.regex`                   | the platform's own engine                               | a fifth of the class library's own engine    |
+| `java.util.Formatter`               | digits worked out in Java, separators from `Intl`       | under half the class library's own formatter |
+| `java.io.ObjectOutputStream`        | codecs generated at build time                          | varies with the types registered             |
 
 [standard-library](standard-library) uses five of those in one Worker, which is why it is the largest
-sample at 510,653 bytes. It exists to prove they link together in a real project rather than only in a
-test fixture.
+sample. It exists to prove they link together in a real project rather than only in a test fixture.
+Each row is priced in the [technical report](../TECHNICAL_REPORT.md).
 
-The timezone row is the one that pays for itself twice. A compiled copy of the timezone database is
-108,033 bytes and the isolate already has one behind `Intl`, so the rules are derived from the offsets
-`Intl` reports and neither the database nor its reader enters the binary.
+The timezone row is the one that pays for itself twice. The isolate already carries a copy of the
+timezone database behind `Intl`, so the rules are derived from the offsets `Intl` reports and neither
+a compiled database nor its reader enters the binary.
 
 ## Refusal at Build Time
 
@@ -115,9 +115,10 @@ locale graph reachable from every `String.format` call, which is the cost the cl
 
 ## Size as an Output
 
-Cloudflare enforces 3 MB on the free plan and 10 MB on paid, applied after its own compression. That
-is a hard number, so every feature here has a measured cost rather than an estimated one, and
-`sizeReport` prints the figure for a project.
+Cloudflare meters the uncompressed bundle against 64 MiB on either plan, which no Java Worker
+approaches. The limit a growing module does reach is the one second a Worker has to start, so every
+feature here has a measured cost rather than an estimated one, and `sizeReport` prints the figure for
+a project.
 
 ```sh
 ../gradlew :queue-consumer:sizeReport
@@ -247,19 +248,10 @@ Wrangler configuration, and the substitution policies resolving against a projec
 separately. [standard-library](standard-library) is the widest of them, since it links `java.time`,
 both HTTP clients, `java.util.regex` and `String.format` in one binary.
 
-The measured sizes, as WebAssembly before packing:
-
-| Sample           |     Raw | gzip -6 |
-| ---------------- | ------: | ------: |
-| hello-world      |  25,330 |  10,708 |
-| npm-dependency   |  29,207 |  11,859 |
-| cron             |  36,914 |  15,163 |
-| durable-object   |  37,661 |  15,457 |
-| email-router     |  38,214 |  15,752 |
-| tcp-client       |  40,203 |  16,450 |
-| kv-counter       |  40,589 |  16,192 |
-| queue-consumer   |  49,895 |  20,455 |
-| standard-library | 510,653 | 163,478 |
+Ordered by compiled size, smallest first: `hello-world`, `npm-dependency`, `cron`,
+`durable-object`, `email-router`, `tcp-client`, `kv-counter`, `queue-consumer`, then
+`standard-library`, which is larger than the rest put together. The measured bytes are in the
+[technical report](../TECHNICAL_REPORT.md).
 
 To deploy one and see the figure Cloudflare meters:
 

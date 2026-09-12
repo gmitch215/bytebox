@@ -46,9 +46,10 @@ wraps the CLI, so `../gradlew :hello-world:workerDev` does the same without leav
 ../gradlew :queue-consumer:sizeReport
 ```
 
-The figure that binds is gzip, because Cloudflare enforces its ceiling after applying its own. Eight
-of these measure under 50 KB raw against a 3 MB free-plan ceiling; `standard-library` is 511 KB,
-because it links every retargeted part of the class library at once.
+The figure that binds is the uncompressed one, which Cloudflare meters against 64 MiB on either plan.
+Every sample here is orders of magnitude under it. `standard-library` is the largest by a wide margin,
+because it links every retargeted part of the class library at once, which also makes it the one
+where a change to the class library shows up first.
 
 ## What Each One Is For
 

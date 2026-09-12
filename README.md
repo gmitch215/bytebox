@@ -12,8 +12,7 @@
 bytebox compiles a Java workspace into a Cloudflare Worker. Write a class, apply the Gradle plugin,
 and deploy WebAssembly that runs on Cloudflare's edge.
 
-A hello world Worker compiles to **25,330 bytes** of WebAssembly against a 3 MB ceiling, starts in
-**8 ms** of a 1 second budget, and answers a request in under a millisecond of CPU.
+A hello world Worker starts in **8 ms** and answers a request in under a millisecond of CPU.
 
 ---
 
@@ -28,7 +27,7 @@ A hello world Worker compiles to **25,330 bytes** of WebAssembly against a 3 MB 
 - [Standard Library](#-standard-library)
 - [Serialization](#-serialization)
 - [npm Packages](#-npm-packages)
-- [Size](#-size)
+- [Startup](#-startup)
 - [Concurrency](#-concurrency)
 - [Platform Limits](#-platform-limits)
 - [Out of Scope](#-out-of-scope)
@@ -56,10 +55,10 @@ The Gradle plugin:
 ```kotlin
 plugins {
 	java
-	id("dev.gmitch215.bytebox") version "1.0.0"
+	id("dev.gmitch215.bytebox") version "1.0.1"
 }
 
-dependencies { implementation("dev.gmitch215:bytebox-core:1.0.0") }
+dependencies { implementation("dev.gmitch215:bytebox-core:1.0.1") }
 ```
 
 The loader, for a Worker assembled by hand:
@@ -271,30 +270,24 @@ private static native String id(int size);
 
 ---
 
-## 📏 Size
+## ⚡ Startup
 
-Cloudflare enforces its ceiling after applying its own gzip, so the gzip figure is the one that binds.
+Cloudflare meters the uncompressed bundle against 64 MiB on either plan. Nothing is enforced against
+the gzip figure wrangler prints beside it, and a Java Worker sits far under either. The limit a
+growing module reaches is the one second a Worker gets to parse and compile its module before the
+first request.
 
-Each feature is measured on its own against a hello world compiled with the same settings:
+The module ships as raw bytes with no decompressor, so startup pays for compiling it and nothing
+else.
 
-| Feature                                | Added, gzipped     |
-| -------------------------------------- | ------------------ |
-| streams, collections, reflection       | 3.0 to 3.8 KB each |
-| threads                                | 6.8 KB             |
-| `java.net.Socket`                      | 9.8 KB             |
-| `BigDecimal`                           | 12.7 KB            |
-| `java.util.regex`                      | 13.3 KB            |
-| `java.net.URL` and `HttpURLConnection` | 13.3 KB            |
-| `java.time` with zones                 | 23.8 KB            |
-| `String.format`                        | 33.0 KB            |
-| `java.net.http`                        | 54.1 KB            |
+Reflection, collections and streams are cheap. `java.net.http` is the most expensive feature here,
+because `Duration` pulls `java.time` in behind it. `java.util.regex` and `String.format` are cheap
+only because the retargeting below answers both from the platform's own engines; linked from the
+class library they are among the largest things a program can reach. Every feature is priced in the
+[technical report](TECHNICAL_REPORT.md).
 
-Reflection, collections and streams are inexpensive. The rows that were costly are the ones the
-retargeting below fixed: `java.util.regex` was 65.3 KB and `String.format` 86.0 KB when they came from
-the class library.
-
-`sizeReport` prints the compiled module on every compression axis against your budget and the two
-plan ceilings. `size { budget = "250KiB" }` fails the build past a figure of your choosing.
+`sizeReport` prints the module against the meter and against your budget. `size { budget = "250KiB" }`
+fails the build past a figure of your choosing.
 
 ---
 
@@ -319,7 +312,7 @@ CPU meter is readable from inside a request.
 
 | Limit                     | Free     | Paid     |
 | ------------------------- | -------- | -------- |
-| Worker size, after gzip   | 3 MB     | 10 MB    |
+| Worker size, uncompressed | 64 MiB   | 64 MiB   |
 | Startup                   | 1 second | 1 second |
 | CPU per request           | 10 ms    | 5 min    |
 | Memory per isolate        | 128 MB   | 128 MB   |

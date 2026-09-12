@@ -7,7 +7,7 @@ on the runtime named beside it. Nothing is estimated.
 
 Java runs on Cloudflare Workers. A `System.out.println("hello world!")` compiled with TeaVM 0.15.0 to
 the WebAssembly GC target instantiates and executes inside workerd, and the complete Worker measures
-**11.82 KiB on wrangler's gzip meter** against a 3 MB free-plan ceiling.
+**33.27 KiB uncompressed**, which is the figure Cloudflare meters, against 64 MiB on either plan.
 
 Getting there requires a purpose-built loader. TeaVM's own loading path cannot run on Workers at all,
 for reasons that are properties of the platform rather than defects in TeaVM.
@@ -16,7 +16,7 @@ for reasons that are properties of the platform rather than defects in TeaVM.
 | -------------------------------------------------- | ------------------------------------------ |
 | Hello world, raw wasm                              | 16,539 bytes                               |
 | Hello world, gzip -6                               | 6,996 bytes                                |
-| Complete Worker, wrangler meter                    | **11.82 KiB** of a 3 MB ceiling            |
+| Complete Worker, wrangler meter                    | **33.27 KiB** of a 64 MiB ceiling          |
 | Worker Startup Time, deployed                      | **8 ms** of a 1 second limit               |
 | `cpuTime` per request, deployed                    | **0-1 ms** of a 10 ms free-plan limit, n=6 |
 | Declared linear memory, default                    | 2,162,688 bytes                            |
@@ -29,8 +29,12 @@ invocation.
 
 ## Measurement Rules
 
-- Bundle figures come from `wrangler deploy --dry-run`, which reports `Total Upload` and the gzip
-  figure the ceiling is enforced against. A local `gzip -c | wc -c` is not that meter.
+- Bundle figures come from `wrangler deploy --dry-run`, which reports `Total Upload` and a gzip
+  figure. `Total Upload` is the uncompressed size and is the only one metered.
+- **The meter changed on 2026-09-04.** Cloudflare removed the compressed limits of 3 MB free and
+  10 MB paid, and now checks only the uncompressed bundle, at 64 MiB on both plans. Every gzip figure
+  below was measured against the old ceiling and is kept as a comparison, not as a limit. The
+  constraints that did not change are the 1 second startup budget and the 128 MB isolate.
 - Runtime behaviour comes from `wrangler dev --local`, which runs workerd. Node and bun disagree with
   it on every result in the Codegen section.
 - Compression ratios are a function of input size. A ratio measured on one binary does not transfer to
@@ -85,12 +89,15 @@ Three shapes, same hello world, `wrangler deploy --dry-run`:
 | `Data` + zstd -22, inflated by `fzstd` | 38.85 KiB    | 16.57 KiB     | yes                                          |
 | `Data` + raw bytes, no decompressor    | 33.27 KiB    | **11.82 KiB** | yes                                          |
 
-Raw bytes in a `Data` module win by 4,864 bytes, land within 51 bytes of the shape that does not run,
-and need no decompressor.
+Raw bytes in a `Data` module beat the compressed frame on both columns, land within 0.11 KiB of the
+shape that does not run, and need no decompressor.
 
-**A pre-compressed frame costs more than it saves at this size.** zstd -22 beats gzip -6 by 6.3% on a
-16 KB binary, while a synchronous zstd decoder costs about 5.6 KB flat. The advantage grows with
-input:
+Under the old compressed ceiling that verdict was marginal: zstd -22 beats gzip -6 by 6.3% on a
+16 KB binary, while a synchronous zstd decoder costs about 5.6 KB flat, so a frame only paid above a
+crossover. The uncompressed meter removes that arithmetic. A frame is now the smaller of the two on
+the figure Cloudflare checks and it loses anyway, because inflating one runs at module scope, inside
+the 1 second a Worker has to start, and raw bytes have nothing to inflate. The ratios below are
+unchanged and kept for comparison:
 
 | Binary        | raw     | gzip -6 | zstd -22 | zstd advantage |
 | ------------- | ------- | ------- | -------- | -------------- |
@@ -101,8 +108,10 @@ input:
 | locale        | 216,127 | 82,657  | 67,894   | 14,763 (17.9%) |
 | String.format | 249,270 | 93,028  | 77,483   | 15,545 (16.7%) |
 
-The advantage passes the decoder's fixed cost between 56 KB and 216 KB of raw wasm, so the crossover
-sits near **120-140 KB raw**. Below it, ship raw bytes; above it, ship a zstd frame.
+Against the old compressed ceiling the advantage passed the decoder's fixed cost between 56 KB and
+216 KB of raw wasm, putting the crossover near **120-140 KB raw**. That crossover no longer decides
+anything: the plugin ships raw bytes at every size a Java Worker reaches, and reaches for a frame only
+past 64 MiB, where raw bytes are refused outright.
 
 ## Size by Feature
 
@@ -689,8 +698,8 @@ Eight Workers built through the plugin, each doing one thing, measured as raw We
 
 A hello world through the plugin measures 25,330 rather than the 16,539 in the Summary, because the
 plugin's entry point carries the suspension machinery a handler needs and a bare `main` does not.
-Every one of these sits under 50 KB against a 3 MB free-plan ceiling, and each stays below the
-compression crossover, so all eight ship as raw bytes with no decompressor.
+Every one of these sits under 50 KB against a 64 MiB ceiling, and all eight ship as raw bytes with no
+decompressor.
 
 ## Reproducibility
 
@@ -712,8 +721,10 @@ figure attributable to a change rather than to the build.
   finalizer callbacks as running in quiet slots between I/O phases, with non-deterministic timing and
   no guarantee they run at all. Whether the maps grow without bound needs a long-lived isolate under
   sustained interop, which a hello world does not produce.
-- **The crossover between raw and compressed packaging**, which the Packaging table brackets between
-  56 KB and 216 KB of raw wasm but does not pin.
+- ~~**The crossover between raw and compressed packaging**, which the Packaging table brackets between
+  56 KB and 216 KB of raw wasm but does not pin.~~ Closed 2026-09-11 without being measured: the
+  compressed ceiling it would have informed was removed on 2026-09-04, and under the uncompressed one
+  the packaging decision turns on startup rather than on where the two curves cross.
 - **`ByteBuffer.allocateDirect` on a later TeaVM.** The failure is reproducible under TeaVM's own
   loader on 0.15.0, which places it upstream, but no version after that has been tried.
 - **Whether the three refused `@JSBody` constructs share one cause.** Each was found by building a
