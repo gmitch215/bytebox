@@ -34,6 +34,9 @@ jobs:
       - name: Build Every Sample
         working-directory: samples
         run: ../gradlew buildWorkers
+      - name: Refuse A Module The Engine Will Not Compile
+        working-directory: samples
+        run: node verify-workers.mjs
       - name: Report Every Module Size
         working-directory: samples
         run: ../gradlew sizeReport
