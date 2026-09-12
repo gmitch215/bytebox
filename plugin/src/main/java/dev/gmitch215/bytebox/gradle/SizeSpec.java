@@ -15,21 +15,39 @@ public abstract class SizeSpec {
 	/** {@return how the compiled module is carried in the bundle} */
 	public abstract Property<ModuleType> getModule();
 
-	/** {@return which compressor packs the module} */
+	/**
+	 * {@return which compressor packs the module}
+	 *
+	 * @deprecated nothing reads this. Cloudflare removed the compressed size limit on 2026-09-04, so
+	 *     pre-compression trades startup time for bundle bytes that are no longer metered.
+	 */
+	@Deprecated(since = "1.0.1", forRemoval = true)
 	public abstract Property<Compressor> getCompression();
 
-	/** {@return the compression level, passed through to the chosen compressor} */
+	/**
+	 * {@return the compression level, passed through to the chosen compressor}
+	 *
+	 * @deprecated see {@link #getCompression()}
+	 */
+	@Deprecated(since = "1.0.1", forRemoval = true)
 	public abstract Property<Integer> getCompressionLevel();
 
-	/** {@return extra arguments for the chosen compressor} */
+	/**
+	 * {@return extra arguments for the chosen compressor}
+	 *
+	 * @deprecated see {@link #getCompression()}
+	 */
+	@Deprecated(since = "1.0.1", forRemoval = true)
 	public abstract ListProperty<String> getCompressionArgs();
 
 	/**
-	 * {@return a ceiling the build fails past, measured on Wrangler's gzip meter}
+	 * {@return a ceiling the build fails past, measured on the uncompressed module}
 	 *
 	 * <p>Takes a plain byte count or a suffixed size: {@code 250KiB}, {@code 3MB}, {@code 1MiB}.
-	 * Cloudflare enforces 3 MB on the free plan and 10 MB on paid, after its own gzip, so a budget
-	 * is for noticing a regression long before the platform does.
+	 * Cloudflare accepts 64 MiB uncompressed on either plan and meters nothing else, so a budget is
+	 * not there to keep a Java Worker deployable. It is there to fail the build when the module
+	 * grows, because a larger bundle spends more of the one second a Worker has to reach its first
+	 * request.
 	 */
 	public abstract Property<String> getBudget();
 
@@ -37,7 +55,9 @@ public abstract class SizeSpec {
 	 * Adds compressor arguments.
 	 *
 	 * @param args the arguments
+	 * @deprecated see {@link #getCompression()}
 	 */
+	@Deprecated(since = "1.0.1", forRemoval = true)
 	public void compressionArgs(String... args) {
 		List<String> all = new ArrayList<>(getCompressionArgs().get());
 		all.addAll(List.of(args));
@@ -107,36 +127,41 @@ public abstract class SizeSpec {
 	/** How the compiled module is carried in the bundle. */
 	public enum ModuleType {
 		/**
-		 * Picks on measured size: raw bytes below the crossover, a compressed frame above it.
+		 * Raw bytes, unless the module is too large for the platform to accept them.
 		 *
-		 * <p>The crossover is where a frame starts saving more than the decompressor costs, which is
-		 * near 120 KB of raw WebAssembly.
+		 * <p>A Java module reaches the second case only past 64 MiB, which is where compression
+		 * stops being a trade and becomes the only way to deploy at all.
 		 */
 		AUTO,
 		/**
-		 * Raw bytes in a {@code Data} module, compressed by Cloudflare's own gzip.
+		 * Raw bytes in a {@code Data} module.
 		 *
-		 * <p>Smallest below the crossover, and needs no decompressor in the bundle at all.
+		 * <p>Nothing to inflate at module scope, so the startup budget pays for compiling the module
+		 * and nothing else.
 		 */
 		DATA,
+
 		/**
 		 * A compressed frame in a {@code Data} module, inflated at module scope.
 		 *
-		 * <p>Wins once the frame saves more than the decompressor costs. The decompressor has to be
-		 * synchronous, because a module-scope await never settles on this runtime.
+		 * <p>The decompressor has to be synchronous, because a module-scope await never settles on
+		 * this runtime, and inflating runs inside the one second a Worker has to start.
+		 *
+		 * @deprecated buys bundle bytes Cloudflare stopped metering on 2026-09-04, and spends startup
+		 *     time it still meters
 		 */
+		@Deprecated(since = "1.0.1", forRemoval = true)
 		DATA_COMPRESSED
 	}
 
 	/**
 	 * Which compressor packs the module.
 	 *
-	 * <p>The figure that matters is the frame plus the decompressor, not the frame alone. Brotli
-	 * compresses better than zstd and its synchronous decoder carries a 122 KB static dictionary,
-	 * which eats most of the win at these sizes.
+	 * @deprecated see {@link SizeSpec#getCompression()}
 	 */
+	@Deprecated(since = "1.0.1", forRemoval = true)
 	public enum Compressor {
-		/** No pre-compression; Cloudflare's gzip does the work. */
+		/** No pre-compression, and nothing to inflate at startup. */
 		NONE(null, null),
 		/** zstd, inflated by {@code fzstd}. */
 		ZSTD("fzstd", "^0.1.1"),

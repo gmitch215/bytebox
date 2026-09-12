@@ -57,6 +57,7 @@ class SizeSpecTest {
 
 	@Test
 	@DisplayName("names the decoder each compressor needs, and none for no compression")
+	@SuppressWarnings("removal")
 	void decoders() {
 		assertEquals("fzstd", SizeSpec.Compressor.ZSTD.decoder());
 		assertEquals("fflate", SizeSpec.Compressor.GZIP.decoder());

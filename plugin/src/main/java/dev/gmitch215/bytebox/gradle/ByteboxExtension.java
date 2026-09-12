@@ -228,7 +228,13 @@ public abstract class ByteboxExtension {
 	 */
 	public abstract Property<Boolean> getNPMIntrospection();
 
-	/** {@return how the compiled module is packed and how big it is allowed to get} */
+	/**
+	 * {@return how the compiled module is packed and how big it is allowed to get}
+	 *
+	 * <p>The platform accepts 64 MiB uncompressed on either plan, which no Java Worker approaches, so
+	 * a budget set here is a growth alarm rather than a deployability check. What growth costs is
+	 * startup.
+	 */
 	public SizeSpec getSize() {
 		return size;
 	}

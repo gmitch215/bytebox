@@ -139,8 +139,7 @@ class ByteboxPluginTest {
 		);
 		assertTrue(bytebox.getWrangler().getObservability().get());
 		assertEquals(SizeSpec.ModuleType.AUTO, bytebox.getSize().getModule().get());
-		assertEquals(SizeSpec.Compressor.ZSTD, bytebox.getSize().getCompression().get());
-		assertEquals(22, bytebox.getSize().getCompressionLevel().get());
+		assertCompressionConventions();
 		assertTrue(bytebox.getNPMIntrospection().get());
 		assertTrue(bytebox.getCoreDependency().get());
 		assertNotNull(bytebox.getCoreVersion().get());
@@ -277,11 +276,18 @@ class ByteboxPluginTest {
 
 	@Test
 	@DisplayName("passes compressor arguments through")
+	@SuppressWarnings("removal")
 	void compressionArgs() {
 		bytebox.getSize().compressionArgs("--long=27");
 		bytebox.getSize().compressionArgs("--ultra");
 
 		assertEquals(List.of("--long=27", "--ultra"), bytebox.getSize().getCompressionArgs().get());
+	}
+
+	@SuppressWarnings("removal")
+	private void assertCompressionConventions() {
+		assertEquals(SizeSpec.Compressor.ZSTD, bytebox.getSize().getCompression().get());
+		assertEquals(22, bytebox.getSize().getCompressionLevel().get());
 	}
 
 	// #endregion

@@ -239,6 +239,7 @@ public class ByteboxPlugin implements Plugin<Project> {
 		return implementation == null ? "1.0.0" : implementation;
 	}
 
+	@SuppressWarnings("removal")
 	private void conventions(Project project, ByteboxExtension extension) {
 		extension.getWrangler().getName().convention(project.getName());
 		extension
@@ -346,6 +347,7 @@ public class ByteboxPlugin implements Plugin<Project> {
 		return new File(root, "node_modules").isDirectory() ? root : own;
 	}
 
+	@SuppressWarnings("removal")
 	private TaskProvider<PackWasmTask> registerPack(
 		Project project,
 		ByteboxExtension extension,
@@ -440,7 +442,7 @@ public class ByteboxPlugin implements Plugin<Project> {
 	private void registerSizeReport(Project project, ByteboxExtension extension) {
 		project.getTasks().register("sizeReport", SizeReportTask.class, task -> {
 			task.setGroup(GROUP);
-			task.setDescription("Measures the compiled module on every compression axis");
+			task.setDescription("Measures the compiled module against the meter and the budget");
 			task.dependsOn("generateWasmGC");
 			task.getWasm().set(
 				project
