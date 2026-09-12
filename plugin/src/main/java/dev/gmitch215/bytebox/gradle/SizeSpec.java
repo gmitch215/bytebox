@@ -45,9 +45,10 @@ public abstract class SizeSpec {
 	 *
 	 * <p>Takes a plain byte count or a suffixed size: {@code 250KiB}, {@code 3MB}, {@code 1MiB}.
 	 * Cloudflare accepts 64 MiB uncompressed on either plan and meters nothing else, so a budget is
-	 * not there to keep a Java Worker deployable. It is there to fail the build when the module
-	 * grows, because a larger bundle spends more of the one second a Worker has to reach its first
-	 * request.
+	 * not there to keep a Java Worker deployable. It is there to fail the build when the compiled
+	 * module grows, because compiling it is what spends the one second a Worker has to reach its
+	 * first request. This measures the module, which is code; bundle bytes that are not code cost
+	 * startup nothing.
 	 */
 	public abstract Property<String> getBudget();
 

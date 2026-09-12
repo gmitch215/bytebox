@@ -22,7 +22,8 @@ import org.gradle.work.DisableCachingByDefault;
  * <p>Cloudflare meters the uncompressed bundle, so the raw figure is the one that binds. Wrangler
  * still prints a gzip figure and this report keeps it for comparison, but no ceiling is enforced
  * against it. The number worth watching is growth: a Java Worker sits orders of magnitude under
- * 64 MiB, and what a larger module costs is startup.
+ * 64 MiB, and what the module costs is startup, measured at roughly 6 ms per half megabyte of
+ * compiled code and nothing at all for bundle bytes that are not code.
  *
  * @since 1.0.0
  */
@@ -88,7 +89,7 @@ public abstract class SizeReportTask extends DefaultTask {
 			);
 		}
 		rows.add("  either plan      " + Compression.BUNDLE_CEILING);
-		rows.add("  startup          1000 ms, which is what a larger module spends");
+		rows.add("  startup          1000 ms, spent compiling this module");
 		return rows;
 	}
 }

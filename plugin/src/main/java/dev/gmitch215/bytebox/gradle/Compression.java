@@ -13,8 +13,9 @@ final class Compression {
 	 * The largest Worker Cloudflare accepts, uncompressed, on either plan.
 	 *
 	 * <p>Since 2026-09-04 there is no compressed size limit and only the uncompressed bundle counts,
-	 * so this is the only ceiling a build can hit. A Java Worker does not approach it; what a large
-	 * bundle costs is startup, which is metered separately.
+	 * so this is the only ceiling a build can hit. A Java Worker does not approach it. What costs a
+	 * Worker is compiled code, metered separately as startup; bundle bytes that are not code measured
+	 * free.
 	 */
 	static final long BUNDLE_CEILING = 67_108_864L;
 

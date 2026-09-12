@@ -5,7 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import org.gradle.api.GradleException;
 import org.junit.jupiter.api.DisplayName;
@@ -198,6 +205,44 @@ class GenerateScaffoldTaskTest {
 	}
 
 	@Test
+	@DisplayName("imports a platform module the program reached for, which a project never names")
+	void platformImports() {
+		GenerateScaffoldTask task = task();
+		task.getWasm().set(module("cloudflare:sockets"));
+
+		String index = index(task);
+		assertTrue(
+			index.contains("import * as cloudflare_sockets from 'cloudflare:sockets';"),
+			index
+		);
+		assertTrue(index.contains("\"cloudflare:sockets\": cloudflare_sockets"), index);
+	}
+
+	@Test
+	@DisplayName("names a platform module once, alongside the packages the project declared")
+	void platformAndPackages() {
+		GenerateScaffoldTask task = task();
+		task.getNPMPackages().set(List.of("nanoid@^5.0.9"));
+		task.getWasm().set(module("cloudflare:sockets", "cloudflare:email", "cloudflare:sockets"));
+
+		String index = index(task);
+		assertTrue(index.contains("\"nanoid\": nanoid"), index);
+		assertTrue(index.contains("\"cloudflare:email\": cloudflare_email"), index);
+		assertEquals(1, index.split("from 'cloudflare:sockets'", -1).length - 1, index);
+	}
+
+	@Test
+	@DisplayName("leaves the compiler's own import table out, which the loader supplies itself")
+	void ignoresInternalImports() {
+		GenerateScaffoldTask task = task();
+		task.getWasm().set(module("teavmMemory", "teavmAsync"));
+
+		String index = index(task);
+		assertTrue(index.contains("const java = load({ runtime, bytes });"), index);
+		assertFalse(index.contains("modules:"), index);
+	}
+
+	@Test
 	@DisplayName("writes a JavaScript class per Durable Object, with what its interfaces call for")
 	void durableClasses() {
 		GenerateScaffoldTask task = task();
@@ -252,7 +297,51 @@ class GenerateScaffoldTaskTest {
 		task.getByteboxVersion().set("^1.0.0");
 		task.getTriggers().set(List.of("fetch"));
 		task.getOutputDirectory().set(directory.toFile());
+		task.getWasm().set(module());
 		return task;
+	}
+
+	/** A module importing nothing, which is what most of these cases are generated against. */
+	private File module(String... specifiers) {
+		List<String> entries = new ArrayList<>();
+		for (String specifier : specifiers) {
+			entries.add("{\"module\":\"" + specifier + "\",\"name\":\"__self__\"}");
+		}
+		return wasm("[" + String.join(",", entries) + "]");
+	}
+
+	/** A module carrying one {@code teavm.imports} section and nothing else. */
+	private File wasm(String table) {
+		byte[] name = "teavm.imports".getBytes(StandardCharsets.UTF_8);
+		byte[] payload = table.getBytes(StandardCharsets.UTF_8);
+		byte[] header = { 0, 'a', 's', 'm', 1, 0, 0, 0 };
+		ByteArrayOutputStream body = new ByteArrayOutputStream();
+		body.write(name.length);
+		body.writeBytes(name);
+		body.writeBytes(payload);
+		byte[] section = body.toByteArray();
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		out.writeBytes(header);
+		out.write(0);
+		leb(out, section.length);
+		out.writeBytes(section);
+		try {
+			Path file = Files.createTempFile(directory, "app", ".wasmbin");
+			Files.write(file, out.toByteArray());
+			return file.toFile();
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	private static void leb(ByteArrayOutputStream out, int value) {
+		int rest = value;
+		do {
+			int b = rest & 0x7F;
+			rest >>>= 7;
+			out.write(rest != 0 ? b | 0x80 : b);
+		} while (rest != 0);
 	}
 
 	private String wrangler(GenerateScaffoldTask task) {
