@@ -223,8 +223,7 @@
 <a href="https://github.com/gmitch215/bytebox/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a></p>
 <p>bytebox compiles a Java workspace into a Cloudflare Worker. Write a class, apply the Gradle plugin,
 and deploy WebAssembly that runs on Cloudflare&#39;s edge.</p>
-<p>A hello world Worker compiles to <strong>25,330 bytes</strong> of WebAssembly against a 3 MB ceiling, starts in
-<strong>8 ms</strong> of a 1 second budget, and answers a request in under a millisecond of CPU.</p>
+<p>A hello world Worker starts in <strong>8 ms</strong> and answers a request in under a millisecond of CPU.</p>
 <hr>
 <h2 id="-table-of-contents">📋 Table of Contents</h2>
 <ul>
@@ -237,7 +236,7 @@ and deploy WebAssembly that runs on Cloudflare&#39;s edge.</p>
 <li><a href="#-standard-library">Standard Library</a></li>
 <li><a href="#-serialization">Serialization</a></li>
 <li><a href="#-npm-packages">npm Packages</a></li>
-<li><a href="#-size">Size</a></li>
+<li><a href="#-startup">Startup</a></li>
 <li><a href="#-concurrency">Concurrency</a></li>
 <li><a href="#-platform-limits">Platform Limits</a></li>
 <li><a href="#-out-of-scope">Out of Scope</a></li>
@@ -257,10 +256,10 @@ together.</p>
 <p>The Gradle plugin:</p>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">plugins</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	java</span></span>
-<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215.bytebox"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) version </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"1.0.0"</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215.bytebox"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) version </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"1.0.1"</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span>
 <span class="line"></span>
-<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">dependencies</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">implementation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215:bytebox-core:1.0.0"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) }</span></span></code></pre><p>The loader, for a Worker assembled by hand:</p>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">dependencies</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> { </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">implementation</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215:bytebox-core:1.0.1"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) }</span></span></code></pre><p>The loader, for a Worker assembled by hand:</p>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bun</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> add</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> @gmitch215/bytebox</span></span></code></pre><hr>
 <h2 id="-quick-start">🚀 Quick Start</h2>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">package</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> com.example;</span></span>
@@ -434,58 +433,20 @@ runtime introspection, and reports which of those it landed on. The floor is the
 <span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">	script</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "return nanoid.nanoid(size);"</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
 <span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> native</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> String </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> size);</span></span></code></pre><hr>
-<h2 id="-size">📏 Size</h2>
-<p>Cloudflare enforces its ceiling after applying its own gzip, so the gzip figure is the one that binds.</p>
-<p>Each feature is measured on its own against a hello world compiled with the same settings:</p>
-<div class="table"><table>
-<thead>
-<tr>
-<th>Feature</th>
-<th>Added, gzipped</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>streams, collections, reflection</td>
-<td>3.0 to 3.8 KB each</td>
-</tr>
-<tr>
-<td>threads</td>
-<td>6.8 KB</td>
-</tr>
-<tr>
-<td><code>java.net.Socket</code></td>
-<td>9.8 KB</td>
-</tr>
-<tr>
-<td><code>BigDecimal</code></td>
-<td>12.7 KB</td>
-</tr>
-<tr>
-<td><code>java.util.regex</code></td>
-<td>13.3 KB</td>
-</tr>
-<tr>
-<td><code>java.net.URL</code> and <code>HttpURLConnection</code></td>
-<td>13.3 KB</td>
-</tr>
-<tr>
-<td><code>java.time</code> with zones</td>
-<td>23.8 KB</td>
-</tr>
-<tr>
-<td><code>String.format</code></td>
-<td>33.0 KB</td>
-</tr>
-<tr>
-<td><code>java.net.http</code></td>
-<td>54.1 KB</td>
-</tr>
-</tbody></table></div>
-<p>Reflection, collections and streams are inexpensive. The rows that were costly are the ones the
-retargeting below fixed: <code>java.util.regex</code> was 65.3 KB and <code>String.format</code> 86.0 KB when they came from
-the class library.</p>
-<p><code>sizeReport</code> prints the compiled module on every compression axis against your budget and the two
-plan ceilings. <code>size { budget = &quot;250KiB&quot; }</code> fails the build past a figure of your choosing.</p>
+<h2 id="-startup">⚡ Startup</h2>
+<p>Cloudflare meters the uncompressed bundle against 64 MiB on either plan. Nothing is enforced against
+the gzip figure wrangler prints beside it, and a Java Worker sits far under either. The limit a
+growing module reaches is the one second a Worker gets to parse and compile its module before the
+first request.</p>
+<p>The module ships as raw bytes with no decompressor, so startup pays for compiling it and nothing
+else.</p>
+<p>Reflection, collections and streams are cheap. <code>java.net.http</code> is the most expensive feature here,
+because <code>Duration</code> pulls <code>java.time</code> in behind it. <code>java.util.regex</code> and <code>String.format</code> are cheap
+only because the retargeting below answers both from the platform&#39;s own engines; linked from the
+class library they are among the largest things a program can reach. Every feature is priced in the
+<a href="https://github.com/gmitch215/bytebox/blob/master/TECHNICAL_REPORT.md">technical report</a>.</p>
+<p><code>sizeReport</code> prints the module against the meter and against your budget. <code>size { budget = &quot;250KiB&quot; }</code>
+fails the build past a figure of your choosing.</p>
 <hr>
 <h2 id="-concurrency">🧵 Concurrency</h2>
 <p>Cloudflare Workers run in a single thread and the Web Worker API is unavailable, so there is no
@@ -509,9 +470,9 @@ CPU meter is readable from inside a request.</p>
 </tr>
 </thead>
 <tbody><tr>
-<td>Worker size, after gzip</td>
-<td>3 MB</td>
-<td>10 MB</td>
+<td>Worker size, uncompressed</td>
+<td>64 MiB</td>
+<td>64 MiB</td>
 </tr>
 <tr>
 <td>Startup</td>
