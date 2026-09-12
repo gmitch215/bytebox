@@ -12,7 +12,7 @@
 bytebox compiles a Java workspace into a Cloudflare Worker. Write a class, apply the Gradle plugin,
 and deploy WebAssembly that runs on Cloudflare's edge.
 
-A hello world Worker starts in **8 ms** and answers a request in under a millisecond of CPU.
+A hello world Worker starts in **10 ms** and answers a request in under a millisecond of CPU.
 
 ---
 
@@ -273,9 +273,13 @@ private static native String id(int size);
 ## ⚡ Startup
 
 Cloudflare meters the uncompressed bundle against 64 MiB on either plan. Nothing is enforced against
-the gzip figure wrangler prints beside it, and a Java Worker sits far under either. The limit a
-growing module reaches is the one second a Worker gets to parse and compile its module before the
-first request.
+the gzip figure wrangler prints beside it, and a Java Worker sits far under either. What a Worker has
+to fit is the one second it gets to parse and compile its module before the first request.
+
+Measured on deployed Workers, that cost tracks compiled code and not bundle size. A hello world
+starts in 8 to 11 ms. Half a megabyte of real compiled Java on top of it costs about 7 ms. Padding
+the same Worker with half a megabyte of inert bytes instead costs nothing measurable, even though it
+uploads the same number of bytes and transfers almost three times as many.
 
 The module ships as raw bytes with no decompressor, so startup pays for compiling it and nothing
 else.
