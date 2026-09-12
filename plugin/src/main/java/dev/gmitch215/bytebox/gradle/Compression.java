@@ -6,22 +6,22 @@ import java.io.UncheckedIOException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPOutputStream;
 
-/** Compresses a module the way the size meter does. */
+/** Compresses a module, for the reference figure beside the one the platform meters. */
 final class Compression {
 
 	/**
-	 * Where a pre-compressed frame starts paying for itself, in bytes of raw WebAssembly.
+	 * The largest Worker Cloudflare accepts, uncompressed, on either plan.
 	 *
-	 * <p>Below this, raw bytes measure smaller because Cloudflare's own gzip is already applied and a
-	 * synchronous decompressor costs about 5.6 KB of bundle flat. Above it, the frame saves more than
-	 * the decompressor costs. Measured between 56 KB and 216 KB of raw wasm on real binaries.
+	 * <p>Since 2026-09-04 there is no compressed size limit and only the uncompressed bundle counts,
+	 * so this is the only ceiling a build can hit. A Java Worker does not approach it; what a large
+	 * bundle costs is startup, which is metered separately.
 	 */
-	static final long COMPRESSION_CROSSOVER = 130_000;
+	static final long BUNDLE_CEILING = 67_108_864L;
 
 	private Compression() {}
 
 	/**
-	 * Compresses at the level Cloudflare's meter applies.
+	 * Compresses at the default level, for the figure wrangler prints for reference.
 	 *
 	 * @param data the bytes to compress
 	 * @return the compressed bytes

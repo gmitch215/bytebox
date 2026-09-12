@@ -24,9 +24,9 @@ import org.gradle.api.tasks.TaskAction;
  *
  * <p>The module is carried as raw bytes rather than compiled by Wrangler, because a
  * {@code CompiledWasm} module is compiled by the platform and there is no way to pass it the JS
- * String Builtins option the compiler's output needs. Raw bytes also measure smaller at these sizes:
- * Cloudflare's own gzip is applied either way, and a pre-compressed frame has to pay for a
- * synchronous decompressor in the same bundle.
+ * String Builtins option the compiler's output needs. Raw bytes are also what a Worker wants to
+ * start from: the platform meters the uncompressed bundle against 64 MiB and nothing else, so a
+ * pre-compressed frame buys bytes nobody counts and spends startup time inflating them.
  *
  * @since 1.0.0
  */
@@ -47,7 +47,7 @@ public abstract class PackWasmTask extends DefaultTask {
 	@Input
 	public abstract Property<SizeSpec.ModuleType> getModuleType();
 
-	/** {@return the ceiling to fail past, in bytes on the gzip meter, or -1 for none} */
+	/** {@return the ceiling to fail past, in uncompressed bytes, or -1 for none} */
 	@Input
 	public abstract Property<Long> getBudget();
 
@@ -55,7 +55,13 @@ public abstract class PackWasmTask extends DefaultTask {
 	@OutputDirectory
 	public abstract DirectoryProperty getOutputDirectory();
 
-	/** {@return the compressor, when one was chosen} */
+	/**
+	 * {@return the compressor, when one was chosen}
+	 *
+	 * @deprecated see {@link SizeSpec#getCompression()}
+	 */
+	@Deprecated(since = "1.0.1", forRemoval = true)
+	@SuppressWarnings("removal")
 	@Input
 	@Optional
 	public abstract Property<SizeSpec.Compressor> getCompression();
@@ -82,21 +88,20 @@ public abstract class PackWasmTask extends DefaultTask {
 			throw new UncheckedIOException(e);
 		}
 
-		long metered = Compression.gzip(raw).length;
 		SizeSpec.ModuleType chosen = resolve(raw.length);
 		getLogger().lifecycle(
-			"bytebox: {} raw, {} on the gzip meter, carried as {}",
+			"bytebox: {} bytes, {} gzipped for reference, carried as {}",
 			raw.length,
-			metered,
+			Compression.gzip(raw).length,
 			chosen
 		);
 
 		long budget = getBudget().get();
-		if (budget > 0 && metered > budget) {
+		if (budget > 0 && raw.length > budget) {
 			throw new GradleException(
-				"the Worker measures " +
-					metered +
-					" bytes on the gzip meter, past the budget of " +
+				"the module measures " +
+					raw.length +
+					" bytes, past the budget of " +
 					budget +
 					". Raise bytebox.size.budget, or find the growth with the sizeReport task."
 			);
@@ -109,10 +114,12 @@ public abstract class PackWasmTask extends DefaultTask {
 	 * @param rawSize the module's size
 	 * @return the resolved type
 	 */
+	@SuppressWarnings("removal")
 	SizeSpec.ModuleType resolve(long rawSize) {
 		SizeSpec.ModuleType declared = getModuleType().get();
 		if (declared != SizeSpec.ModuleType.AUTO) return declared;
-		return rawSize < Compression.COMPRESSION_CROSSOVER
+		// a frame only earns its startup cost when raw bytes would not be accepted at all
+		return rawSize < Compression.BUNDLE_CEILING
 			? SizeSpec.ModuleType.DATA
 			: SizeSpec.ModuleType.DATA_COMPRESSED;
 	}

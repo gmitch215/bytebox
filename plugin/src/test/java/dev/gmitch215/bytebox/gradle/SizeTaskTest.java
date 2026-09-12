@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @DisplayName("packing and measuring the module")
+@SuppressWarnings("removal")
 class SizeTaskTest {
 
 	@TempDir
@@ -39,15 +40,13 @@ class SizeTaskTest {
 	}
 
 	@Test
-	@DisplayName("carries a small module raw and a large one as a frame")
+	@DisplayName("carries the module raw until the platform would refuse raw bytes")
 	void resolvesTheModuleType() throws IOException {
 		PackWasmTask task = pack(module(1024));
 
 		assertEquals(SizeSpec.ModuleType.DATA, task.resolve(1024));
-		assertEquals(
-			SizeSpec.ModuleType.DATA_COMPRESSED,
-			task.resolve(Compression.COMPRESSION_CROSSOVER)
-		);
+		assertEquals(SizeSpec.ModuleType.DATA, task.resolve(Compression.BUNDLE_CEILING - 1));
+		assertEquals(SizeSpec.ModuleType.DATA_COMPRESSED, task.resolve(Compression.BUNDLE_CEILING));
 	}
 
 	@Test
@@ -72,6 +71,20 @@ class SizeTaskTest {
 	}
 
 	@Test
+	@DisplayName("measures the budget on the bytes Cloudflare meters, not on their gzip")
+	void enforcesTheBudgetOnRawBytes() throws IOException {
+		byte[] wasm = module(64 * 1024);
+		// the module compresses well, so a budget between the two figures separates the meters
+		long budget = (Compression.gzip(wasm).length + wasm.length) / 2;
+		assertTrue(Compression.gzip(wasm).length < budget, "the fixture must compress under it");
+
+		PackWasmTask task = pack(wasm);
+		task.getBudget().set(budget);
+
+		assertThrows(GradleException.class, task::pack);
+	}
+
+	@Test
 	@DisplayName("passes a budget it fits inside")
 	void insideTheBudget() throws IOException {
 		PackWasmTask task = pack(module(1024));
@@ -81,18 +94,18 @@ class SizeTaskTest {
 	}
 
 	@Test
-	@DisplayName("reports every compression axis, and the meter Cloudflare enforces")
+	@DisplayName("reports the uncompressed meter, the ceiling both plans share, and gzip beside it")
 	void reports() throws IOException {
 		report(module(4096)).report();
 		String out = String.join("\n", SizeReportTask.rows("app.wasm", module(4096), 1024L * 1024));
 
 		assertTrue(out.contains("app.wasm"), out);
-		assertTrue(out.contains("raw              4096"), out);
-		assertTrue(out.contains("the meter Cloudflare enforces"), out);
+		assertTrue(out.contains("raw              4096   <- the meter Cloudflare enforces"), out);
 		assertTrue(out.contains("gzip -9"), out);
+		assertTrue(out.contains("reference only"), out);
 		assertTrue(out.contains("to spare"), out);
-		assertTrue(out.contains("free plan        3145728"), out);
-		assertTrue(out.contains("paid plan        10485760"), out);
+		assertTrue(out.contains("either plan      67108864"), out);
+		assertTrue(out.contains("startup          1000 ms"), out);
 	}
 
 	@Test
@@ -107,21 +120,17 @@ class SizeTaskTest {
 	}
 
 	@Test
-	@DisplayName("says a small module is carried raw and a large one as a frame")
-	void reportsTheCrossover() {
+	@DisplayName("says the module is carried raw, with nothing to inflate at startup")
+	void reportsHowItIsCarried() {
 		assertTrue(
-			row(SizeReportTask.rows("a", module(1024), -1L), "carried as").contains("raw bytes")
-		);
-		assertTrue(
-			row(
-				SizeReportTask.rows("a", module((int) Compression.COMPRESSION_CROSSOVER), -1L),
-				"carried as"
-			).contains("saves more than its decoder costs")
+			row(SizeReportTask.rows("a", module(1024), -1L), "carried as").contains(
+				"nothing to inflate at startup"
+			)
 		);
 	}
 
 	@Test
-	@DisplayName("compresses the way the meter does, and a higher level compresses harder")
+	@DisplayName("round-trips the reference figure, and a higher level compresses harder")
 	void compresses() throws IOException {
 		byte[] raw = module(64 * 1024);
 

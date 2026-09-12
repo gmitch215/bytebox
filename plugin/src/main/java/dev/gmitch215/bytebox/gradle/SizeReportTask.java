@@ -17,12 +17,12 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.DisableCachingByDefault;
 
 /**
- * Measures the compiled module and prints one row per compression axis.
+ * Measures the compiled module and prints what the platform meters beside what it does not.
  *
- * <p>Cloudflare enforces its ceiling after its own gzip, so the gzip figure is the one that binds and
- * a local {@code gzip -c | wc -c} is not that meter. A pre-compressed frame only pays once it saves
- * more than a synchronous decompressor costs in the same bundle, which is why the crossover is
- * reported rather than assumed.
+ * <p>Cloudflare meters the uncompressed bundle, so the raw figure is the one that binds. Wrangler
+ * still prints a gzip figure and this report keeps it for comparison, but no ceiling is enforced
+ * against it. The number worth watching is growth: a Java Worker sits orders of magnitude under
+ * 64 MiB, and what a larger module costs is startup.
  *
  * @since 1.0.0
  */
@@ -64,22 +64,19 @@ public abstract class SizeReportTask extends DefaultTask {
 	 * @return one line per row
 	 */
 	static List<String> rows(String name, byte[] raw, long budget) {
-		int gzipped = Compression.gzip(raw).length;
 		List<String> rows = new ArrayList<>();
 		rows.add(name);
-		rows.add("  raw              " + raw.length);
-		rows.add("  gzip -6          " + gzipped + "   <- the meter Cloudflare enforces");
-		rows.add("  gzip -9          " + Compression.gzip(raw, 9).length);
+		rows.add("  raw              " + raw.length + "   <- the meter Cloudflare enforces");
+		rows.add("  gzip -6          " + Compression.gzip(raw).length + "   reference only");
+		rows.add("  gzip -9          " + Compression.gzip(raw, 9).length + "   reference only");
 		rows.add(
 			"  carried as       " +
-				(raw.length < Compression.COMPRESSION_CROSSOVER
-					? "raw bytes, which measure smaller below " +
-						Compression.COMPRESSION_CROSSOVER +
-						" raw"
-					: "a compressed frame, which now saves more than its decoder costs")
+				(raw.length < Compression.BUNDLE_CEILING
+					? "raw bytes, with nothing to inflate at startup"
+					: "a compressed frame, the only shape the platform accepts this large")
 		);
 		if (budget > 0) {
-			long headroom = budget - gzipped;
+			long headroom = budget - raw.length;
 			rows.add(
 				"  budget           " +
 					budget +
@@ -90,8 +87,8 @@ public abstract class SizeReportTask extends DefaultTask {
 					")"
 			);
 		}
-		rows.add("  free plan        3145728");
-		rows.add("  paid plan        10485760");
+		rows.add("  either plan      " + Compression.BUNDLE_CEILING);
+		rows.add("  startup          1000 ms, which is what a larger module spends");
 		return rows;
 	}
 }
