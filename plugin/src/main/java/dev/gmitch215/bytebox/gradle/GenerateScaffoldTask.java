@@ -11,12 +11,16 @@ import java.util.List;
 import java.util.Map;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
 /**
@@ -92,6 +96,17 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 	/** {@return the Durable Objects written in Java, each needing a JavaScript class to be one} */
 	@Input
 	public abstract ListProperty<DurableObjects> getDurableObjects();
+
+	/**
+	 * {@return the compiled module, read for the platform modules it imports}
+	 *
+	 * <p>A retargeted API reaches a {@code cloudflare:} module from inside the WebAssembly, where no
+	 * bundler can see it and the project never names it. The module itself is the only place that
+	 * knows, which is why generating the entry point needs it.
+	 */
+	@InputFile
+	@PathSensitive(PathSensitivity.NONE)
+	public abstract RegularFileProperty getWasm();
 
 	/** {@return where the project is written} */
 	@OutputDirectory
@@ -228,6 +243,9 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 		List<String> packages = new ArrayList<>();
 		for (String declared : getNPMPackages().get()) {
 			packages.add(declared.substring(0, declared.lastIndexOf('@')));
+		}
+		for (String platform : WasmImports.platformModules(wasm())) {
+			if (!packages.contains(platform)) packages.add(platform);
 		}
 
 		StringBuilder out = new StringBuilder();
@@ -388,6 +406,14 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 	 * @param packageName the npm package name
 	 * @return an identifier the generated import can bind to
 	 */
+	private byte[] wasm() {
+		try {
+			return Files.readAllBytes(getWasm().get().getAsFile().toPath());
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
 	private static String identifier(String packageName) {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < packageName.length(); i++) {

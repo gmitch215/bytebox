@@ -386,6 +386,15 @@ public class ByteboxPlugin implements Plugin<Project> {
 				task.setDescription(
 					"Writes the Wrangler configuration and the JavaScript entry point"
 				);
+				task.dependsOn("generateWasmGC");
+				task.getWasm().set(
+					project
+						.getLayout()
+						.getBuildDirectory()
+						.dir("generated/teavm/wasm-gc")
+						.get()
+						.file(project.getName() + ".wasm")
+				);
 				WranglerSpec wrangler = extension.getWrangler();
 				task.getWorkerName().set(wrangler.getName());
 				task.getCompatibilityDate().set(wrangler.getCompatibilityDate());
