@@ -106,7 +106,8 @@ loadScripts(document, 'script');</script>
  <p>Cloudflare meters the uncompressed bundle, so the raw figure is the one that binds. Wrangler
  still prints a gzip figure and this report keeps it for comparison, but no ceiling is enforced
  against it. The number worth watching is growth: a Java Worker sits orders of magnitude under
- 64 MiB, and what a larger module costs is startup.</div>
+ 64 MiB, and what the module costs is startup, measured at roughly 6 ms per half megabyte of
+ compiled code and nothing at all for bundle bytes that are not code.</div>
 <dl class="notes">
 <dt>Since:</dt>
 <dd>1.0.0</dd>

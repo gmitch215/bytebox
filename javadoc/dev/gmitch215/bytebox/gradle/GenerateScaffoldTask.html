@@ -231,9 +231,14 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns the triggers the handler handles, by export name.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getWorkerName()" class="member-name-link">getWorkerName</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.file.RegularFileProperty</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getWasm()" class="member-name-link">getWasm</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Returns the compiled module, read for the platform modules it imports.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract org.gradle.api.provider.Property<wbr>&lt;<a href="https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getWorkerName()" class="member-name-link">getWorkerName</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns the Worker's name.</div>
 </div>
 </div>
@@ -443,6 +448,23 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the Durable Objects written in Java, each needing a JavaScript class to be one</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getWasm()">
+<h3>getWasm</h3>
+<div class="member-signature"><span class="annotations">@InputFile
+@PathSensitive(NONE)
+</span><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">org.gradle.api.file.RegularFileProperty</span>&nbsp;<span class="element-name">getWasm</span>()</div>
+<div class="block">Returns the compiled module, read for the platform modules it imports.
+
+ <p>A retargeted API reaches a <code>cloudflare:</code> module from inside the WebAssembly, where no
+ bundler can see it and the project never names it. The module itself is the only place that
+ knows, which is why generating the entry point needs it.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the compiled module, read for the platform modules it imports</dd>
 </dl>
 </section>
 </li>

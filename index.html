@@ -223,7 +223,7 @@
 <a href="https://github.com/gmitch215/bytebox/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a></p>
 <p>bytebox compiles a Java workspace into a Cloudflare Worker. Write a class, apply the Gradle plugin,
 and deploy WebAssembly that runs on Cloudflare&#39;s edge.</p>
-<p>A hello world Worker starts in <strong>8 ms</strong> and answers a request in under a millisecond of CPU.</p>
+<p>A hello world Worker starts in <strong>10 ms</strong> and answers a request in under a millisecond of CPU.</p>
 <hr>
 <h2 id="-table-of-contents">📋 Table of Contents</h2>
 <ul>
@@ -435,9 +435,12 @@ runtime introspection, and reports which of those it landed on. The floor is the
 <span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> native</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> String </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> size);</span></span></code></pre><hr>
 <h2 id="-startup">⚡ Startup</h2>
 <p>Cloudflare meters the uncompressed bundle against 64 MiB on either plan. Nothing is enforced against
-the gzip figure wrangler prints beside it, and a Java Worker sits far under either. The limit a
-growing module reaches is the one second a Worker gets to parse and compile its module before the
-first request.</p>
+the gzip figure wrangler prints beside it, and a Java Worker sits far under either. What a Worker has
+to fit is the one second it gets to parse and compile its module before the first request.</p>
+<p>Measured on deployed Workers, that cost tracks compiled code and not bundle size. A hello world
+starts in 8 to 11 ms. Half a megabyte of real compiled Java on top of it costs about 7 ms. Padding
+the same Worker with half a megabyte of inert bytes instead costs nothing measurable, even though it
+uploads the same number of bytes and transfers almost three times as many.</p>
 <p>The module ships as raw bytes with no decompressor, so startup pays for compiling it and nothing
 else.</p>
 <p>Reflection, collections and streams are cheap. <code>java.net.http</code> is the most expensive feature here,
