@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @since 1.0.0
  */
-final class IntlZoneRules extends ZoneRules {
+final class IntlZoneRules {
 
 	/** How far {@link #nextTransition} and {@link #previousTransition} look. */
 	static final int SEARCH_DAYS = 400;
@@ -48,17 +48,14 @@ final class IntlZoneRules extends ZoneRules {
 		this.lookup = lookup;
 	}
 
-	@Override
 	public boolean isFixedOffset() {
 		return false;
 	}
 
-	@Override
 	public ZoneOffset getOffset(Instant instant) {
 		return offset(lookup.offsetAt(instant.getEpochSecond()));
 	}
 
-	@Override
 	public ZoneOffset getOffset(LocalDateTime localDateTime) {
 		List<ZoneOffset> valid = getValidOffsets(localDateTime);
 		if (!valid.isEmpty()) return valid.get(0);
@@ -71,7 +68,6 @@ final class IntlZoneRules extends ZoneRules {
 	 * to this reading, and a candidate survives only if reading the clock back through it lands on
 	 * itself. A gap leaves none standing and an overlap leaves two.
 	 */
-	@Override
 	public List<ZoneOffset> getValidOffsets(LocalDateTime localDateTime) {
 		long wall = localDateTime.toEpochSecond(ZoneOffset.UTC);
 		int before = lookup.offsetAt(wall - DAY);
@@ -85,7 +81,6 @@ final class IntlZoneRules extends ZoneRules {
 		return valid;
 	}
 
-	@Override
 	public ZoneOffsetTransition getTransition(LocalDateTime localDateTime) {
 		long wall = localDateTime.toEpochSecond(ZoneOffset.UTC);
 		int before = lookup.offsetAt(wall - DAY);
@@ -100,29 +95,24 @@ final class IntlZoneRules extends ZoneRules {
 		return transitionAt(bisect(earliest, latest, target, true), target);
 	}
 
-	@Override
 	public ZoneOffset getStandardOffset(Instant instant) {
 		return offset(standardSeconds(instant.getEpochSecond()));
 	}
 
-	@Override
 	public Duration getDaylightSavings(Instant instant) {
 		long at = instant.getEpochSecond();
 		return Duration.ofSeconds(lookup.offsetAt(at) - standardSeconds(at));
 	}
 
-	@Override
 	public boolean isDaylightSavings(Instant instant) {
 		long at = instant.getEpochSecond();
 		return lookup.offsetAt(at) != standardSeconds(at);
 	}
 
-	@Override
 	public boolean isValidOffset(LocalDateTime localDateTime, ZoneOffset offset) {
 		return offset != null && getValidOffsets(localDateTime).contains(offset);
 	}
 
-	@Override
 	public ZoneOffsetTransition nextTransition(Instant instant) {
 		long from = instant.getEpochSecond();
 		int start = lookup.offsetAt(from);
@@ -138,7 +128,6 @@ final class IntlZoneRules extends ZoneRules {
 		return null;
 	}
 
-	@Override
 	public ZoneOffsetTransition previousTransition(Instant instant) {
 		// the runtime rounds a sub-second reading up, so that a transition on the second counts as past
 		long from = instant.getNano() > 0 ? instant.getEpochSecond() + 1 : instant.getEpochSecond();
@@ -153,7 +142,6 @@ final class IntlZoneRules extends ZoneRules {
 		return null;
 	}
 
-	@Override
 	public List<ZoneOffsetTransition> getTransitions() {
 		throw new UnsupportedOperationException(
 			"the recorded history of " +
@@ -163,7 +151,6 @@ final class IntlZoneRules extends ZoneRules {
 		);
 	}
 
-	@Override
 	public List<ZoneOffsetTransitionRule> getTransitionRules() {
 		throw new UnsupportedOperationException(
 			"the recurring rules of " +

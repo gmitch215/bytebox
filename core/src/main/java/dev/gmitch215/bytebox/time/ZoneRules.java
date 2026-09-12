@@ -21,12 +21,26 @@ import java.util.List;
  * {@code ZoneOffset.getRules()} needs. The five-argument form builds rules from a transition history
  * and refuses, because a history is what this platform does not have to give.
  *
+ * <p>Final, and a zone is carried in a field rather than in a subclass. A subclass would have to name
+ * this class as its supertype, which is the one name a substitute may not use: the compiler
+ * translates {@code java.time.zone.ZoneRules} into a copy of this class under the original name,
+ * while a subclass goes on extending this one, and the two are unrelated wasm types. The symptom is
+ * a {@code CompileError} from the engine naming a method that returns one where the other is
+ * declared, so javac refusing the subclass is the cheaper failure.
+ *
  * @since 1.0.0
  */
-public abstract class ZoneRules {
+public final class ZoneRules {
 
-	/** For {@link IntlZoneRules} and the fixed rules below, and nothing else. */
-	protected ZoneRules() {}
+	/** Set when the rules are a bare offset, and null when {@link #zone} carries them instead. */
+	private final ZoneOffset fixed;
+
+	private final IntlZoneRules zone;
+
+	private ZoneRules(ZoneOffset fixed, IntlZoneRules zone) {
+		this.fixed = fixed;
+		this.zone = zone;
+	}
 
 	/**
 	 * The rules of a zone that is only ever one offset.
@@ -36,7 +50,20 @@ public abstract class ZoneRules {
 	 */
 	public static ZoneRules of(ZoneOffset offset) {
 		if (offset == null) throw new NullPointerException("offset");
-		return new Fixed(offset);
+		return new ZoneRules(offset, null);
+	}
+
+	/**
+	 * The rules of a zone the platform knows, derived from the offsets it reports.
+	 *
+	 * <p>Not an {@code of} overload: this class mirrors {@code java.time.zone.ZoneRules}, which has
+	 * only the two above, and a third would make {@code of(null)} ambiguous.
+	 *
+	 * @param zone the derivation
+	 * @return rules that ask it
+	 */
+	static ZoneRules forZone(IntlZoneRules zone) {
+		return new ZoneRules(null, zone);
 	}
 
 	/**
@@ -64,7 +91,9 @@ public abstract class ZoneRules {
 	}
 
 	/** {@return whether the offset never varies} */
-	public abstract boolean isFixedOffset();
+	public boolean isFixedOffset() {
+		return fixed != null;
+	}
 
 	/**
 	 * The offset at an instant.
@@ -72,7 +101,9 @@ public abstract class ZoneRules {
 	 * @param instant the instant
 	 * @return the offset
 	 */
-	public abstract ZoneOffset getOffset(Instant instant);
+	public ZoneOffset getOffset(Instant instant) {
+		return fixed != null ? fixed : zone.getOffset(instant);
+	}
 
 	/**
 	 * The offset that applies to a wall-clock reading, preferring the earlier one where it happens
@@ -81,7 +112,9 @@ public abstract class ZoneRules {
 	 * @param localDateTime the reading
 	 * @return the offset
 	 */
-	public abstract ZoneOffset getOffset(LocalDateTime localDateTime);
+	public ZoneOffset getOffset(LocalDateTime localDateTime) {
+		return fixed != null ? fixed : zone.getOffset(localDateTime);
+	}
 
 	/**
 	 * Every offset a wall-clock reading could mean: none in a gap, two in an overlap, otherwise one.
@@ -89,7 +122,11 @@ public abstract class ZoneRules {
 	 * @param localDateTime the reading
 	 * @return the offsets, earliest first
 	 */
-	public abstract List<ZoneOffset> getValidOffsets(LocalDateTime localDateTime);
+	public List<ZoneOffset> getValidOffsets(LocalDateTime localDateTime) {
+		return fixed != null
+			? Collections.singletonList(fixed)
+			: zone.getValidOffsets(localDateTime);
+	}
 
 	/**
 	 * The change a wall-clock reading falls inside.
@@ -97,7 +134,9 @@ public abstract class ZoneRules {
 	 * @param localDateTime the reading
 	 * @return the change, or null when the reading is an ordinary one
 	 */
-	public abstract ZoneOffsetTransition getTransition(LocalDateTime localDateTime);
+	public ZoneOffsetTransition getTransition(LocalDateTime localDateTime) {
+		return fixed != null ? null : zone.getTransition(localDateTime);
+	}
 
 	/**
 	 * The offset the zone keeps when daylight saving is not in force.
@@ -105,7 +144,9 @@ public abstract class ZoneRules {
 	 * @param instant the instant
 	 * @return the offset
 	 */
-	public abstract ZoneOffset getStandardOffset(Instant instant);
+	public ZoneOffset getStandardOffset(Instant instant) {
+		return fixed != null ? fixed : zone.getStandardOffset(instant);
+	}
 
 	/**
 	 * How far daylight saving has moved the clock.
@@ -113,7 +154,9 @@ public abstract class ZoneRules {
 	 * @param instant the instant
 	 * @return the amount, zero when it is not in force
 	 */
-	public abstract Duration getDaylightSavings(Instant instant);
+	public Duration getDaylightSavings(Instant instant) {
+		return fixed != null ? Duration.ZERO : zone.getDaylightSavings(instant);
+	}
 
 	/**
 	 * Whether daylight saving is in force.
@@ -121,7 +164,9 @@ public abstract class ZoneRules {
 	 * @param instant the instant
 	 * @return whether it is
 	 */
-	public abstract boolean isDaylightSavings(Instant instant);
+	public boolean isDaylightSavings(Instant instant) {
+		return fixed != null ? false : zone.isDaylightSavings(instant);
+	}
 
 	/**
 	 * Whether a wall-clock reading and an offset go together.
@@ -130,7 +175,9 @@ public abstract class ZoneRules {
 	 * @param offset the offset
 	 * @return whether they do
 	 */
-	public abstract boolean isValidOffset(LocalDateTime localDateTime, ZoneOffset offset);
+	public boolean isValidOffset(LocalDateTime localDateTime, ZoneOffset offset) {
+		return fixed != null ? fixed.equals(offset) : zone.isValidOffset(localDateTime, offset);
+	}
 
 	/**
 	 * The next change after an instant.
@@ -138,7 +185,9 @@ public abstract class ZoneRules {
 	 * @param instant the instant
 	 * @return the change, or null when none is scheduled
 	 */
-	public abstract ZoneOffsetTransition nextTransition(Instant instant);
+	public ZoneOffsetTransition nextTransition(Instant instant) {
+		return fixed != null ? null : zone.nextTransition(instant);
+	}
 
 	/**
 	 * The last change before an instant.
@@ -146,107 +195,34 @@ public abstract class ZoneRules {
 	 * @param instant the instant
 	 * @return the change, or null when there was none
 	 */
-	public abstract ZoneOffsetTransition previousTransition(Instant instant);
+	public ZoneOffsetTransition previousTransition(Instant instant) {
+		return fixed != null ? null : zone.previousTransition(instant);
+	}
 
 	/** {@return every recorded change} */
-	public abstract List<ZoneOffsetTransition> getTransitions();
+	public List<ZoneOffsetTransition> getTransitions() {
+		return fixed != null ? Collections.emptyList() : zone.getTransitions();
+	}
 
 	/** {@return the rules by which changes recur} */
-	public abstract List<ZoneOffsetTransitionRule> getTransitionRules();
+	public List<ZoneOffsetTransitionRule> getTransitionRules() {
+		return fixed != null ? Collections.emptyList() : zone.getTransitionRules();
+	}
 
 	@Override
-	public abstract boolean equals(Object otherRules);
+	public boolean equals(Object otherRules) {
+		if (!(otherRules instanceof ZoneRules)) return false;
+		ZoneRules other = (ZoneRules) otherRules;
+		return fixed != null ? fixed.equals(other.fixed) : zone.equals(other.zone);
+	}
 
 	@Override
-	public abstract int hashCode();
+	public int hashCode() {
+		return fixed != null ? fixed.hashCode() : zone.hashCode();
+	}
 
-	/** A zone that is only ever one offset, which is what a bare offset amounts to. */
-	private static final class Fixed extends ZoneRules {
-
-		private final ZoneOffset offset;
-
-		Fixed(ZoneOffset offset) {
-			this.offset = offset;
-		}
-
-		@Override
-		public boolean isFixedOffset() {
-			return true;
-		}
-
-		@Override
-		public ZoneOffset getOffset(Instant instant) {
-			return offset;
-		}
-
-		@Override
-		public ZoneOffset getOffset(LocalDateTime localDateTime) {
-			return offset;
-		}
-
-		@Override
-		public List<ZoneOffset> getValidOffsets(LocalDateTime localDateTime) {
-			return Collections.singletonList(offset);
-		}
-
-		@Override
-		public ZoneOffsetTransition getTransition(LocalDateTime localDateTime) {
-			return null;
-		}
-
-		@Override
-		public ZoneOffset getStandardOffset(Instant instant) {
-			return offset;
-		}
-
-		@Override
-		public Duration getDaylightSavings(Instant instant) {
-			return Duration.ZERO;
-		}
-
-		@Override
-		public boolean isDaylightSavings(Instant instant) {
-			return false;
-		}
-
-		@Override
-		public boolean isValidOffset(LocalDateTime localDateTime, ZoneOffset offset) {
-			return this.offset.equals(offset);
-		}
-
-		@Override
-		public ZoneOffsetTransition nextTransition(Instant instant) {
-			return null;
-		}
-
-		@Override
-		public ZoneOffsetTransition previousTransition(Instant instant) {
-			return null;
-		}
-
-		@Override
-		public List<ZoneOffsetTransition> getTransitions() {
-			return Collections.emptyList();
-		}
-
-		@Override
-		public List<ZoneOffsetTransitionRule> getTransitionRules() {
-			return Collections.emptyList();
-		}
-
-		@Override
-		public boolean equals(Object other) {
-			return other instanceof Fixed && offset.equals(((Fixed) other).offset);
-		}
-
-		@Override
-		public int hashCode() {
-			return offset.hashCode();
-		}
-
-		@Override
-		public String toString() {
-			return "FixedRules:" + offset;
-		}
+	@Override
+	public String toString() {
+		return fixed != null ? "FixedRules:" + fixed : zone.toString();
 	}
 }

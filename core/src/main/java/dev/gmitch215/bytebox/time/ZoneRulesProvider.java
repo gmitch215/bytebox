@@ -55,7 +55,9 @@ public class ZoneRulesProvider {
 			throw new ZoneRulesException("Unknown time-zone ID: " + zoneId);
 		}
 
-		ZoneRules rules = new IntlZoneRules(zoneId, at -> Zones.offsetAt(zoneId, (double) at));
+		ZoneRules rules = ZoneRules.forZone(
+			new IntlZoneRules(zoneId, at -> Zones.offsetAt(zoneId, (double) at))
+		);
 		RULES.put(zoneId, rules);
 		return rules;
 	}
