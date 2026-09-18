@@ -223,7 +223,7 @@ in the same position. `System.out.println` reaches the Worker log.
 
 **What made the streaming case work** was supplying two classes the class library omits,
 `java.util.concurrent.locks.ReentrantLock` and `java.util.concurrent.atomic.AtomicReferenceArray`.
-The lock is worth knowing about before relying on it: it never waits. One fiber runs at a time, so an
+The lock never waits. One fiber runs at a time, so an
 uncontended acquire is already exclusive, and the only way to contend here is for a fiber to suspend
 while holding the lock. That case throws instead of blocking, which is a refusal you can see rather
 than two fibers quietly sharing a section written for one. Blocking would be the faithful answer and
@@ -293,7 +293,7 @@ Two consequences. Timing a section of code by subtracting two readings measures 
 `Thread.sleep` is scheduled against a clock that is not moving, so it is either instantly due or never
 due, depending on whether an I/O operation intervenes.
 
-`dev.gmitch215.bytebox.builtin.Clock` documents what each reading actually means here.
+`dev.gmitch215.bytebox.builtin.Clock` documents what each reading means here.
 [standard-library](samples/standard-library) marks the one place it takes a reading.
 
 ## Generated Code Instead of Reflection
@@ -385,7 +385,7 @@ delimiter. `java.net.Socket` is retargeted onto the same thing, so a library tha
 ordinary way works unchanged, and reads block by suspending the fiber.
 
 The platform will not connect to its own address ranges, to localhost, to a private network address, or
-to port 25. One consequence is worth knowing before designing around it: `smtp.mx.cloudflare.net` is a
+to port 25. One consequence shapes what you can build on it: `smtp.mx.cloudflare.net` is a
 Cloudflare address, so a Worker cannot SMTP to Cloudflare Email Sending even with valid credentials.
 Outbound mail goes through the `send_email` binding or the REST API. External SMTP, IMAP and POP3 hosts
 are fine.

@@ -574,9 +574,9 @@ deferred rather than absent.
 What that does not settle is the platform. Node runs the finalizers promptly and Cloudflare documents
 its own as running in quiet slots between I/O phases, with non-deterministic timing and no guarantee
 they run at all. So the bound is the number of distinct primitives a long-lived isolate ever crosses
-into Java, and the release of that bound depends on a callback the platform does not promise. A
-program that hashes unbounded distinct strings from JavaScript is the shape to avoid; one that hashes
-JavaScript objects is not, because those are held weakly.
+into Java, and the release of that bound depends on a callback the platform does not promise.
+Hashing unbounded distinct JavaScript strings grows that map without a release you can rely on.
+Hashing JavaScript objects does not, because those are held weakly.
 
 ## The Refused `@JSBody` Constructs Do Not Reproduce
 
