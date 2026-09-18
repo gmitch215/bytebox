@@ -3,7 +3,7 @@ plugins {
 	id("com.vanniktech.maven.publish") version "0.36.0" apply false
 }
 
-val v = "1.0.1"
+val v = "1.0.2"
 
 allprojects {
 	val base = if (project.hasProperty("snapshot")) "$v-SNAPSHOT" else v

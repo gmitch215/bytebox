@@ -1,6 +1,6 @@
 {
 	"name": "@gmitch215/bytebox",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"type": "module",
 	"description": "Run Java on Cloudflare Workers",
 	"main": "./dist/index.js",
