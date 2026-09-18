@@ -22,6 +22,7 @@ public final class Substitutions extends SimpleSubstitutionPolicy {
 	public void contribute(SubstitutionSink sink) {
 		sink.selectClasses(
 			named("java.util.Formatter")
+				.or(named("java.util.StringJoiner"))
 				.or(named("java.util.Formattable"))
 				.or(named("java.util.FormattableFlags"))
 				.or(named("java.util.IllegalFormatException"))
