@@ -282,7 +282,7 @@ together.</p>
 <span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">./gradlew</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> workerDeploy</span></span></code></pre><p><code>buildWorker</code> writes a complete Worker into <code>build/bytebox/worker</code>: the module, a <code>wrangler.jsonc</code>,
 a JavaScript entry point and a package manifest. Nothing there is hand-written.</p>
 <p><a href="https://github.com/gmitch215/bytebox/tree/master/samples">samples/</a> has nine of these, one per feature, and
-<a href="https://github.com/gmitch215/bytebox/blob/master/samples/ADVANCED_USAGE.md">samples/ADVANCED_USAGE.md</a> is the design document behind them.</p>
+<a href="https://github.com/gmitch215/bytebox/blob/master/ADVANCED_USAGE.md">ADVANCED_USAGE.md</a> is the design document behind them.</p>
 <hr>
 <h2 id="-triggers">🎛 Triggers</h2>
 <p>One interface per trigger, each optional. The build derives which handlers to export and which
@@ -403,7 +403,7 @@ unresolved, because the platform accepts no inbound connection and speaks no UDP
 I/O, so <code>Instant.now()</code> gives the time the invocation began. <code>CASE_INSENSITIVE</code> folds the whole of
 Unicode here where a JVM folds ASCII. A timezone&#39;s recorded history is not available, because the
 rules are derived from the offsets <code>Intl</code> reports rather than read from a table.</p>
-<p><a href="https://github.com/gmitch215/bytebox/blob/master/samples/ADVANCED_USAGE.md">samples/ADVANCED_USAGE.md</a> covers the rest, with the measured cost of each.</p>
+<p><a href="https://github.com/gmitch215/bytebox/blob/master/ADVANCED_USAGE.md">ADVANCED_USAGE.md</a> covers the rest, with the measured cost of each.</p>
 <hr>
 <h2 id="-serialization">💾 Serialization</h2>
 <p><code>java.io</code> serialization writes the bytes a JVM writes, checked byte for byte against a real
