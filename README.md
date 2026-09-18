@@ -104,7 +104,7 @@ bytebox {
 a JavaScript entry point and a package manifest. Nothing there is hand-written.
 
 [samples/](samples) has nine of these, one per feature, and
-[samples/ADVANCED_USAGE.md](samples/ADVANCED_USAGE.md) is the design document behind them.
+[ADVANCED_USAGE.md](ADVANCED_USAGE.md) is the design document behind them.
 
 ---
 
@@ -217,7 +217,7 @@ I/O, so `Instant.now()` gives the time the invocation began. `CASE_INSENSITIVE` 
 Unicode here where a JVM folds ASCII. A timezone's recorded history is not available, because the
 rules are derived from the offsets `Intl` reports rather than read from a table.
 
-[samples/ADVANCED_USAGE.md](samples/ADVANCED_USAGE.md) covers the rest, with the measured cost of each.
+[ADVANCED_USAGE.md](ADVANCED_USAGE.md) covers the rest, with the measured cost of each.
 
 ---
 

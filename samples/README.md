@@ -3,7 +3,7 @@
 Nine Workers, each showing one thing. They build against the bytebox in this tree rather than a
 published version, so they double as the end-to-end check for the Gradle plugin.
 
-[ADVANCED_USAGE.md](ADVANCED_USAGE.md) is the design document behind them: the rules the whole thing
+[ADVANCED_USAGE.md](../ADVANCED_USAGE.md) is the design document behind them: the rules the whole thing
 is built on, what each one costs, and recipes that combine several samples.
 
 | Sample                               | Shows                                                       |
@@ -72,6 +72,10 @@ enters the WebAssembly, so it costs bundle bytes rather than module bytes.
 
 **tcp-client** connects with TLS and frames a response by delimiter. Its comments record what
 Cloudflare refuses to connect to, which is the part that decides whether raw TCP is the right tool.
+
+**mixed-dependencies** takes a Java library and an npm package in one project. Guava is compiled into
+the module; nanoid stays JavaScript beside it. The two arrive by different routes and are paid for in
+different currencies, which is the point of having them side by side.
 
 **standard-library** writes `java.time`, `java.net.http`, `java.util.regex` and `String.format` the way
 they are written anywhere. Nothing in it is a bytebox API; the compiler points each reference at an

@@ -45,7 +45,7 @@ describe('the landing page', () => {
 
 	it('resolves a relative link against the repository, and leaves the rest alone', () => {
 		expect(page).toContain(`href="${repo}/tree/master/samples"`);
-		expect(page).toContain(`href="${repo}/blob/master/samples/ADVANCED_USAGE.md"`);
+		expect(page).toContain(`href="${repo}/blob/master/ADVANCED_USAGE.md"`);
 		expect(page).toContain(`href="${repo}/blob/master/LICENSE"`);
 		// a badge is already absolute
 		expect(page).toContain('href="https://codecov.io/gh/gmitch215/bytebox"');
