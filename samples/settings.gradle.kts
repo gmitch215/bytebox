@@ -25,5 +25,6 @@ include(
 	"queue-consumer",
 	"npm-dependency",
 	"tcp-client",
-	"standard-library"
+	"standard-library",
+	"mixed-dependencies"
 )
