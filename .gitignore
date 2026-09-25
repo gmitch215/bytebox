@@ -41,3 +41,6 @@ size/ledger/*.json
 # the samples build against the bytebox in this tree
 samples/*/build
 samples/build
+
+# output of the paper
+paper.pdf
