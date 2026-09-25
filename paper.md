@@ -11,7 +11,7 @@ tags:
   - Gradle
 authors:
   - name: Gregory Mitchell
-    orcid: 0000-0000-0000-0000
+    orcid: 0009-0002-3956-4818
     affiliation: 1
 affiliations:
   - name: Independent Researcher, Hanover, NH, United States
@@ -86,13 +86,18 @@ executes a .NET runtime in WebAssembly on a browser host [@blazor]. WALL-E
 integrates managed-language libraries through external library linking rather than
 nesting a runtime inside the module [@walle]. GraalVM Native Image takes a different
 target entirely, compiling Java ahead of time to a native executable for a specific
-operating system [@graalvm]. Separately, WebAssembly has been evaluated as a
-serverless execution target independent of any particular language
+operating system [@graalvm]. It sits with AWS Lambda SnapStart [@snapstart] and CRaC
+[@crac] among systems that cut JVM startup cost, by snapshotting or ahead-of-time
+compilation, while keeping a conventional operating-system host. Separately,
+WebAssembly has been evaluated as a serverless execution target independent of any
+particular language
 [@murphy; @lumos].
 
-Those approaches ship a language runtime into WebAssembly and emulate what the host
-does not provide. Bytebox starts from an existing Java-to-WebAssembly compiler and
-makes the opposite move where it can: the class library is bound to services the
+Pyodide and Blazor ship a language runtime into WebAssembly and emulate what the
+host does not provide; the startup-side systems keep a conventional host and change
+how the runtime reaches it. Bytebox starts from an existing Java-to-WebAssembly
+compiler and makes the opposite move where it can: the class library is bound to
+services the
 host already implements, work that cannot execute on the platform is removed at
 build time, and semantics that cannot be preserved are refused rather than
 approximated.
@@ -117,10 +122,11 @@ than through a wrapper API, which is what allows an unmodified dependency to
 compile: `java.time` resolves to ThreeTen-Backport [@threeten] with zone rules read
 from the host's internationalization data, `java.net` to the platform's own HTTP and
 TCP facilities, `java.util.regex` to the host's regular-expression engine with
-differing constructs translated, and `java.util.Formatter` to digits computed in
-Java because the host's rounding answers a different question. JSON codecs and
-`java.io` serialization are generated at build time rather than discovered by
-reflection, since a closed-world compiler cannot prune a reflective closure.
+differing constructs translated [@davis], and `java.util.Formatter` to digits
+computed in Java because the host's rounding answers a different question. JSON
+codecs and `java.io` serialization are generated at build time rather than
+discovered by reflection, since a closed-world compiler cannot prune a reflective
+closure.
 Constructs with no faithful equivalent — inbound sockets, subprocesses, dynamic
 class loading, several formatter and regular-expression forms — fail at compile time
 with the refusal named.
@@ -130,7 +136,7 @@ JavaScript type information in descending order of reliability and falls back to
 dynamic representation when no static shape can be established, so a package without
 published types still binds.
 
-Nine samples in the repository each demonstrate one feature and double as the
+Ten samples in the repository each demonstrate one feature and double as the
 end-to-end check, and a verification step compiles every built module through the
 loader's own options before the build reports success.
 
@@ -142,16 +148,17 @@ rather than uploaded bytes, remaining flat at 8–10 ms while inert padding grew
 bundle 640-fold; request CPU, not size or startup, is the budget a retargeted class
 library spends, measured at a 43 ms median against a documented 10 ms free-plan
 allowance without termination; the isolate memory ceiling measured 254 MiB accepted
-and 256 MiB refused against a documented 128 MB; five of fourteen third-party Java
-libraries compile and run unmodified, with the refusals falling into three
+and 256 MiB refused against a documented 128 MB [@cflimits]; five of fourteen
+third-party Java libraries compile and run unmodified, with the refusals falling
+into three
 identifiable layers; and a regular expression translated to byte-identical results
 across 48 pattern–input pairs cost 14 ms on the reference JVM and 11,010 ms on the
 host engine, showing that semantic agreement does not imply equivalent cost.
 
 None of those measurements was obtainable without a way to deploy a managed runtime
-to this platform, which is the research role the software plays. The reproducible
-build makes the measurements repeatable by others, and the samples provide the
-workloads.
+to this platform, which is the research role the software plays. The study names this
+repository at commit `db114b1` as its artifact; the reproducible build makes the
+measurements repeatable by others, and the samples provide the workloads.
 
 # AI Usage Disclosure
 
