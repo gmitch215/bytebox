@@ -162,12 +162,13 @@ measurements repeatable by others, and the samples provide the workloads.
 
 # AI Usage Disclosure
 
-The implementation was developed with assistance from AI coding agents
-directed by the author, under measurement and failure-mode rules recorded in the
-repository. All architectural decisions, all measurements and their interpretation,
-and all prose in this paper and in the accompanying study are the author's own.
-Generated code was reviewed, tested and, where it was wrong, corrected or removed;
-several of the defects reported in the accompanying study were found this way.
+Generative AI tools were used interactively during the development of Bytebox and
+preparation of this manuscript, including for technical discussion, implementation
+assistance, and proposing and revising manuscript prose. The author directed the
+research questions, system design, experimental evaluation, and overall argument of
+the paper; AI-generated suggestions and prose were reviewed, accepted, modified, or
+rejected by the author. The author takes responsibility for the implementation,
+experimental results, interpretations, claims, and final manuscript.
 
 # Acknowledgements
 
