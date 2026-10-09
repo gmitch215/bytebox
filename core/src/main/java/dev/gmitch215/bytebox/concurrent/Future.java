@@ -7,10 +7,11 @@ import org.teavm.jso.core.JSPromise;
 /**
  * A value that is not here yet, backed by a JavaScript promise.
  *
- * <p>{@code java.util.concurrent.CompletableFuture} does not exist on this platform: the class
- * library ships a small subset of {@code java.util.concurrent} with no {@code Future} at all, and a
- * thread pool cannot be built on a runtime with one thread. This carries the part of that API which
- * means something here, over the promise the runtime already understands.
+ * <p>{@code java.util.concurrent.Future} and {@code CompletableFuture} exist on this platform
+ * (bytebox supplies them, because the class library does not), but they have no pool behind them and
+ * know nothing about promises. This is the type to use when the work is a JavaScript promise: it
+ * carries the part of that API which means something here, over the promise the runtime already
+ * understands.
  *
  * <p>Most code does not need it. A binding call blocks and returns a value, which is more direct
  * than a future and costs the same. Reach for this to hold work open past a handler's return, to

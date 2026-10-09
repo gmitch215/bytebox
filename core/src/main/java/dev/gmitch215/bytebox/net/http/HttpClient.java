@@ -31,9 +31,9 @@ import java.util.Optional;
  * <p>{@link #send} blocks the way it does on a JVM, which here means suspending the fiber rather than
  * an OS thread. Nothing would run in parallel with it in any case, because the runtime has one thread.
  *
- * <p>{@code sendAsync} is absent, and for a reason worth naming: it returns a
- * {@code CompletableFuture}, which the class library does not have. A method that cannot work should
- * not be on the surface, so calling it is a compile error in your own project rather than an
+ * <p>{@code sendAsync} is still absent. Its return type, {@code CompletableFuture}, now exists on
+ * this platform, but this client does not implement the method. A method that cannot work should not
+ * be on the surface, so calling it is a compile error in your own project rather than an
  * unresolved reference when the program is compiled to WebAssembly.
  * {@link dev.gmitch215.bytebox.concurrent.Async#supply} runs work on its own fiber where that is what
  * was wanted.
