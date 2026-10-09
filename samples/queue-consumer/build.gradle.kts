@@ -8,6 +8,7 @@ bytebox {
 	wrangler {
 		name = "queue-consumer"
 		compatibilityDate = "2026-08-22"
+		queueConsumers("orders")
 	}
 
 	bindings {
