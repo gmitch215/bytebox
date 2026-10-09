@@ -13,6 +13,7 @@ dependencies {
 	implementation(libs.threetenbp)
 	// the substitution policy runs in the compiler, not in the program
 	compileOnly(libs.teavm.extension.spi)
+	compileOnly(libs.teavm.core)
 	compileOnly(libs.annotations)
 
 	testImplementation(libs.junit.api)
@@ -20,6 +21,7 @@ dependencies {
 	testRuntimeOnly(libs.junit.engine)
 	// the substitution policies are ordinary classes, so which names they select is checkable here
 	testImplementation(libs.teavm.extension.spi)
+	testImplementation(libs.teavm.core)
 }
 
 // the same suite again with a carriage-return line separator. %n is the platform's separator rather
@@ -36,6 +38,10 @@ val testCrlf by tasks.registering(Test::class) {
 }
 
 tasks.named("check") { dependsOn(testCrlf) }
+
+tasks.jar {
+	from(rootProject.file("NOTICE")) { into("META-INF") }
+}
 
 mavenPublishing {
 	coordinates(project.group.toString(), project.name, project.version.toString())

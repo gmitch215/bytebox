@@ -1,0 +1,11 @@
+bytebox
+Copyright (c) 2026 Gregory Mitchell
+Released under the MIT License (see LICENSE).
+
+This product includes software from TeaVM (https://teavm.org), released under the Apache License,
+Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0):
+
+  core/src/main/java/dev/gmitch215/bytebox/text/DoubleAnalyzer.java
+    Copyright 2018 Alexey Andreev
+    Modified from org.teavm.classlib.impl.text.DoubleAnalyzer in TeaVM 0.15.0. The tables and the
+    multiplication are TeaVM's; the choice of digits and the subnormal handling were replaced.
