@@ -2,6 +2,7 @@ package dev.gmitch215.bytebox;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import dev.gmitch215.bytebox.js.TSObject;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +33,13 @@ class ResponseTest {
 
 		assertEquals(404, response.getStatus());
 		assertEquals("Not Found", response.getStatusText());
+	}
+
+	@Test
+	@DisplayName("lets a class written before copy() existed keep compiling, and clones natively")
+	void copyHasADefault() {
+		// the default is a native clone, which only the platform has
+		assertThrows(UnsatisfiedLinkError.class, () -> new Stub(200).copy());
 	}
 
 	/** Everything below the status needs the platform, so the stub refuses rather than pretends. */

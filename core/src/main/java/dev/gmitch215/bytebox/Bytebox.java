@@ -254,6 +254,9 @@ public final class Bytebox {
 	@JSBody(params = "message", script = "console.log(message);")
 	public static native void log(String message);
 
+	@JSBody(params = "response", script = "return response.clone();")
+	static native Response copyOf(Response response);
+
 	@JSBody(params = "url", script = "return fetch(url);")
 	private static native JSPromise<Response> sendUrl(String url);
 

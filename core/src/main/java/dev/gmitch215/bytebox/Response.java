@@ -108,6 +108,17 @@ public interface Response extends JSObject {
 		);
 	}
 
+	/**
+	 * Copies the response so its body can be read twice, once by the caller and once by something
+	 * that consumes it, such as {@link dev.gmitch215.bytebox.cache.Cache#put(String, Response)}.
+	 *
+	 * @return a response with the same status, headers and body
+	 * @since 1.0.3
+	 */
+	default Response copy() {
+		return Bytebox.copyOf(this);
+	}
+
 	@JSMethod("text")
 	JSPromise<JSString> readText();
 
