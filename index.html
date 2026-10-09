@@ -230,10 +230,15 @@ and deploy WebAssembly that runs on Cloudflare&#39;s edge.</p>
 <li><a href="#-why-bytebox">Why bytebox</a></li>
 <li><a href="#-install">Install</a></li>
 <li><a href="#-quick-start">Quick Start</a></li>
+<li><a href="#-kotlin">Kotlin</a></li>
 <li><a href="#-triggers">Triggers</a></li>
 <li><a href="#-bindings">Bindings</a></li>
+<li><a href="#-cache">Cache</a></li>
+<li><a href="#-htmlrewriter">HTMLRewriter</a></li>
+<li><a href="#-workflows">Workflows</a></li>
 <li><a href="#-json">JSON</a></li>
 <li><a href="#-standard-library">Standard Library</a></li>
+<li><a href="#-opt-in-extras">Opt-In Extras</a></li>
 <li><a href="#-serialization">Serialization</a></li>
 <li><a href="#-npm-packages">npm Packages</a></li>
 <li><a href="#-startup">Startup</a></li>
@@ -281,8 +286,48 @@ together.</p>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">./gradlew</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> buildWorker</span></span>
 <span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">./gradlew</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> workerDeploy</span></span></code></pre><p><code>buildWorker</code> writes a complete Worker into <code>build/bytebox/worker</code>: the module, a <code>wrangler.jsonc</code>,
 a JavaScript entry point and a package manifest. Nothing there is hand-written.</p>
-<p><a href="https://github.com/gmitch215/bytebox/tree/master/samples">samples/</a> has nine of these, one per feature, and
+<p><a href="https://github.com/gmitch215/bytebox/tree/master/samples">samples/</a> has fourteen of these, one per feature, and
 <a href="https://github.com/gmitch215/bytebox/blob/master/ADVANCED_USAGE.md">ADVANCED_USAGE.md</a> is the design document behind them.</p>
+<hr>
+<h2 id="-kotlin">🟣 Kotlin</h2>
+<p>Apply the Kotlin plugin next to bytebox, in either order. The build orders the Kotlin compile tasks
+after the generators, and <code>kotlin-stdlib</code> is compiled into the module like any other dependency.</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">plugins</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"dev.gmitch215.bytebox"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	kotlin</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"jvm"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) version </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"2.4.20"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	handlerClass </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "com.example.KotlinWorker"</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	wrangler</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		name </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "kotlin"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		compatibilityDate </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "2026-08-22"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p>A handler is a <code>class</code> with a public no-argument constructor, or an <code>object</code>, which the generated
+entry point reads through its <code>INSTANCE</code>:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">data</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> class</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> Language</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">val</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> name: </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">String</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">val</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> year: </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">/** A Worker written as a Kotlin object; the build reads its instance, so nothing constructs it. */</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">object</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> KotlinWorker</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> : </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Worker</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> val</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> languages </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> listOf</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Language</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Java"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">1995</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">), </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Language</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Kotlin"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">2011</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">), </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Language</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Rust"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">2015</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">))</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	override</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> fun</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> fetch</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(request: </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Request</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, env: </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, ctx: </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">ExecutionCtx</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">): </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">Response</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		val</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> since </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> request.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">query</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"since"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"2000"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">).</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">toInt</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		val</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> released </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> languages.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">filter</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> { it.year </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">>=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> since }.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">associate</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> { it.name to it.year }</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> (released.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">isEmpty</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Bytebox.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">response</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"nothing since </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">$since</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Bytebox.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">response</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(released.entries.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">joinToString</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) { </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"${it.key} was released in ${it.</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">value</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">}"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> })</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p>A Durable Object has to be a class, because there is one instance per id; naming an <code>object</code> fails
+the build with a message that says so. Collections, <code>Sequence</code>, string templates, data classes,
+sealed classes, <code>Regex</code>, <code>String.format</code> and <code>@JSONType</code> classes print what they print on a JVM, and
+the handler is plain blocking code, as in Java.</p>
+<p>kotlinx-coroutines does not build. <code>runBlocking</code>, <code>launch</code>, <code>delay</code>, <code>withContext</code> and
+<code>Dispatchers.*</code> are refused by the compiler, and a <code>suspend</code> lambda started with <code>startCoroutine</code>
+compiles to a module the engine rejects. <code>sequence { yield(...) }</code> works. The refusals name classes
+the class library lacks, so the list shrinks as they arrive; the first wall and the measurements are
+in <a href="https://github.com/gmitch215/bytebox/blob/master/ADVANCED_USAGE.md">ADVANCED_USAGE.md</a>.</p>
 <hr>
 <h2 id="-triggers">🎛 Triggers</h2>
 <p>One interface per trigger, each optional. The build derives which handlers to export and which
@@ -341,7 +386,142 @@ provision the resource.</p>
 <pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
 <span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	bindings</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(KV, D1, D1, KV) </span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D">// KV, DB, DB_2, KV_2</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p><code>bindingsReport</code> prints every declared binding and the resource it points at, which is where a name
-that drifted shows up.</p>
+that drifted shows up. A Workflow binding is <code>WORKFLOW</code>; see <a href="#-workflows">Workflows</a>.</p>
+<p><code>durableObject(&quot;Counter&quot;)</code> declares the binding only. <code>durableObjects(&quot;com.example.Counter&quot;)</code> also
+writes the exported class and a <code>new_sqlite_classes</code> migration, which Wrangler requires before it
+accepts the Worker. The generated entry loads the module a second time for the Durable Object classes,
+with a gate of their own, so a Worker can wait on its own Durable Object. A project that declares one
+compiles and instantiates the module twice and holds two heaps; the memory of the second was not
+measured. A queue binding only sends: a Worker receives a queue&#39;s messages after
+<code>wrangler { queueConsumers(&quot;orders&quot;) }</code>. The generated <code>wrangler.jsonc</code> writes <code>queues</code> as
+<code>{ &quot;producers&quot;: [...], &quot;consumers&quot;: [...] }</code>, and a consumer-only Worker writes only <code>consumers</code>. A
+Worker that is a queue&#39;s consumer cannot be deleted until <code>wrangler queues consumer remove &lt;queue&gt; &lt;worker&gt;</code> runs.</p>
+<hr>
+<h2 id="-cache">🗂 Cache</h2>
+<p>The Workers Cache API needs no binding. <code>Caches.defaultCache()</code> returns <code>caches.default</code> and
+<code>Caches.open(name)</code> a named cache. <code>match</code>, <code>put</code> and <code>delete</code> take a <code>Request</code> or a URL string and
+block; <code>putAsync</code>, <code>matchAsync</code> and <code>deleteAsync</code> return the promise, for <code>ctx.waitUntil</code>.</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">public</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> class</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> CachedWorker</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> implements</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> Worker</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	@</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">Override</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	public</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Response </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">fetch</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(Request </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">request</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, Env </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, ExecutionCtx </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">ctx</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		Cache cache </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Caches.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">defaultCache</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		Response stored </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> cache.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">match</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(request);</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		if</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> (stored </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">!=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> null</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">return</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> answer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(stored.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">text</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(), </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"HIT"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		Response fresh </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> answer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">compute</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(request.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()), </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"MISS"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		fresh.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">getHeaders</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">().</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">set</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"Cache-Control"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"public, max-age=60"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		ctx.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">waitUntil</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(cache.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">putAsync</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(request, fresh.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">copy</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()));</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> fresh;</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Response </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">answer</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(String </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">body</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, String </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">cache</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		TSObject headers </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">object</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		headers.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">set</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"X-Cache"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">of</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(cache));</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Bytebox.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">response</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(body, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">200</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, headers);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> String </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">compute</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(String </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">path</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		long</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> sum </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> 0</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		for</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> i </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> 1</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">; i </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">&#x3C;=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> 10_000</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">; i</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">++</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) sum </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">+=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">long</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) i </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> path.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">length</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> path </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">+</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> " computed at "</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> +</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> System.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">currentTimeMillis</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">() </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">+</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> ", sum "</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> +</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> sum </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">+</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">\n</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">;</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p><code>put</code> consumes the response body, so <code>Response.copy()</code> makes the copy to store while the handler
+returns the original. The key must be a <code>GET</code> request: a POST key, a <code>206</code> response and <code>Vary: *</code>
+reject with a <code>TypeError</code>. A response with <code>Set-Cookie</code> is accepted and not stored, and an entry is
+local to one data center, so a request routed elsewhere is a miss.
+<code>samples/cache</code> is this class. Deployed to a free account, two requests for one URL answered
+<code>X-Cache: MISS</code> and then <code>X-Cache: HIT</code> with the same body.</p>
+<hr>
+<h2 id="-htmlrewriter">🧱 HTMLRewriter</h2>
+<p><code>HTMLRewriter.create()</code> builds the platform&#39;s rewriter, and <code>transform(response)</code> returns a response
+whose body is rewritten as it is read. Handlers are lambdas or classes:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> Response </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">links</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(Response page) {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	ContentOptions html </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> ContentOptions.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">html</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> HTMLRewriter.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">create</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">()</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"a[href]"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, link </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-></span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">			link.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">setAttribute</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"target"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"_blank"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">			link.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">setAttribute</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"rel"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"noopener"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		})</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">on</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"body"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, body </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-></span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> body.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">prepend</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"&#x3C;aside>Rewritten in Java&#x3C;/aside>"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, html))</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">onEnd</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(end </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-></span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> end.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">append</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"&#x3C;!-- served by bytebox -->"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, html))</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">transform</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(page);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p>Selectors are the platform&#39;s and pass through as strings. <code>on</code> takes an element handler; <code>onText</code>
+and <code>onComments</code> take the text and comments inside a match; <code>onDoctype</code>, <code>onDocumentText</code>,
+<code>onDocumentComments</code> and <code>onEnd</code> are the document-level ones. Content is a string, escaped as text
+unless it is wrapped in <code>ContentOptions.html()</code>. Text arrives in chunks, so collect them until
+<code>isLastInTextNode()</code> before matching a word that could span two.</p>
+<p>Each handler call runs on its own fiber and the platform waits for it, so a handler can call a
+binding or <code>fetch</code>. That costs a fiber per call, about twice the platform&#39;s own per-callback cost in
+a local measurement, so register the kinds you need and match narrowly. A handler that throws stops
+the parse and errors the body, and in Java the message arrives as a <code>JSRejection</code> that carries the
+text and not the exception class. A <code>Response</code> or a stream cannot be passed as content.
+<code>samples/html-rewriter</code> rewrites a static page on <code>/</code> and words in text on <code>/text</code>. Deployed to a free
+account, both routes answered the rewritten page.</p>
+<hr>
+<h2 id="-workflows">🔁 Workflows</h2>
+<p>A Java class that implements <code>WorkflowEntrypoint</code> is a Workflow. Name it once in the build and the
+plugin writes the exported class the platform instantiates and a <code>workflows</code> entry in
+<code>wrangler.jsonc</code>:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	handlerClass </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "com.example.OrderWorker"</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	workflows</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"com.example.OrderFlow"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	wrangler</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		name </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "workflow"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		compatibilityDate </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "2026-08-22"</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	bindings</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">		workflow</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"com.example.OrderFlow"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"WORKFLOW"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"order-flow"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">public</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> class</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> OrderFlow</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> implements</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0"> WorkflowEntrypoint</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	@</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">Override</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">	public</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> TSObject </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(WorkflowEvent </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">event</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, Step </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">step</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, Env </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70">env</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">) {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		String item </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> event.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">payload</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">().</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">get</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"item"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">).</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">asString</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		TSObject reserved </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> step.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"reserve"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, () </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-></span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">of</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"reserved "</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> +</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> item));</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		step.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">sleep</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"wait for payment"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"2 seconds"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		TSObject receipt </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> step.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">run</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"ship"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, () </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">-></span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">			TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">of</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(reserved.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">asString</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">() </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">+</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> ", shipped for "</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> +</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> event.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">instanceId</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">())</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		);</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		TSObject output </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">object</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		output.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">set</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"receipt"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, receipt);</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">		return</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> output;</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p><code>Step.run(name, body)</code> wraps <code>step.do</code> and stores the body&#39;s result; <code>Step.run(name, config, body)</code>
+takes Cloudflare&#39;s step config as a <code>TSObject</code>, for retries and timeouts. <code>Step.sleep(name, duration)</code>
+takes a duration string such as <code>&quot;30 seconds&quot;</code>. A body that throws fails the attempt and the platform
+retries it. The method is <code>run</code> because <code>do</code> is a keyword.</p>
+<p>The platform runs <code>run</code> again from the top to resume an instance, and a finished step returns its
+saved result without running its body. Keep side effects, the clock and anything random inside a
+step, and give each step the same name every time. Fields on the class do not survive a resume.</p>
+<p><code>run</code> goes through the isolate&#39;s gate like every other entry. While an instance is inside <code>run</code>, a
+sleep included, every other call into the same Worker waits, and a sleeping instance cannot be
+terminated, paused or sent an event from that Worker. A Workflow that sleeps for long belongs in a
+Worker that serves nothing else. The three-argument <code>workflow(class, binding, name)</code> above names the
+binding and the Workflow yourself. A project that only calls <code>workflows(...)</code> gets
+<code>WORKFLOW_&lt;CLASS_IN_UPPER_SNAKE_CASE&gt;</code> and a Workflow name in kebab case. The name must be unique per
+account. The one-argument <code>workflow(class)</code> writes a configuration without the <code>binding</code> key, and
+Wrangler refuses it.</p>
+<p><code>createBatch</code> starts up to 100 instances in one call. The options form takes Cloudflare&#39;s object as
+it is and reports what was and was not created:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">TSObject instances </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">array</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">instances.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">push</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(Workflow.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">entry</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"first"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, params));</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">instances.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">push</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(Workflow.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">entry</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"second"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, params));</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">TSObject options </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> TSObject.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">object</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">();</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">options.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">set</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF">"instances"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, instances);</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">Workflow.BatchResult result </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> flow.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">createBatch</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(options);</span></span></code></pre><p><code>createBatch(count, params)</code> starts <code>count</code> instances with one input. <code>BatchResult.created()</code> lists
+the instances and <code>errors()</code> the entries that were not created, each with an <code>index</code>, <code>id</code>, <code>code</code>
+and <code>message</code>: 10405 is an id that exists, and 10415 an id the batch repeats. The older list form,
+<code>createBatch(List&lt;TSObject&gt;)</code>, returns only the created instances and skips a duplicate id silently,
+which is why Cloudflare deprecates it. The options form needs Wrangler 4.148.0 or later for local
+development. <code>samples/workflow</code> starts a Workflow at <code>/start?item=lamp</code> and reads it back at
+<code>/status?id=&lt;id&gt;</code>. Deployed to a free account, <code>/start</code> returned an instance id and <code>/status</code> read
+<code>queued</code>, then <code>running</code>, then <code>complete</code> with the receipt.</p>
 <hr>
 <h2 id="-json">🧾 JSON</h2>
 <p>Annotate a type and the build writes its codec:</p>
@@ -394,16 +574,61 @@ of Cloudflare Workers compiles unchanged.</p>
 <td><code>java.util.Formatter</code></td>
 <td>digits computed in Java, separators from <code>Intl</code></td>
 </tr>
+<tr>
+<td><code>java.security.MessageDigest</code></td>
+<td>pure Java: MD5, SHA-1, SHA-256, SHA-384, SHA-512</td>
+</tr>
+<tr>
+<td><code>java.util.concurrent</code></td>
+<td><code>ReentrantLock</code>, <code>Condition</code> and <code>CompletableFuture</code> on fibers</td>
+</tr>
+<tr>
+<td><code>java.lang.ClassLoader</code></td>
+<td>an empty classpath, so a lookup finds nothing</td>
+</tr>
 </tbody></table></div>
-<p>Each one either matches a JVM or refuses while you are building. A pattern using an atomic group, a
-possessive quantifier or a flag written inside it will not compile, and <code>Pattern.compile</code> names what
-it refused. <code>String.format</code> refuses <code>%t</code> and <code>%a</code>. <code>ServerSocket</code> and <code>DatagramSocket</code> are left
-unresolved, because the platform accepts no inbound connection and speaks no UDP.</p>
-<p>Nothing about this is free of consequences, and they are written down. The clock is pinned between
-I/O, so <code>Instant.now()</code> gives the time the invocation began. <code>CASE_INSENSITIVE</code> folds the whole of
-Unicode here where a JVM folds ASCII. A timezone&#39;s recorded history is not available, because the
-rules are derived from the offsets <code>Intl</code> reports rather than read from a table.</p>
+<p>Each one either matches a JVM, refuses, or is listed below as a known difference. Only <code>ServerSocket</code>
+and <code>DatagramSocket</code> fail the build, because they are left unresolved: the platform accepts no inbound
+connection and speaks no UDP. The rest refuse when the program runs. <code>Pattern.compile</code> throws a
+<code>PatternSyntaxException</code> naming a flag written anywhere but the start of a pattern, <code>\G</code>, <code>\X</code>, a
+capturing group inside an atomic group or a possessive quantifier, a backreference inside the group
+it names, and a backreference under <code>CASE_INSENSITIVE</code> without <code>UNICODE_CASE</code>. <code>String.format</code> throws on <code>%t</code> unless
+<code>classlib { dateFormat = true }</code> switches it on.</p>
+<p>The differences are measured and written down. The clock is pinned between I/O, so <code>Instant.now()</code>
+gives the time the invocation began. <code>CASE_INSENSITIVE</code> with <code>UNICODE_CASE</code> folds the whole of
+Unicode, and differs from a JVM at 62 characters; with it, <code>Pattern.matcher</code> throws
+<code>UnsupportedOperationException</code> for text holding a character above U+FFFF when the pattern uses <code>.</code>
+or a negated class. A timezone&#39;s recorded history is not available by default, because
+the rules are derived from the offsets <code>Intl</code> reports rather than read from a table;
+<code>classlib { zoneHistory = true }</code> reads it from a bundled database instead. <code>Double.toString</code>,
+<code>Float.toString</code> and <code>Double.parseDouble</code> and <code>Float.parseFloat</code> agree with JDK 27 on everything
+tested, including hexadecimal floats and the messages of a refused string; <code>Float.toString</code> costs
+two to three times what the class library&#39;s did. One number difference is known: negating a runtime
+<code>0.0</code> with <code>-x</code> gives <code>+0.0</code>, where a JVM gives <code>-0.0</code>. The regex engine is the platform&#39;s, and a pattern that backtracks badly costs far more than on a
+JVM: the technical report measures <code>(a+)+b</code> at 14 ms on a reference JVM and 11,010 ms here, over
+inputs of 20 to 30 characters.</p>
 <p><a href="https://github.com/gmitch215/bytebox/blob/master/ADVANCED_USAGE.md">ADVANCED_USAGE.md</a> covers the rest, with the measured cost of each.</p>
+<hr>
+<h2 id="-opt-in-extras">🧩 Opt-In Extras</h2>
+<p>The <code>classlib</code> block switches on a part of the class library that costs bytes only when a program
+uses it. It has two flags, <code>zoneHistory</code> and <code>dateFormat</code>, both off by default:</p>
+<pre class="shiki shiki-themes github-light github-dark" style="--shiki-light:#24292e;--shiki-dark:#e1e4e8;--shiki-light-bg:#fff;--shiki-dark-bg:#24292e" tabindex="0"><code><span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">bytebox</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">	classlib</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		zoneHistory </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">		dateFormat </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF"> true</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">	}</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">}</span></span></code></pre><p>With <code>zoneHistory</code>, <code>ZoneRules.getTransitions()</code> and <code>getTransitionRules()</code> answer from the bundled
+tzdata 2024b database, and so do <code>nextTransition</code> and <code>previousTransition</code>, at any distance, as a JVM
+does. Without it the first two throw <code>UnsupportedOperationException</code> and the other two answer <code>null</code>
+past 400 days. The 108,033-byte file and about 40 KB of reader code enter the module only when the
+program calls one of those methods: a Worker that calls <code>getTransitions()</code> once grew from 45,662 to
+193,379 bytes, and one that sets the flag and never calls any of them grew by 495 to 827 bytes.</p>
+<p>With <code>dateFormat</code>, <code>String.format</code> accepts <code>%t</code> and <code>%T</code> for a <code>long</code>, <code>Long</code>, <code>Date</code>, <code>Calendar</code> or
+<code>java.time</code> value in <code>Locale.US</code>, <code>Locale.ENGLISH</code> or no locale. <code>%tZ</code>, <code>%tc</code>, any other locale and an
+instant before 1582-10-15 (a JVM reads the Julian calendar there) are still refused. The flag adds 24
+to 28 KB to a program that formats and 585 bytes to one that does not. With it off, the hook that
+makes the flag possible costs 361 bytes in a program the size of <code>samples/standard-library</code> that
+calls <code>String.format</code>, and nothing in one that does not.</p>
 <hr>
 <h2 id="-serialization">💾 Serialization</h2>
 <p><code>java.io</code> serialization writes the bytes a JVM writes, checked byte for byte against a real
@@ -432,7 +657,11 @@ runtime introspection, and reports which of those it landed on. The floor is the
 <span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">	imports</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> @</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">JSBodyImport</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">alias</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "nanoid"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">fromModule</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "nanoid"</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">),</span></span>
 <span class="line"><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF">	script</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF"> "return nanoid.nanoid(size);"</span></span>
 <span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">)</span></span>
-<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> native</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> String </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> size);</span></span></code></pre><hr>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">private</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> static</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583"> native</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> String </span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0">id</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583">int</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8"> size);</span></span></code></pre><p>A script the compiler cannot parse fails the build with <code>Error in @JSBody script</code>. The compiler&#39;s
+parser is older than the engine that runs the module, so each script it reports is parsed again by
+<code>node</code> as a function body, and only a script <code>node</code> refuses too fails the build. A <code>for...of</code> loop or
+a BigInt literal passes. Without <code>node</code> on the PATH every reported script fails the build.</p>
+<hr>
 <h2 id="-startup">⚡ Startup</h2>
 <p>Cloudflare meters the uncompressed bundle against 64 MiB on either plan. Nothing is enforced against
 the gzip figure wrangler prints beside it, and a Java Worker sits far under either. What a Worker has
@@ -456,8 +685,14 @@ fails the build past a figure of your choosing.</p>
 parallelism to be had. A Java thread is a fiber scheduled on the host&#39;s queue.</p>
 <p>That makes a blocking API the honest one. <code>env</code> calls look synchronous and suspend underneath, which
 is what a compiled continuation gives you. <code>Future</code> is the escape hatch when work needs to overlap or
-outlive a response — <code>java.util.concurrent.CompletableFuture</code> does not exist on this platform, and a
-thread pool cannot.</p>
+outlive a response. <code>java.util.concurrent.CompletableFuture</code> runs each stage on a fiber, and a thread
+pool cannot.</p>
+<p>A lock, a join or a get works from the handler&#39;s constructor, from a static initialiser it
+triggers, and from the constructor of a Durable Object or a Workflow, because the generated entry
+builds each of them on a fiber. A constructor that throws fails the request that reached it, with the
+exception&#39;s message, and the next request builds again. A handler that throws while it is built fails
+every request with <code>module start failed: ...</code>, and one that never finishes fails them with
+<code>module start has not finished</code>.</p>
 <p>Workers freeze the clock between I/O, so a <code>Thread.sleep</code> would never come due. bytebox advances its
 own clock to cover one and gives the compiled program the same clock to read, which is what makes a
 sleep terminate. Absolute timestamps are sound; a duration taken from two readings is not, and no
@@ -503,17 +738,30 @@ CPU meter is readable from inside a request.</p>
 <td>250</td>
 </tr>
 </tbody></table></div>
+<p>The table is the platform&#39;s stated numbers. Measured on one deployed Worker on the free plan, neither
+CPU nor memory behaved as written: a Worker linking the retargeted class library reported a median
+<code>cpuTime</code> of 43 ms (range 2 to 79 ms, n = 8) with nothing terminated, and one request allocated
+254 MiB while 256 MiB was refused. The sources are the CPU and isolate memory measurements in the
+<a href="https://github.com/gmitch215/bytebox/blob/master/TECHNICAL_REPORT.md">technical report</a>. Two limits come from the compiled program itself. Calling <code>hashCode()</code> on a JavaScript string or
+number caches it in a map the platform does not promise to drain, so a long-lived isolate that hashes
+unbounded distinct strings grows that map. A class
+initialiser that throws does not leave the class erroneous for the rest of the program, as it does
+on a JVM.</p>
 <hr>
 <h2 id="-out-of-scope">🛑 Out of Scope</h2>
 <ul>
 <li><strong>Subprocesses.</strong> <code>Process</code> and <code>ProcessBuilder</code> do not exist, and Workers have no equivalent.</li>
 <li><strong>Threads.</strong> Fibers are real; parallelism is not.</li>
 <li><strong>Dynamic class loading.</strong> Compilation is closed-world, so reflection resolves against classes
-registered at build time.</li>
+registered at build time, and <code>ClassLoader</code> finds no resources and loads no classes.</li>
+<li><strong>Kotlin coroutines.</strong> kotlinx-coroutines does not build, and a <code>suspend</code> lambda started with
+<code>startCoroutine</code> produces a module the engine rejects.</li>
 <li><strong>Listening.</strong> <code>ServerSocket</code> and <code>DatagramSocket</code> are left unresolved, because the platform accepts
 no inbound connection and speaks no UDP.</li>
-<li><strong><code>%t</code> and <code>%a</code>, atomic groups, possessive quantifiers.</strong> Anything a retargeted API cannot render
-exactly is refused where you can see it rather than approximated where you cannot.</li>
+<li><strong>A flag written after the start of a pattern, and <code>%tZ</code> or <code>%tc</code>.</strong> Anything a retargeted API
+cannot render exactly is refused where you can see it rather than approximated where you cannot.</li>
+<li><strong>A Workflow beside a busy Worker.</strong> While an instance is inside <code>run</code>, every other call into
+that Worker waits.</li>
 </ul>
 <hr>
 <h2 id="-license">📄 License</h2>

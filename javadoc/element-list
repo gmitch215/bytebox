@@ -1,9 +1,12 @@
 dev.gmitch215.bytebox
 dev.gmitch215.bytebox.binding
 dev.gmitch215.bytebox.builtin
+dev.gmitch215.bytebox.cache
+dev.gmitch215.bytebox.classloader
 dev.gmitch215.bytebox.concurrent
 dev.gmitch215.bytebox.durable
 dev.gmitch215.bytebox.gradle
+dev.gmitch215.bytebox.html
 dev.gmitch215.bytebox.http
 dev.gmitch215.bytebox.io
 dev.gmitch215.bytebox.js
@@ -12,6 +15,10 @@ dev.gmitch215.bytebox.locks
 dev.gmitch215.bytebox.net
 dev.gmitch215.bytebox.net.http
 dev.gmitch215.bytebox.regex
+dev.gmitch215.bytebox.security
 dev.gmitch215.bytebox.socket
+dev.gmitch215.bytebox.sync
 dev.gmitch215.bytebox.text
 dev.gmitch215.bytebox.time
+dev.gmitch215.bytebox.util
+dev.gmitch215.bytebox.workflow
