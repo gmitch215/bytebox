@@ -19,7 +19,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  */
 export default async function setup(): Promise<void> {
 	await Promise.all(
-		['worker', 'core-worker', 'counter-worker'].map((name) =>
+		['worker', 'core-worker', 'counter-worker', 'workflow-worker', 'self-worker'].map((name) =>
 			build({
 				entryPoints: [join(here, `${name}.ts`)],
 				outfile: join(here, `${name}.build.mjs`),
