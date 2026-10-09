@@ -24,10 +24,10 @@ import java.util.UnknownFormatConversionException;
  * against a hello world of 7 KB. The digits are worked out here instead, by {@link Decimal}, and
  * {@code Locale} - which is 0.9 KB by itself - is all that is left of the rest.
  *
- * <p>Two conversions are not here, and both would put back what this class exists to remove.
+ * <p>One conversion is not here, because it would put back what this class exists to remove.
  * {@code %t} and {@code %T} would make the date and calendar graph reachable from every
- * {@code String.format} call; use {@code DateTimeFormatter} instead. {@code %a} and {@code %A} write a
- * double in hexadecimal; use {@code Double.toHexString}. Each throws and names its replacement.
+ * {@code String.format} call; use {@code DateTimeFormatter} instead. It throws and names its
+ * replacement.
  *
  * <p>Grouping is inserted every three digits, which is right for the locales that group in threes and
  * wrong for the ones that do not. The decimal point and the group separator themselves come from the
@@ -210,6 +210,7 @@ public final class Formatter implements Closeable, Flushable {
 		private final int width;
 		private final int precision;
 		private final char conversion;
+		private final char suffix;
 
 		private final boolean left;
 		private final boolean alternate;
@@ -303,24 +304,35 @@ public final class Formatter implements Closeable, Flushable {
 				throw new UnknownFormatConversionException(format.substring(percent));
 			}
 			char conversion = format.charAt(at++);
-			if (conversion == 't' || conversion == 'T') {
-				throw new UnsupportedOperationException(
-					"%" +
-						conversion +
-						" is not supported here, because the date conversions would make the calendar" +
-						" and locale graph reachable from every String.format call; DateTimeFormatter" +
-						" formats a date"
-				);
+			if (conversion == 'D' || conversion == 'O' || conversion == 'F') {
+				throw new UnknownFormatConversionException(String.valueOf(conversion));
 			}
-			if (conversion == 'a' || conversion == 'A') {
-				throw new UnsupportedOperationException(
-					"%" +
-						conversion +
-						" is not supported here; Double.toHexString writes a double" +
-						" in hexadecimal"
+			char suffix = 0;
+			if (conversion == 't' || conversion == 'T') {
+				if (DateConversion.installed == null) {
+					throw new UnsupportedOperationException(
+						"%" +
+							conversion +
+							" is not supported here, because the date conversions would make the calendar" +
+							" and locale graph reachable from every String.format call; DateTimeFormatter" +
+							" formats a date; classlib { dateFormat = true } switches them on"
+					);
+				}
+				suffix = DateConversion.installed.suffix(
+					format,
+					at++,
+					conversion,
+					precision,
+					alternate,
+					signed,
+					space,
+					zero,
+					grouped,
+					parenthesised
 				);
 			}
 
+			this.suffix = suffix;
 			this.text = format.substring(percent, at);
 			this.end = at;
 			this.index = index;
@@ -367,8 +379,6 @@ public final class Formatter implements Closeable, Flushable {
 			if (specifier.width >= 0 || specifier.precision >= 0) {
 				throw new java.util.IllegalFormatFlagsException(specifier.text);
 			}
-			// the platform's separator rather than a newline, which is what the conversion means; on
-			// this runtime the two are the same, and on a JVM under Windows they are not
 			// the platform's separator rather than a newline, which is what the conversion means; on
 			// this runtime the two are the same, and on a JVM under Windows they are not
 			return System.lineSeparator();
@@ -430,6 +440,17 @@ public final class Formatter implements Closeable, Flushable {
 			case 'g':
 				value = general(specifier, argument, locale);
 				break;
+			case 'a':
+				value = hexFloat(specifier, argument);
+				break;
+			case 't':
+				value = justify(
+					argument == null
+						? "null"
+						: DateConversion.installed.format(specifier.suffix, argument, locale),
+					specifier
+				);
+				break;
 			default:
 				throw new UnknownFormatConversionException(String.valueOf(specifier.conversion));
 		}
@@ -482,13 +503,9 @@ public final class Formatter implements Closeable, Flushable {
 		if (specifier.alternate) {
 			throw new java.util.FormatFlagsConversionMismatchException("#", 'd');
 		}
+		if (argument == null) return justify("null", specifier);
 		String text = wholeNumber(argument);
-		if (text == null) {
-			throw new IllegalFormatConversionException(
-				'd',
-				argument == null ? Object.class : argument.getClass()
-			);
-		}
+		if (text == null) throw new IllegalFormatConversionException('d', argument.getClass());
 		boolean negative = text.startsWith("-");
 		// the most negative long has no positive counterpart, so the digits come from the text
 		String body = negative ? text.substring(1) : text;
@@ -504,6 +521,24 @@ public final class Formatter implements Closeable, Flushable {
 		if (specifier.grouped) {
 			throw new java.util.FormatFlagsConversionMismatchException(",", conversion);
 		}
+		if (argument == null) return justify("null", specifier);
+		String prefix = specifier.alternate ? (radix == 8 ? "0" : "0x") : "";
+		if (isBigInteger(argument)) {
+			String text = argument.toString();
+			boolean negative = text.startsWith("-");
+			String digits = toRadix(negative ? text.substring(1) : text, radix);
+			boolean wrapped = negative && specifier.parenthesised;
+			String sign = negative
+				? specifier.parenthesised
+					? "("
+					: "-"
+				: specifier.signed
+					? "+"
+					: specifier.space
+						? " "
+						: "";
+			return zeroed(sign + prefix, digits, wrapped ? ")" : "", specifier);
+		}
 		if (specifier.parenthesised) {
 			throw new java.util.FormatFlagsConversionMismatchException("(", conversion);
 		}
@@ -514,9 +549,83 @@ public final class Formatter implements Closeable, Flushable {
 		if (specifier.space) {
 			throw new java.util.FormatFlagsConversionMismatchException(" ", conversion);
 		}
-		String body = unsigned(argument, conversion, radix);
-		if (specifier.alternate) body = (radix == 8 ? "0" : "0x") + body;
-		return signed(body, false, specifier);
+		return zeroed(prefix, unsigned(argument, conversion, radix), "", specifier);
+	}
+
+	/** The zeros go between the prefix and the digits, which is where the runtime puts them. */
+	private String zeroed(String lead, String digits, String trail, Specifier specifier) {
+		StringBuilder text = new StringBuilder(lead);
+		if (specifier.zero) {
+			for (
+				int at = lead.length() + digits.length() + trail.length();
+				at < specifier.width;
+				at++
+			) {
+				text.append('0');
+			}
+		}
+		return justify(text.append(digits).append(trail).toString(), specifier);
+	}
+
+	/** Named by its class rather than its type, so that a program that never formats one pays nothing. */
+	private static boolean isBigInteger(Object argument) {
+		return argument != null && "java.math.BigInteger".equals(argument.getClass().getName());
+	}
+
+	/** The digits of a whole number written in decimal, written in another base, by long division. */
+	private static String toRadix(String decimal, int radix) {
+		int[] digits = new int[decimal.length()];
+		for (int at = 0; at < digits.length; at++) digits[at] = decimal.charAt(at) - '0';
+
+		StringBuilder out = new StringBuilder();
+		int start = 0;
+		while (start < digits.length) {
+			int remainder = 0;
+			for (int at = start; at < digits.length; at++) {
+				int current = remainder * 10 + digits[at];
+				digits[at] = current / radix;
+				remainder = current % radix;
+			}
+			out.append(Character.forDigit(remainder, radix));
+			while (start < digits.length && digits[start] == 0) start++;
+		}
+		return out.reverse().toString();
+	}
+
+	/**
+	 * A floating-point number in hexadecimal, laid out the way the runtime lays it out, including
+	 * where it counts the zero padding from.
+	 */
+	private String hexFloat(Specifier specifier, Object argument) {
+		if (specifier.grouped || specifier.parenthesised) {
+			throw new java.util.FormatFlagsConversionMismatchException(
+				(specifier.grouped ? "," : "") + (specifier.parenthesised ? "(" : ""),
+				'a'
+			);
+		}
+		if (argument == null) return justify(truncate("null", specifier.precision), specifier);
+		if (!(argument instanceof Double) && !(argument instanceof Float)) {
+			throw new IllegalFormatConversionException('a', argument.getClass());
+		}
+		double value = argument instanceof Double ? (Double) argument : (Float) argument;
+		if (Double.isNaN(value)) return justify("NaN", specifier);
+
+		boolean negative = isNegative(value);
+		String sign = negative ? "-" : specifier.signed ? "+" : specifier.space ? " " : "";
+		if (Double.isInfinite(value)) return justify(sign + "Infinity", specifier);
+
+		int digits =
+			specifier.precision < 0 ? 0 : specifier.precision == 0 ? 1 : specifier.precision;
+		String hex = HexFloat.of(Math.abs(value), digits);
+		StringBuilder text = new StringBuilder(sign).append("0x");
+		if (specifier.zero) {
+			int leading = sign.isEmpty() ? 2 : 3;
+			for (int at = hex.length() + leading; at < specifier.width; at++) text.append('0');
+		}
+		int p = hex.indexOf('p');
+		text.append(hex, 0, p);
+		for (int at = p - hex.indexOf('.') - 1; digits != 0 && at < digits; at++) text.append('0');
+		return justify(text.append(hex, p, hex.length()).toString(), specifier);
 	}
 
 	private String decimal(Specifier specifier, Object argument, Locale locale) {
@@ -579,6 +688,13 @@ public final class Formatter implements Closeable, Flushable {
 	 * going through a double would not be.
 	 */
 	private Fraction fraction(Specifier specifier, Object argument, char conversion) {
+		if (argument == null) {
+			return new Fraction(
+				null,
+				false,
+				justify(truncate("null", specifier.precision), specifier)
+			);
+		}
 		if (argument instanceof Double || argument instanceof Float) {
 			double value = argument instanceof Double ? (Double) argument : (Float) argument;
 			String special = special(value, specifier);
@@ -681,7 +797,18 @@ public final class Formatter implements Closeable, Flushable {
 	private String special(double value, Specifier specifier) {
 		if (!Double.isNaN(value) && !Double.isInfinite(value)) return null;
 		if (Double.isNaN(value)) return justify("NaN", specifier);
-		return signed("Infinity", value < 0, specifier);
+		boolean negative = value < 0;
+		String sign = negative
+			? specifier.parenthesised
+				? "("
+				: "-"
+			: specifier.signed
+				? "+"
+				: specifier.space
+					? " "
+					: "";
+		String close = negative && specifier.parenthesised ? ")" : "";
+		return justify(sign + "Infinity" + close, specifier);
 	}
 
 	/** Negative zero is negative, and comparing it against zero does not say so. */

@@ -43,6 +43,29 @@ class FormatterTest {
 		return into.toString();
 	}
 
+	/** The same text, or the same exception class, as the runtime. */
+	private static void assertAgrees(String format, Object... args) {
+		String expected = null;
+		Class<?> expectedFailure = null;
+		try {
+			expected = String.format(Locale.US, format, args);
+		} catch (RuntimeException failure) {
+			expectedFailure = failure.getClass();
+		}
+
+		String actual = null;
+		Class<?> actualFailure = null;
+		try {
+			actual = ours(format, args);
+		} catch (RuntimeException failure) {
+			actualFailure = failure.getClass();
+		}
+
+		String label = "format: " + format + " args: " + java.util.Arrays.toString(args);
+		assertEquals(expectedFailure, actualFailure, label);
+		assertEquals(expected, actual, label);
+	}
+
 	private static void assertMatches(String format, Object... args) {
 		assertEquals(
 			String.format(Locale.US, format, args),
@@ -170,19 +193,83 @@ class FormatterTest {
 		assertMatches(format, 0);
 	}
 
+	private static final BigInteger[] BIG = {
+		BigInteger.ZERO,
+		BigInteger.ONE,
+		BigInteger.ONE.negate(),
+		new BigInteger("255"),
+		new BigInteger("-255"),
+		new BigInteger("8"),
+		BigInteger.valueOf(Long.MAX_VALUE),
+		BigInteger.valueOf(Long.MIN_VALUE),
+		BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE),
+		BigInteger.ONE.shiftLeft(64),
+		BigInteger.ONE.shiftLeft(64).negate().subtract(BigInteger.ONE),
+		new BigInteger("123456789012345678901234567890"),
+		new BigInteger("-123456789012345678901234567890"),
+		BigInteger.ONE.shiftLeft(200).subtract(BigInteger.ONE),
+		BigInteger.TEN.pow(300).negate()
+	};
+
 	/**
-	 * A value wider than a long is read from its text, which gives its decimal digits and not its
-	 * digits in another base, so the two radix conversions refuse it the way they refuse a string.
+	 * A value wider than a long is read from its decimal text and converted on the digit string, so the
+	 * class is never named; unlike a long it keeps its sign and accepts the sign flags.
 	 */
+	@ParameterizedTest
+	@ValueSource(
+		strings = {
+			"%x",
+			"%X",
+			"%o",
+			"%#x",
+			"%#X",
+			"%#o",
+			"%08x",
+			"%-8x|",
+			"%08o",
+			"%+x",
+			"% x",
+			"%(x",
+			"%(o",
+			"%+#x",
+			"%(#X",
+			"%(012x",
+			"%+020o",
+			"%#030x",
+			"%#030o",
+			"%30x",
+			"%-30o|",
+			"%5x",
+			"%d"
+		}
+	)
+	@DisplayName("matches on a big integer in hexadecimal and octal")
+	void matchesOnBigRadix(String format) {
+		for (BigInteger value : BIG) assertMatches(format, value);
+	}
+
 	@Test
-	@DisplayName("refuses a big integer in hexadecimal, because its text is decimal")
-	void refusesBigRadix() {
-		assertThrows(java.util.IllegalFormatConversionException.class, () ->
-			ours("%x", new BigInteger("255"))
-		);
-		assertThrows(java.util.IllegalFormatConversionException.class, () ->
-			ours("%o", new BigInteger("8"))
-		);
+	@DisplayName("refuses what a big integer refuses in hexadecimal and octal")
+	void refusesBigRadixCombinations() {
+		for (String format : new String[] { "%,x", "%,o", "%.2x", "%.0o", "%-x", "%0x", "%-08x" }) {
+			assertAgrees(format, BigInteger.TEN);
+		}
+		assertAgrees("%x", new BigDecimal("255"));
+		assertAgrees("%o", new BigDecimal("8"));
+		assertAgrees("%x", new java.util.concurrent.atomic.AtomicInteger(255));
+		assertAgrees("%x", 1.5);
+		assertAgrees("%x", "ff");
+	}
+
+	@Test
+	@DisplayName("matches on the alternate form with zero padding for the fixed-width types")
+	void matchesOnZeroPaddedAlternateRadix() {
+		for (String format : new String[] { "%#010x", "%#010X", "%#010o", "%#04x" }) {
+			assertMatches(format, 255);
+			assertMatches(format, -1);
+			assertMatches(format, 255L);
+			assertMatches(format, (byte) 15);
+		}
 	}
 
 	// #endregion
@@ -244,6 +331,26 @@ class FormatterTest {
 		assertMatches("%.2f %e %g", Double.NaN, Double.NaN, Double.NaN);
 		assertMatches("%10f|%-10f|", Double.NaN, Double.POSITIVE_INFINITY);
 		assertMatches("%+f %(f", Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
+	}
+
+	@Test
+	@DisplayName("matches on infinity under the zero flag, which pads with spaces")
+	void matchesOnInfinityWithZeroPadding() {
+		for (double value : new double[] { Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY }) {
+			for (String format : new String[] {
+				"%010f",
+				"%010.2e",
+				"%010g",
+				"%+010f",
+				"%(010f",
+				"% 010f",
+				"%-10f|"
+			}) {
+				assertAgrees(format, value);
+				assertAgrees(format, (float) value);
+			}
+		}
+		assertEquals("  Infinity", ours("%010f", Double.POSITIVE_INFINITY));
 	}
 
 	@ParameterizedTest
@@ -363,9 +470,35 @@ class FormatterTest {
 		assertThrows(java.util.IllegalFormatConversionException.class, () -> ours("%f", 1));
 		assertThrows(java.util.IllegalFormatConversionException.class, () -> ours("%x", 1.5));
 		assertThrows(java.util.IllegalFormatConversionException.class, () -> ours("%c", 1.5));
-		assertThrows(java.util.IllegalFormatConversionException.class, () ->
-			ours("%d", (Object) null)
-		);
+	}
+
+	@Test
+	@DisplayName("matches on a null under a number conversion, which is the four letters")
+	void matchesOnNullNumbers() {
+		Object none = null;
+		for (char conversion : "dxofegaDXOFEGA".toCharArray()) {
+			for (String flags : new String[] {
+				"",
+				"-",
+				"0",
+				"+",
+				" ",
+				"(",
+				"#",
+				",",
+				"-#",
+				"0("
+			}) {
+				for (String width : new String[] { "", "8" }) {
+					for (String precision : new String[] { "", ".2", ".0" }) {
+						assertAgrees("%" + flags + width + precision + conversion, none);
+					}
+				}
+			}
+		}
+		assertEquals("null", ours("%d", none));
+		assertEquals("nu", ours("%.2f", none));
+		assertEquals("NULL", ours("%X", none));
 	}
 
 	@Test
@@ -433,33 +566,171 @@ class FormatterTest {
 		);
 	}
 
-	/**
-	 * The two conversions that are refused on purpose, because supporting either would put back the
-	 * graph this class exists to keep out.
-	 */
+	/** The date conversions are refused on purpose: they would make the calendar graph reachable. */
 	@Test
-	@DisplayName("refuses the date and hexadecimal-float conversions, naming what to use instead")
-	void refusesTheDateAndHexConversions() {
+	@DisplayName("refuses the date conversions, naming what to use instead")
+	void refusesTheDateConversions() {
 		assertTrue(
 			assertThrows(UnsupportedOperationException.class, () -> ours("%tF", 0L))
 				.getMessage()
-				.contains("DateTimeFormatter")
+				.contains("dateFormat = true")
 		);
 		assertTrue(
 			assertThrows(UnsupportedOperationException.class, () -> ours("%TF", 0L))
 				.getMessage()
 				.contains("DateTimeFormatter")
 		);
-		assertTrue(
-			assertThrows(UnsupportedOperationException.class, () -> ours("%a", 1.5))
-				.getMessage()
-				.contains("toHexString")
-		);
-		assertTrue(
-			assertThrows(UnsupportedOperationException.class, () -> ours("%A", 1.5))
-				.getMessage()
-				.contains("toHexString")
-		);
+	}
+
+	// #endregion
+
+	// #region hexadecimal floating point
+
+	private static double[] hexValues() {
+		return new double[] {
+			0.0,
+			-0.0,
+			1.0,
+			-1.0,
+			0.5,
+			1.5,
+			-1.5,
+			0.1,
+			Math.PI,
+			-Math.E,
+			255.99999,
+			1e300,
+			-1e-300,
+			Double.MAX_VALUE,
+			Double.MIN_NORMAL,
+			Double.MIN_VALUE,
+			-Double.MIN_VALUE,
+			Double.longBitsToDouble(0x000fffffffffffffL),
+			Double.longBitsToDouble(0x0008000000000001L),
+			3.0e-320,
+			Double.longBitsToDouble(0x3ff0000000000001L),
+			Double.longBitsToDouble(0x3ff0000000001000L),
+			Double.longBitsToDouble(0x3fffffffffffffffL),
+			Double.longBitsToDouble(0x7fefffffffffffffL),
+			Double.longBitsToDouble(0x7feffffffffffff0L),
+			Double.NaN,
+			Double.POSITIVE_INFINITY,
+			Double.NEGATIVE_INFINITY
+		};
+	}
+
+	@ParameterizedTest
+	@ValueSource(
+		strings = {
+			"%a",
+			"%A",
+			"%.0a",
+			"%.1a",
+			"%.2A",
+			"%.3a",
+			"%.12a",
+			"%.13a",
+			"%.20a",
+			"%20a",
+			"%-20a|",
+			"%020a",
+			"%020A",
+			"%+a",
+			"% a",
+			"%+020a",
+			"% 020a",
+			"%#a",
+			"%20.3a",
+			"%-20.3a|",
+			"%020.3a",
+			"%.3a|%<a",
+			"%1$a %1$.1a",
+			"%5a"
+		}
+	)
+	@DisplayName("matches on hexadecimal floating point")
+	void matchesOnHexFloat(String format) {
+		for (double value : hexValues()) {
+			assertMatches(format, value);
+			assertMatches(format, (float) value);
+		}
+	}
+
+	@Test
+	@DisplayName("matches on hexadecimal floating point over every precision and random bits")
+	void matchesOnRandomHexFloat() {
+		long seed = 0x2545F4914F6CDD1DL;
+		for (int i = 0; i < 1500; i++) {
+			seed ^= seed << 13;
+			seed ^= seed >>> 7;
+			seed ^= seed << 17;
+			double value = Double.longBitsToDouble(i % 3 == 0 ? seed & 0x800fffffffffffffL : seed);
+			if (Double.isNaN(value)) continue;
+			for (int precision = 0; precision <= 14; precision++) {
+				assertMatches("%." + precision + "a", value);
+			}
+			assertMatches("%a", value);
+			assertMatches("%A", value);
+		}
+	}
+
+	@Test
+	@DisplayName("refuses what a hexadecimal float refuses")
+	void refusesHexFloatCombinations() {
+		for (String format : new String[] {
+			"%,a",
+			"%(a",
+			"%,(a",
+			"%-a",
+			"%0a",
+			"%-020a",
+			"%+ a",
+			"%10.-1a"
+		}) {
+			assertAgrees(format, 1.5);
+		}
+		assertAgrees("%a", 1);
+		assertAgrees("%a", 1L);
+		assertAgrees("%a", "1.5");
+		assertAgrees("%a", new BigDecimal("1.5"));
+		assertAgrees("%a", new BigInteger("15"));
+		assertAgrees("%a", (Object) null);
+		assertAgrees("%10a|", (Object) null);
+		assertAgrees("%.2A", (Object) null);
+	}
+
+	// #endregion
+
+	// #region the smallest doubles
+
+	@Test
+	@DisplayName(
+		"writes Double.MIN_VALUE as two digits, the form Double.toString gives on a modern JDK"
+	)
+	void writesTheSmallestDouble() {
+		assertEquals("4.9e-324", Decimal.of(Double.MIN_VALUE).scientific(1));
+		assertEquals("4.900000e-324", ours("%e", Double.MIN_VALUE));
+		assertEquals("0.00000", ours("%.5f", Double.MIN_VALUE));
+		assertEquals("4.9e-324", ours("%.2g", Double.MIN_VALUE));
+		assertEquals("9.9e-324", Decimal.of(Double.longBitsToDouble(2L)).scientific(1));
+	}
+
+	@Test
+	@DisplayName("matches on the format conversions over subnormals")
+	void matchesOnSubnormalConversions() {
+		double[] values = {
+			Double.MIN_VALUE,
+			Double.longBitsToDouble(2L),
+			Double.longBitsToDouble(3L),
+			3.0e-320,
+			Double.longBitsToDouble(0x000fffffffffffffL),
+			Double.MIN_NORMAL
+		};
+		for (double value : values) {
+			for (String format : new String[] { "%e", "%.20e", "%g", "%.5f", "%.330f", "%E" }) {
+				assertMatches(format, value);
+			}
+		}
 	}
 
 	// #endregion
