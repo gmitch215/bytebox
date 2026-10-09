@@ -2,6 +2,8 @@ package dev.gmitch215.bytebox.binding;
 
 import dev.gmitch215.bytebox.concurrent.Async;
 import dev.gmitch215.bytebox.js.TSObject;
+import java.util.ArrayList;
+import java.util.List;
 import org.teavm.jso.JSMethod;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSPromise;
@@ -52,11 +54,115 @@ public interface Workflow extends JSObject {
 		return Async.await(fetchInstance(id));
 	}
 
+	/**
+	 * Starts up to 100 instances in one call, from the list form Cloudflare deprecates.
+	 *
+	 * <p>An id that already exists, or that repeats inside the batch, is skipped without a word. Use
+	 * {@link #createBatch(TSObject)} to hear about those.
+	 *
+	 * @param instances one {@link #entry} per instance
+	 * @return the instances that were created, in order
+	 */
+	default List<Instance> createBatch(List<TSObject> instances) {
+		TSObject created = Async.await(rawCreateBatch(TSObject.array(instances)));
+		List<Instance> all = new ArrayList<>(created.length());
+		for (int i = 0; i < created.length(); i++) all.add(instanceOf(created.at(i)));
+		return all;
+	}
+
+	/**
+	 * Starts up to 100 instances in one call, from the options form.
+	 *
+	 * <p>The object is Cloudflare's own: {@code {count, params, retention}} to start that many
+	 * instances with one input, or {@code {instances: [...]}} to give each its own. A bad entry throws
+	 * before anything is created; an id that already exists is reported in
+	 * {@link BatchResult#errors()} and the rest are created.
+	 *
+	 * @param options the options object
+	 * @return what was created and what was not
+	 */
+	default BatchResult createBatch(TSObject options) {
+		TSObject result = Async.await(rawCreateBatch(options));
+		List<Instance> created = new ArrayList<>();
+		TSObject made = result.get("created");
+		for (int i = 0; i < made.length(); i++) created.add(instanceOf(made.at(i)));
+		List<BatchError> errors = new ArrayList<>();
+		TSObject failed = result.get("errors");
+		for (int i = 0; i < failed.length(); i++) {
+			TSObject error = failed.at(i);
+			TSObject id = error.get("id");
+			errors.add(
+				new BatchError(
+					error.get("index").asInt(),
+					id.isUndefined() || id.isNull() ? null : id.asString(),
+					error.get("code").asInt(),
+					error.get("message").asString()
+				)
+			);
+		}
+		return new BatchResult(created, errors);
+	}
+
+	/**
+	 * Starts {@code count} instances that share one input.
+	 *
+	 * @param count how many, from 1 to 100
+	 * @param params the input every instance gets
+	 * @return what was created and what was not
+	 */
+	default BatchResult createBatch(int count, TSObject params) {
+		TSObject options = TSObject.object();
+		options.set("count", TSObject.of(count));
+		options.set("params", params);
+		return createBatch(options);
+	}
+
+	/**
+	 * Builds one entry of a batch.
+	 *
+	 * @param id the instance id
+	 * @param params the instance's input
+	 * @return an entry for {@link #createBatch(List)} or the {@code instances} of an options object
+	 */
+	static TSObject entry(String id, TSObject params) {
+		TSObject entry = TSObject.object();
+		entry.set("id", TSObject.of(id));
+		entry.set("params", params);
+		return entry;
+	}
+
+	private static Instance instanceOf(TSObject value) {
+		return (Instance) (JSObject) value;
+	}
+
 	@JSMethod("create")
 	JSPromise<Instance> create(TSObject options);
 
+	@JSMethod("createBatch")
+	JSPromise<TSObject> rawCreateBatch(TSObject batch);
+
 	@JSMethod("get")
 	JSPromise<Instance> fetchInstance(String id);
+
+	/**
+	 * What {@code createBatch} made.
+	 *
+	 * @param created the new instances, in input order
+	 * @param errors the entries that were not created
+	 * @since 1.0.3
+	 */
+	record BatchResult(List<Instance> created, List<BatchError> errors) {}
+
+	/**
+	 * One entry a batch did not create.
+	 *
+	 * @param index the entry's position in the input
+	 * @param id the entry's id, or {@code null} for a count batch
+	 * @param code Cloudflare's error code, 10405 for an id that exists and 10415 for one the batch repeats
+	 * @param message the reason
+	 * @since 1.0.3
+	 */
+	record BatchError(int index, String id, int code, String message) {}
 
 	/**
 	 * One workflow instance.

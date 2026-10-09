@@ -37,6 +37,8 @@ public final class DurableHandlers {
 	 */
 	private static final Map<String, Object> INSTANCES = new HashMap<>();
 
+	private static final Map<String, Object> BUILDING = new HashMap<>();
+
 	private DurableHandlers() {}
 
 	/**
@@ -54,6 +56,181 @@ public final class DurableHandlers {
 		T built = factory.get();
 		INSTANCES.put(identifier, built);
 		return built;
+	}
+
+	/**
+	 * The instance for an identifier, built on first use on the calling fiber.
+	 *
+	 * <p>Unlike {@link #instance}, this may be called from a fiber whose constructor suspends. Two
+	 * fibers that ask for the same identifier while the first constructor is waiting get one instance:
+	 * the second waits for the first to finish. A constructor that throws leaves nothing behind, so the
+	 * next caller tries again.
+	 */
+	@SuppressWarnings("unchecked")
+	static <T> T built(String identifier, Supplier<T> factory) {
+		Object held = INSTANCES.get(identifier);
+		if (held != null) return (T) held;
+		Object gate = BUILDING.computeIfAbsent(identifier, key -> new Object());
+		synchronized (gate) {
+			held = INSTANCES.get(identifier);
+			if (held != null) return (T) held;
+			T made = factory.get();
+			INSTANCES.put(identifier, made);
+			// kept on a failure, so a retry and a waiter still share one gate
+			BUILDING.remove(identifier);
+			return made;
+		}
+	}
+
+	/**
+	 * Runs a request on the instance for an identifier, building the instance on the same fiber.
+	 *
+	 * <p>The form the generated entry point calls, so a constructor that locks, joins or waits works.
+	 * A constructor that throws rejects the promise.
+	 *
+	 * @param identifier the Durable Object's identifier
+	 * @param factory how to build one
+	 * @param request the request
+	 * @param state the instance's context
+	 * @param env the bindings
+	 * @param <T> the object's type
+	 * @return the response, once the handler has produced one
+	 * @since 1.0.3
+	 */
+	public static <T extends DurableObject> JSPromise<Response> fetch(
+		String identifier,
+		Supplier<T> factory,
+		Request request,
+		DurableState state,
+		Env env
+	) {
+		Deferred<Response> deferred = Deferred.create();
+		start(deferred, () -> built(identifier, factory).fetch(request, state, env));
+		return deferred.promise();
+	}
+
+	/**
+	 * Runs an alarm on the instance for an identifier, building the instance on the same fiber.
+	 *
+	 * @param identifier the Durable Object's identifier
+	 * @param factory how to build one
+	 * @param state the instance's context
+	 * @param env the bindings
+	 * @param <T> the object's type
+	 * @return a promise that settles when the handler returns
+	 * @since 1.0.3
+	 */
+	public static <T extends AlarmObject> JSPromise<JSObject> alarm(
+		String identifier,
+		Supplier<T> factory,
+		DurableState state,
+		Env env
+	) {
+		return complete(() -> built(identifier, factory).alarm(state, env));
+	}
+
+	/**
+	 * Runs a text message on the instance for an identifier, building the instance on the same fiber.
+	 *
+	 * @param identifier the Durable Object's identifier
+	 * @param factory how to build one
+	 * @param socket which connection sent it
+	 * @param text the message
+	 * @param state the instance's context
+	 * @param env the bindings
+	 * @param <T> the object's type
+	 * @return a promise that settles when the handler returns
+	 * @since 1.0.3
+	 */
+	public static <T extends SocketObject> JSPromise<JSObject> message(
+		String identifier,
+		Supplier<T> factory,
+		WebSocket socket,
+		String text,
+		DurableState state,
+		Env env
+	) {
+		return complete(() -> built(identifier, factory).message(socket, text, state, env));
+	}
+
+	/**
+	 * Runs a binary message on the instance for an identifier, building the instance on the same fiber.
+	 *
+	 * @param identifier the Durable Object's identifier
+	 * @param factory how to build one
+	 * @param socket which connection sent it
+	 * @param bytes the message
+	 * @param state the instance's context
+	 * @param env the bindings
+	 * @param <T> the object's type
+	 * @return a promise that settles when the handler returns
+	 * @since 1.0.3
+	 */
+	public static <T extends SocketObject> JSPromise<JSObject> message(
+		String identifier,
+		Supplier<T> factory,
+		WebSocket socket,
+		ArrayBuffer bytes,
+		DurableState state,
+		Env env
+	) {
+		return complete(() ->
+			built(identifier, factory).message(socket, Bytes.fromBuffer(bytes), state, env)
+		);
+	}
+
+	/**
+	 * Runs a close on the instance for an identifier, building the instance on the same fiber.
+	 *
+	 * @param identifier the Durable Object's identifier
+	 * @param factory how to build one
+	 * @param socket which connection closed
+	 * @param code the close code
+	 * @param reason the close reason
+	 * @param clean whether the peer closed properly
+	 * @param state the instance's context
+	 * @param env the bindings
+	 * @param <T> the object's type
+	 * @return a promise that settles when the handler returns
+	 * @since 1.0.3
+	 */
+	public static <T extends SocketObject> JSPromise<JSObject> closed(
+		String identifier,
+		Supplier<T> factory,
+		WebSocket socket,
+		int code,
+		String reason,
+		boolean clean,
+		DurableState state,
+		Env env
+	) {
+		return complete(() ->
+			built(identifier, factory).closed(socket, code, reason, clean, state, env)
+		);
+	}
+
+	/**
+	 * Runs a failure on the instance for an identifier, building the instance on the same fiber.
+	 *
+	 * @param identifier the Durable Object's identifier
+	 * @param factory how to build one
+	 * @param socket which connection failed
+	 * @param message what went wrong
+	 * @param state the instance's context
+	 * @param env the bindings
+	 * @param <T> the object's type
+	 * @return a promise that settles when the handler returns
+	 * @since 1.0.3
+	 */
+	public static <T extends SocketObject> JSPromise<JSObject> failed(
+		String identifier,
+		Supplier<T> factory,
+		WebSocket socket,
+		String message,
+		DurableState state,
+		Env env
+	) {
+		return complete(() -> built(identifier, factory).failed(socket, message, state, env));
 	}
 
 	/**
