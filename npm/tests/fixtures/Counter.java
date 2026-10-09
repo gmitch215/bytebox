@@ -17,6 +17,7 @@ import java.util.List;
 public class Counter implements SocketObject, AlarmObject {
 
 	private final StringBuilder seen = new StringBuilder();
+	private final List<String> built = LockRoutes.blocked();
 	private String stage = "start";
 
 	@Override
@@ -44,6 +45,7 @@ public class Counter implements SocketObject, AlarmObject {
 			case "/alarm" -> alarm(state);
 			case "/socket", "/durablesocket" -> upgrade(state);
 			case "/seen" -> Bytebox.response(seen.toString());
+			case "/built" -> Bytebox.response(String.join("\n", built));
 			default -> Bytebox.response("no durable route for " + request.path(), 404);
 		};
 	}

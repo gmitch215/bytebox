@@ -156,6 +156,46 @@ describe('the platform builtins', () => {
 	});
 });
 
+describe('the pattern engine', () => {
+	it('reads a leading flag and a Unicode block name as a JVM does', async () => {
+		const result = await route<Record<string, string>>('/regex');
+
+		expect(result.leadingFlag).toBe('true');
+		expect(result.block).toBe('ecole');
+	});
+
+	it('folds only ASCII under CASE_INSENSITIVE alone', async () => {
+		const result = await route<Record<string, string>>('/regex');
+
+		expect(result.asciiFold).toBe('false,false,true');
+	});
+
+	it('runs atomic groups and possessive quantifiers without backtracking into them', async () => {
+		const result = await route<Record<string, string>>('/regex');
+
+		expect(result.atomic).toBe('4-6');
+		expect(result.possessive).toBe('|0-4');
+	});
+
+	it('keeps the group numbers the caller sees around an atomic group', async () => {
+		const result = await route<Record<string, string>>('/regex');
+
+		expect(result.groups).toBe('0-4[a,d]');
+	});
+
+	it('intersects and unions nested character classes', async () => {
+		const result = await route<Record<string, string>>('/regex');
+
+		expect(result.nested).toBe('1-4|0-2;3-5|0-2;4-5');
+	});
+
+	it('starts a search inside a surrogate pair as a JVM does', async () => {
+		const result = await route<Record<string, string>>('/regex');
+
+		expect(result.pairs).toBe('0-1;1-1;2-2;3-4;4-4|2-3|3-4;4-4|0-0');
+	});
+});
+
 describe('futures', () => {
 	it('builds from a value, a failure and a promise, and transforms each', async () => {
 		const result = await route<Record<string, string>>('/futures');
@@ -314,6 +354,20 @@ describe('a Durable Object', () => {
 		const seen = await (await env.CORE.fetch('https://bytebox.test/durableseen')).text();
 		expect(seen).toContain('bytes:4');
 		expect(seen).toContain('closed:1000');
+	});
+
+	it('builds the instance on a fiber, so a constructor can lock and join', async () => {
+		const response = await env.CORE.fetch('https://bytebox.test/durablebuilt?id=built-once');
+
+		expect(response.status).toBe(200);
+		expect((await response.text()).split('\n')).toEqual([
+			'first holds',
+			'second asks',
+			'first releases',
+			'second holds',
+			'second released',
+			'held false'
+		]);
 	});
 });
 

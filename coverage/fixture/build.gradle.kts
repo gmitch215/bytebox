@@ -26,6 +26,7 @@ dependencies {
 
 tasks.named("compileJava") {
 	dependsOn(instrument, project(":bytebox-core").tasks.named("processResources"))
+	mustRunAfter(":bytebox-fixture:generateWasmGC")
 }
 
 // both write into the fixtures directory, so they are ordered rather than left to race

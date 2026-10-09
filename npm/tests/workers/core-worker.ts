@@ -40,6 +40,11 @@ export default {
 		// the services with no local emulation are merged over the ones miniflare does provide
 		const resolved = { ...(env as object), ...bindings };
 		const path = new URL(request.url).pathname;
+		if (path === '/__node') {
+			const version =
+				typeof process === 'undefined' ? null : (process.versions?.node ?? null);
+			return Response.json({ process: typeof process, version });
+		}
 		if (path.startsWith('/__trigger/')) {
 			return triggers.drive(path.slice('/__trigger/'.length), resolved, ctx);
 		}

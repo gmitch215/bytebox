@@ -48,6 +48,10 @@ public class CoreWorker
 	/** What each trigger recorded, read back through /fired so one route can assert them all. */
 	static final StringBuilder FIRED = new StringBuilder();
 
+	public CoreWorker() {
+		LockRoutes.startup();
+	}
+
 	@Override
 	public Response fetch(Request request, Env env, ExecutionCtx ctx) {
 		if (request.path().equals("/throws")) return route(request, env);
@@ -101,6 +105,10 @@ public class CoreWorker
 				.durableObject("DO_COUNTER")
 				.byName("global")
 				.fetch("https://counter/seen");
+			case "/durablebuilt" -> env
+				.durableObject("DO_COUNTER")
+				.byName(request.query("id", "built"))
+				.fetch("https://counter/built");
 			case "/rejects" -> rejects();
 			case "/fetch" -> fetch(request.query("base", "http://echo.test"));
 			case "/urlconnection" -> unchecked(() ->
@@ -119,6 +127,22 @@ public class CoreWorker
 			case "/json" -> json();
 			case "/throws" -> thrown();
 			case "/missing" -> missing(env);
+			case "/workflowrun", "/workflowbatch", "/workflowengine" -> WorkflowRoutes.route(
+				request,
+				env
+			);
+			case "/cacheround",
+				"/cacherequest",
+				"/cachenames",
+				"/cachecopy",
+				"/cacherefuse" -> CacheRoutes.route(request);
+			case "/htmlrewrite", "/htmlreturn" -> HtmlRoutes.route(request, env);
+			case "/startuplock", "/lockcontend", "/lockcondition", "/lockfuture" -> unchecked(() ->
+				LockRoutes.route(request)
+			);
+			case "/digest" -> unchecked(DigestRoutes::route);
+			case "/parse" -> ParseRoutes.values();
+			case "/parsetable" -> ParseRoutes.table(request);
 			default -> Bytebox.response("no route for " + request.path(), 404);
 		};
 	}
@@ -1158,9 +1182,64 @@ public class CoreWorker
 				pair("found", found.toString()),
 				pair("replaced", pattern.matcher("alpha-1").replaceAll("<$1>")),
 				pair("split", String.join("|", "a1b22c".split("\\d+"))),
-				pair("formatted", String.format("%,.2f %s %04d", 1234.5, "x", 7))
+				pair("formatted", String.format("%,.2f %s %04d", 1234.5, "x", 7)),
+				pair("leadingFlag", String.valueOf(matches("(?i)hello", 0, "HELLO"))),
+				pair(
+					"block",
+					java.util.regex.Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
+						.matcher("e\u0301cole\u0300")
+						.replaceAll("")
+				),
+				pair(
+					"asciiFold",
+					matches("\u00e9", java.util.regex.Pattern.CASE_INSENSITIVE, "\u00c9") +
+						"," +
+						matches("k", java.util.regex.Pattern.CASE_INSENSITIVE, "\u212a") +
+						"," +
+						matches("k", java.util.regex.Pattern.CASE_INSENSITIVE, "K")
+				),
+				pair("atomic", all("(?>a|ab)c", "abc ac")),
+				pair("possessive", all("a*+a", "aaa") + "|" + all("a++b", "aaab")),
+				pair("groups", all("(a)(?>bc)(d)", "abcd")),
+				pair(
+					"nested",
+					all("[a-z&&[^aeiou]]+", "abcde") +
+						"|" +
+						all("[a[b]]+", "abcab") +
+						"|" +
+						all("[\\w&&[^\\d]]+", "ab12_")
+				),
+				pair(
+					"pairs",
+					all("[a[b]]*", "a😀b") +
+						"|" +
+						all("\\B.", "a😀b") +
+						"|" +
+						all("[a[b]]*$", "a😀b") +
+						"|" +
+						all("(?m)^", "a\n")
+				)
 			)
 		);
+	}
+
+	private static boolean matches(String pattern, int flags, String input) {
+		return java.util.regex.Pattern.compile(pattern, flags).matcher(input).matches();
+	}
+
+	/** Every match as start-end, with the groups in brackets. */
+	private static String all(String pattern, String input) {
+		java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(pattern).matcher(input);
+		StringBuilder found = new StringBuilder();
+		while (matcher.find()) {
+			if (found.length() > 0) found.append(';');
+			found.append(matcher.start()).append('-').append(matcher.end());
+			for (int group = 1; group <= matcher.groupCount(); group++) {
+				found.append(group == 1 ? '[' : ',').append(matcher.group(group));
+			}
+			if (matcher.groupCount() > 0) found.append(']');
+		}
+		return found.toString();
 	}
 
 	/**  #json(String...) */
