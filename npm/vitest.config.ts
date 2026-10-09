@@ -12,6 +12,35 @@ const modulesRoot = join(import.meta.dirname, 'tests');
 
 const WASM = ['hello', 'thrower', 'imported', 'queued', 'sleeper', 'argv', 'core'];
 
+// the installed workerd (1.20261006) serves up to today or its build date plus 7 days; later is refused
+const COMPATIBILITY_DATE = '2026-08-22';
+const DEFAULT_FLAGS = ['no_nodejs_compat', 'no_nodejs_compat_v2'];
+const COMPAT_FLAGS = ['nodejs_compat', 'nodejs_compat_v2'];
+
+const COMPAT_PROBE_WORKER = `export default {
+	fetch: () => Response.json({ process: typeof process, nodeVersion: process?.versions?.node ?? null })
+}`;
+
+const coreFixture = {
+	// the default names the plugin assigns, so the Java accessors resolve without any name being
+	// written down
+	bindings: { GREETING: 'hello from the environment' },
+	kvNamespaces: ['KV'],
+	r2Buckets: ['BLOB'],
+	d1Databases: ['DB'],
+	durableObjects: {
+		DO_COUNTER: { className: 'Counter', scriptName: 'bytebox-counter' }
+	},
+	serviceBindings: {
+		SERVICE: 'bytebox-echo',
+		MTLS: 'bytebox-echo',
+		BROWSER: 'bytebox-echo'
+	},
+	// everything the fixture fetches lands here rather than on the internet, which is what makes the
+	// HTTP surfaces gate-testable
+	outboundService: 'bytebox-echo'
+};
+
 /**
  * Workers under test, each as its own miniflare service.
  *
@@ -22,10 +51,10 @@ const WASM = ['hello', 'thrower', 'imported', 'queued', 'sleeper', 'argv', 'core
 function auxiliary(name: string, bundle: string, extra: Record<string, unknown> = {}) {
 	return {
 		name,
-		compatibilityDate: '2026-08-22',
+		compatibilityDate: COMPATIBILITY_DATE,
 		// what the generated scaffold emits: Java needs no Node polyfills, and both are default-on
 		// from 2026-08-04
-		compatibilityFlags: ['no_nodejs_compat', 'no_nodejs_compat_v2'],
+		compatibilityFlags: DEFAULT_FLAGS,
 		modulesRoot,
 		modules: [
 			{ type: 'ESModule' as const, path: join(workers, bundle) },
@@ -90,45 +119,64 @@ export default defineConfig({
 				plugins: [
 					cloudflareTest({
 						miniflare: {
-							compatibilityDate: '2026-08-22',
-							compatibilityFlags: ['no_nodejs_compat', 'no_nodejs_compat_v2'],
+							compatibilityDate: COMPATIBILITY_DATE,
+							compatibilityFlags: DEFAULT_FLAGS,
 							serviceBindings: {
 								FIXTURE: 'bytebox-fixture',
-								CORE: 'bytebox-core-fixture'
+								CORE: 'bytebox-core-fixture',
+								CORE_COMPAT: 'bytebox-core-compat-fixture',
+								COMPAT_PROBE: 'bytebox-compat-probe',
+								SELF: 'bytebox-self'
 							},
 							workers: [
 								auxiliary('bytebox-fixture', 'worker.build.mjs'),
 								auxiliary('bytebox-core-fixture', 'core-worker.build.mjs', {
-									// the default names the plugin assigns, so the Java accessors
-									// resolve without any name being written down
-									bindings: { GREETING: 'hello from the environment' },
-									kvNamespaces: ['KV'],
-									r2Buckets: ['BLOB'],
-									d1Databases: ['DB'],
-									durableObjects: {
-										DO_COUNTER: {
-											className: 'Counter',
-											scriptName: 'bytebox-counter'
+									...coreFixture,
+									serviceBindings: {
+										...coreFixture.serviceBindings,
+										FLOW_FAKE: {
+											name: 'bytebox-workflow',
+											entrypoint: 'BatchFake'
 										}
 									},
-									serviceBindings: {
-										SERVICE: 'bytebox-echo',
-										MTLS: 'bytebox-echo',
-										BROWSER: 'bytebox-echo'
-									},
-									// everything the fixture fetches lands here rather than on the
-									// internet, which is what makes the HTTP surfaces gate-testable
-									outboundService: 'bytebox-echo'
+									workflows: {
+										FLOW: {
+											name: 'bytebox-flow',
+											className: 'Flow',
+											scriptName: 'bytebox-workflow'
+										}
+									}
 								}),
+								// hosts the Workflow class, the way the Durable Object has a Worker of its own
+								auxiliary('bytebox-workflow', 'workflow-worker.build.mjs'),
+								// the same Worker as a user who opts in to Node compatibility gets it
+								auxiliary('bytebox-core-compat-fixture', 'core-worker.build.mjs', {
+									...coreFixture,
+									compatibilityFlags: COMPAT_FLAGS
+								}),
+								{
+									name: 'bytebox-compat-probe',
+									compatibilityDate: COMPATIBILITY_DATE,
+									compatibilityFlags: COMPAT_FLAGS,
+									modules: true,
+									script: COMPAT_PROBE_WORKER
+								},
 								auxiliary('bytebox-counter', 'counter-worker.build.mjs', {
 									// the hosting worker declares the namespace; the caller references it by script
 									durableObjects: {
 										DO_COUNTER: { className: 'Counter', useSQLite: true }
 									}
 								}),
+								// calls the Durable Objects it hosts itself, as a generated project does
+								auxiliary('bytebox-self', 'self-worker.build.mjs', {
+									durableObjects: {
+										DO_COUNTER: { className: 'Counter', useSQLite: true },
+										DO_RELAY: { className: 'Relay', useSQLite: true }
+									}
+								}),
 								{
 									name: 'bytebox-echo',
-									compatibilityDate: '2026-08-22',
+									compatibilityDate: COMPATIBILITY_DATE,
 									modules: true,
 									script: ECHO_WORKER
 								}
