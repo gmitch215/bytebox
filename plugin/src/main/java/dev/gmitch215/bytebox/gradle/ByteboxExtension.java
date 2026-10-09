@@ -40,6 +40,7 @@ public abstract class ByteboxExtension {
 
 	private final SizeSpec size;
 	private final WranglerSpec wrangler;
+	private final ClasslibSpec classlib;
 	private final Bindings bindings = new Bindings();
 
 	/**
@@ -49,6 +50,7 @@ public abstract class ByteboxExtension {
 	public ByteboxExtension(ObjectFactory objects) {
 		size = objects.newInstance(SizeSpec.class);
 		wrangler = objects.newInstance(WranglerSpec.class);
+		classlib = objects.newInstance(ClasslibSpec.class);
 	}
 
 	/**
@@ -130,6 +132,34 @@ public abstract class ByteboxExtension {
 		List<String> all = new ArrayList<>(getDurableObjectClasses().get());
 		all.addAll(List.of(classes));
 		getDurableObjectClasses().set(all);
+	}
+
+	/**
+	 * {@return the Java classes to expose as Workflows, fully qualified}
+	 *
+	 * <p>Each one implements {@code WorkflowEntrypoint}.
+	 */
+	public abstract ListProperty<String> getWorkflowClasses();
+
+	/**
+	 * Exposes Java classes as Workflows.
+	 *
+	 * <p>The build writes the JavaScript {@code WorkflowEntrypoint} subclass the platform instantiates,
+	 * and the binding that starts it, named {@code WORKFLOW_} and the class name upper-snaked. A binding
+	 * you declared yourself for the class is used instead.
+	 *
+	 * {@snippet lang = "kotlin":
+	 * bytebox {
+	 * 	workflows("com.example.Onboarding")
+	 * }
+	 *}
+	 *
+	 * @param classes the fully qualified class names
+	 */
+	public void workflows(String... classes) {
+		List<String> all = new ArrayList<>(getWorkflowClasses().get());
+		all.addAll(List.of(classes));
+		getWorkflowClasses().set(all);
 	}
 
 	/**
@@ -260,6 +290,29 @@ public abstract class ByteboxExtension {
 	 */
 	public void wrangler(Action<WranglerSpec> action) {
 		action.execute(wrangler);
+	}
+
+	/** {@return the parts of the class library a project has switched on} */
+	public ClasslibSpec getClasslib() {
+		return classlib;
+	}
+
+	/**
+	 * Switches on parts of the class library that are off by default because they cost module bytes.
+	 *
+	 * {@snippet lang = "kotlin":
+	 * bytebox {
+	 * 	classlib {
+	 * 		zoneHistory = true
+	 * 		dateFormat = true
+	 * 	}
+	 * }
+	 *}
+	 *
+	 * @param action the configuration
+	 */
+	public void classlib(Action<ClasslibSpec> action) {
+		action.execute(classlib);
 	}
 
 	/** {@return the declared bindings} */

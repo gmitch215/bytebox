@@ -39,6 +39,8 @@ dependencies {
 	// the generators read a handler's own interfaces and annotations, so the tests need real classes
 	// implementing them rather than names; this is the same surface a consumer compiles against
 	testImplementation(project(":bytebox-core"))
+	// the plugin reacts to Kotlin by id and never compiles against it; only the tests apply it
+	testImplementation(libs.kotlin.gradle.plugin)
 
 	"functionalTestImplementation"(gradleTestKit())
 	"functionalTestImplementation"(libs.junit.api)
@@ -46,6 +48,18 @@ dependencies {
 	"functionalTestRuntimeOnly"(libs.junit.engine)
 	"functionalTestRuntimeOnly"(rootProject.libs.junit.launcher)
 }
+
+val versionProperties by tasks.registering(WriteProperties::class) {
+	destinationFile = layout.buildDirectory.file("generated/version/dev/gmitch215/bytebox/gradle/version.properties")
+	property("version", project.version.toString())
+}
+
+tasks.processResources {
+	from(layout.buildDirectory.dir("generated/version"))
+	dependsOn(versionProperties)
+}
+
+tasks.test { systemProperty("bytebox.version", project.version.toString()) }
 
 tasks.register<Test>("functionalTest") {
 	description = "Drives the plugin against real sample projects"

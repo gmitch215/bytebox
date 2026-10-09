@@ -1,6 +1,7 @@
 package dev.gmitch215.bytebox.gradle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -239,12 +240,13 @@ class BindingsTest {
 	}
 
 	@Test
-	@DisplayName("names a Workflow under name rather than binding, as Wrangler wants")
+	@DisplayName("keeps naming a Workflow declared by class under name rather than binding")
 	void workflowConfigKey() {
 		Bindings bindings = new Bindings();
 		bindings.workflow("com.example.Onboarding");
 
 		assertTrue(bindings.getAll().get(0).toConfig().containsKey("name"));
+		assertFalse(bindings.getAll().get(0).toConfig().containsKey("binding"));
 	}
 
 	@Test
@@ -254,6 +256,21 @@ class BindingsTest {
 
 		assertEquals(List.of("binding", "id"), List.copyOf(binding.toConfig().keySet()));
 		assertEquals(Map.of(), new Binding(BindingType.KV, "KV").identifiers());
+	}
+
+	@Test
+	@DisplayName("writes the identifiers in the order they were given, however many there are")
+	void identifierOrder() {
+		Map<String, String> identifiers = new java.util.LinkedHashMap<>();
+		for (String key : List.of("h", "g", "f", "e", "d", "c", "b", "a"))
+			identifiers.put(key, key);
+
+		Binding binding = new Binding(BindingType.KV, "SESSIONS", identifiers);
+
+		assertEquals(
+			List.of("binding", "h", "g", "f", "e", "d", "c", "b", "a"),
+			List.copyOf(binding.toConfig().keySet())
+		);
 	}
 
 	@Test

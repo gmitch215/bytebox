@@ -127,6 +127,53 @@ class GenerateScaffoldTaskTest {
 	}
 
 	@Test
+	@DisplayName(
+		"writes queues as an object, with producers from the bindings and the named consumers"
+	)
+	void queues() {
+		Bindings bindings = new Bindings();
+		bindings.queue("QUEUE", "orders");
+		bindings.queue();
+
+		GenerateScaffoldTask task = task();
+		task.getBindings().set(bindings.getAll());
+		task.getQueueConsumers().set(List.of("orders", "audit"));
+
+		assertTrue(
+			wrangler(task).contains(
+				"\"queues\": { \"producers\": [{ \"binding\": \"QUEUE\", \"queue\": \"orders\" }," +
+					" { \"binding\": \"QUEUE_2\" }], \"consumers\": [{ \"queue\": \"orders\" }," +
+					" { \"queue\": \"audit\" }] }"
+			)
+		);
+	}
+
+	@Test
+	@DisplayName("writes a consumer with no producer, and a producer with no consumer")
+	void queuesOneSided() {
+		GenerateScaffoldTask consumer = task();
+		consumer.getQueueConsumers().set(List.of("orders"));
+		assertTrue(
+			wrangler(consumer).contains(
+				"\"queues\": { \"consumers\": [{ \"queue\": \"orders\" }] }"
+			)
+		);
+
+		Bindings bindings = new Bindings();
+		bindings.queue("QUEUE", "orders");
+		GenerateScaffoldTask producer = task();
+		producer.getBindings().set(bindings.getAll());
+		String config = wrangler(producer);
+		assertTrue(
+			config.contains(
+				"\"queues\": { \"producers\": [{ \"binding\": \"QUEUE\", \"queue\": \"orders\" }] }"
+			),
+			config
+		);
+		assertFalse(config.contains("consumers"), config);
+	}
+
+	@Test
 	@DisplayName("declares each Java Durable Object class in a migration")
 	void migrations() {
 		GenerateScaffoldTask task = task();
@@ -266,6 +313,122 @@ class GenerateScaffoldTaskTest {
 		assertTrue(index.contains("export class Plain extends DurableObject"), index);
 		assertFalse(index.contains("durablePlainAlarm"), index);
 		assertFalse(index.contains("durablePlainMessageText"), index);
+	}
+
+	@Test
+	@DisplayName("gives Durable Objects a heap and a gate of their own, apart from the handlers")
+	void durableObjectsHaveTheirOwnInstance() {
+		GenerateScaffoldTask task = task();
+		task.getDurableObjects().set(List.of(new DurableObjects("com.example.Room", true, true)));
+
+		String index = index(task);
+		assertEquals(2, index.split("= load\\(", -1).length - 1, index);
+		assertTrue(index.contains("const durable = load({ runtime, bytes });"), index);
+		assertTrue(index.contains("durable.call('main', []);"), index);
+		assertTrue(index.contains("const durableGate = createGate();"), index);
+		assertTrue(index.contains("durableGate.run(() =>"), index);
+		assertTrue(index.contains("durable.call('durableRoomFetch'"), index);
+		assertFalse(index.contains("java.call('durableRoom"), index);
+		assertEquals(5, index.split("durableGate\\.run", -1).length - 1, index);
+		assertEquals(1, index.split(" gate\\.run", -1).length - 1, index);
+
+		int start = index.indexOf("export class Room");
+		String body = index.substring(start, index.indexOf("\n}\n", start));
+		assertFalse(body.contains("java."), body);
+		assertEquals(5, body.split("durable\\.call\\(", -1).length - 1, body);
+	}
+
+	@Test
+	@DisplayName("hands the Durable Object instance the same npm packages as the handlers")
+	void durableObjectsKeepTheModules() {
+		GenerateScaffoldTask task = task();
+		task.getNPMPackages().set(List.of("nanoid@^5.0.9"));
+		task.getDurableObjects().set(List.of(new DurableObjects("com.example.Room", false, false)));
+
+		String index = index(task);
+		assertEquals(2, index.split("\"nanoid\": nanoid", -1).length - 1, index);
+		assertEquals(1, index.split("import \\* as nanoid", -1).length - 1, index);
+	}
+
+	@Test
+	@DisplayName("loads the module once when no Durable Object is declared")
+	void noDurableObjectsLoadsOnce() {
+		String index = index(task());
+
+		assertEquals(1, index.split("= load\\(", -1).length - 1, index);
+		assertFalse(index.contains("durable"), index);
+	}
+
+	@Test
+	@DisplayName("writes a WorkflowEntrypoint class per Workflow, forwarding run through the gate")
+	void workflowClasses() {
+		GenerateScaffoldTask task = task();
+		task.getWorkflows().set(
+			List.of(
+				new WorkflowClasses("com.example.Onboarding", false),
+				new WorkflowClasses("com.example.Billing", false)
+			)
+		);
+
+		String index = index(task);
+		assertTrue(
+			index.contains("import { WorkflowEntrypoint } from 'cloudflare:workers';"),
+			index
+		);
+		assertTrue(index.contains("export class Onboarding extends WorkflowEntrypoint {"), index);
+		assertTrue(index.contains("export class Billing extends WorkflowEntrypoint {"), index);
+		assertTrue(index.contains("run(event: unknown, step: unknown): Promise<unknown> {"), index);
+		assertTrue(index.contains("return gate.run(async () => {"), index);
+		assertTrue(
+			index.contains("java.call('workflowOnboardingRun', event, step, this.env)"),
+			index
+		);
+		assertTrue(index.contains("java.call('workflowBillingRun', event, step, this.env)"), index);
+		assertFalse(index.contains("DurableObject"), index);
+	}
+
+	@Test
+	@DisplayName("imports both base classes in one statement when a Worker has both kinds")
+	void workflowAndDurableObject() {
+		GenerateScaffoldTask task = task();
+		task.getDurableObjects().set(List.of(new DurableObjects("com.example.Room", false, false)));
+		task.getWorkflows().set(List.of(new WorkflowClasses("com.example.Onboarding", false)));
+
+		String index = index(task);
+		assertTrue(
+			index.contains(
+				"import { DurableObject, WorkflowEntrypoint } from 'cloudflare:workers';"
+			),
+			index
+		);
+		assertEquals(1, index.split("from 'cloudflare:workers'", -1).length - 1, index);
+	}
+
+	@Test
+	@DisplayName("writes the same index.ts as before when no Workflow is declared")
+	void noWorkflowsChangesNothing() {
+		String plain = index(task());
+		GenerateScaffoldTask withFlows = task();
+		withFlows.getWorkflows().set(List.of());
+
+		assertEquals(plain, index(withFlows));
+		assertFalse(plain.contains("Workflow"), plain);
+	}
+
+	@Test
+	@DisplayName("declares a Workflow binding with the three keys Wrangler requires")
+	void workflowBinding() {
+		Bindings bindings = new Bindings();
+		bindings.workflow("com.example.Onboarding", "WORKFLOW_ONBOARDING", "onboarding");
+
+		GenerateScaffoldTask task = task();
+		task.getBindings().set(bindings.getAll());
+
+		String config = wrangler(task);
+		assertTrue(config.contains("\"workflows\": [{ "), config);
+		assertTrue(config.contains("\"name\": \"onboarding\""), config);
+		assertTrue(config.contains("\"binding\": \"WORKFLOW_ONBOARDING\""), config);
+		assertTrue(config.contains("\"class_name\": \"Onboarding\""), config);
 	}
 
 	// #endregion

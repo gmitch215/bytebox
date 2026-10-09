@@ -100,6 +100,13 @@ public record DurableObjects(
 							" there would be nothing for the generated class to call"
 					);
 				}
+				if (Triggers.isSingleton(type)) {
+					throw new GradleException(
+						className +
+							" can only be reached through INSTANCE, but a Durable Object has one instance per" +
+							" id. Declare it as a class with a public constructor, not a Kotlin object."
+					);
+				}
 				found.add(
 					new DurableObjects(
 						className,

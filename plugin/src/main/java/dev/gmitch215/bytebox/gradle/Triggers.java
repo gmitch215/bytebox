@@ -1,6 +1,8 @@
 package dev.gmitch215.bytebox.gradle;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -62,24 +64,7 @@ public enum Triggers {
 	 * @return the triggers, in declaration order
 	 */
 	public static List<Triggers> of(String handlerClass, Iterable<File> classpath) {
-		List<URL> urls = new ArrayList<>();
-		for (File entry : classpath) {
-			try {
-				urls.add(entry.toURI().toURL());
-			} catch (MalformedURLException unreachable) {
-				throw new GradleException(
-					"could not read the classpath entry " + entry,
-					unreachable
-				);
-			}
-		}
-
-		try (
-			URLClassLoader loader = new URLClassLoader(
-				urls.toArray(new URL[0]),
-				Triggers.class.getClassLoader()
-			)
-		) {
+		try (URLClassLoader loader = open(classpath)) {
 			Class<?> handler = Class.forName(handlerClass, false, loader);
 			Set<String> implemented = new LinkedHashSet<>();
 			collect(handler, implemented);
@@ -107,6 +92,73 @@ public enum Triggers {
 		} catch (java.io.IOException closing) {
 			throw new GradleException("could not read the compiled classes", closing);
 		}
+	}
+
+	/**
+	 * Whether a class is reached through a shared instance because it cannot be constructed.
+	 *
+	 * <p>A Kotlin {@code object} compiles to a private constructor and a public static {@code INSTANCE}
+	 * of its own type, and so does a Java enum constant. A class with a public no-arg constructor is
+	 * constructed, whatever else it declares, so the code written for a Java handler does not change.
+	 *
+	 * @param handler the loaded class
+	 * @return whether the instance is {@code INSTANCE}
+	 */
+	public static boolean isSingleton(Class<?> handler) {
+		try {
+			handler.getConstructor();
+			return false;
+		} catch (NoSuchMethodException none) {
+			// no public no-arg constructor: look for the instance
+		}
+		try {
+			Field field = handler.getDeclaredField("INSTANCE");
+			int modifiers = field.getModifiers();
+			return (
+				Modifier.isStatic(modifiers) &&
+				Modifier.isPublic(modifiers) &&
+				field.getType() == handler
+			);
+		} catch (NoSuchFieldException none) {
+			return false;
+		}
+	}
+
+	/**
+	 * Loads a class without initialising it and reports whether {@link #isSingleton(Class)}.
+	 *
+	 * @param handlerClass the fully qualified class name
+	 * @param classpath where to find it
+	 * @return whether the handler is reached through {@code INSTANCE}
+	 */
+	public static boolean isSingleton(String handlerClass, Iterable<File> classpath) {
+		try (URLClassLoader loader = open(classpath)) {
+			return isSingleton(Class.forName(handlerClass, false, loader));
+		} catch (ClassNotFoundException missing) {
+			throw new GradleException(
+				"could not find the handler class " +
+					handlerClass +
+					"; check bytebox.handlerClass against the compiled sources",
+				missing
+			);
+		} catch (java.io.IOException closing) {
+			throw new GradleException("could not read the compiled classes", closing);
+		}
+	}
+
+	private static URLClassLoader open(Iterable<File> classpath) {
+		List<URL> urls = new ArrayList<>();
+		for (File entry : classpath) {
+			try {
+				urls.add(entry.toURI().toURL());
+			} catch (MalformedURLException unreachable) {
+				throw new GradleException(
+					"could not read the classpath entry " + entry,
+					unreachable
+				);
+			}
+		}
+		return new URLClassLoader(urls.toArray(new URL[0]), Triggers.class.getClassLoader());
 	}
 
 	/** Walks the whole hierarchy, because a handler may implement a trigger through a base class. */

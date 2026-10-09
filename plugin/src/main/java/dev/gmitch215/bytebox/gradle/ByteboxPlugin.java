@@ -1,11 +1,15 @@
 package dev.gmitch215.bytebox.gradle;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
@@ -39,6 +43,10 @@ import org.teavm.gradle.tasks.TeaVMTask;
  *       and the package manifest.
  *   <li>{@code buildWorker} depends on all of it.
  * </ol>
+ *
+ * <p>A project written in Kotlin applies {@code org.jetbrains.kotlin.jvm} next to this plugin. The
+ * generators then read what the Kotlin compiler wrote, and a handler declared as an {@code object} is
+ * reached through its instance.
  *
  * <p>Everything up to and including {@code buildWorker} runs with no Cloudflare credentials. Only the
  * commands that reach the account need a login, and each says so.
@@ -150,6 +158,7 @@ public class ByteboxPlugin implements Plugin<Project> {
 			.configureEach(task -> {
 				task.getClasspath().from(generated.getOutput());
 				task.dependsOn(generated.getCompileJavaTaskName());
+				JSBodyErrors.watch(task);
 			});
 		project
 			.getExtensions()
@@ -174,6 +183,40 @@ public class ByteboxPlugin implements Plugin<Project> {
 
 		registerSizeReport(project, extension);
 		registerWranglerTasks(project, extension, workerDirectory);
+
+		// by id, so the plugin never compiles against Kotlin and a Java project never sees it
+		project.getPluginManager().withPlugin("org.jetbrains.kotlin.jvm", kotlin -> {
+			List<TaskProvider<?>> generators = List.of(entryPoint, codecs, serial);
+			orderAroundKotlin(project, bindings, generators);
+			scaffold.configure(task -> task.dependsOn("compileKotlin"));
+		});
+	}
+
+	/**
+	 * Orders the generators around the Kotlin compile tasks.
+	 *
+	 * <p>Kotlin's compile tasks read every Java source directory of their source set, so they need the
+	 * npm bindings and the generated entry point and codecs written first. Only the Java compile was
+	 * ordered after those. In the other direction a generator reads the compiled handler, which is
+	 * Kotlin's output. Tasks are matched by name, so the order the two plugins are applied in does not
+	 * matter.
+	 */
+	private void orderAroundKotlin(
+		Project project,
+		TaskProvider<GenerateNPMBindingsTask> bindings,
+		List<TaskProvider<?>> generators
+	) {
+		project
+			.getTasks()
+			.matching(task -> task.getName().equals("compileKotlin"))
+			.configureEach(task -> task.dependsOn(bindings));
+		project
+			.getTasks()
+			.matching(task -> task.getName().equals("compileByteboxKotlin"))
+			.configureEach(task -> task.dependsOn(generators.toArray()));
+		for (TaskProvider<?> generator : generators) {
+			generator.configure(task -> task.dependsOn("compileKotlin"));
+		}
 	}
 
 	/**
@@ -183,8 +226,8 @@ public class ByteboxPlugin implements Plugin<Project> {
 	 * module, and without it the runtime is a global assignment instead. Neither is
 	 * {@code minDirectBuffersSize}, which is measured in megabytes and names more than direct byte
 	 * buffers: it sizes the linear-memory heap the interop stages every {@code byte[]} through on its
-	 * way to a typed array. At zero the heap is initialised empty and the first such conversion spins
-	 * inside the allocator forever, so one megabyte is the floor rather than a budget.
+	 * way to a typed array. At zero the heap is initialised empty and the first such conversion fails
+	 * with {@code Could not initialize buffer}, so one megabyte is the floor rather than a budget.
 	 *
 	 * <p>The rest are conventions a project can override.
 	 */
@@ -235,8 +278,21 @@ public class ByteboxPlugin implements Plugin<Project> {
 
 	/** The plugin's own version, which is the one its generated code is written against. */
 	private static String version() {
-		String implementation = ByteboxPlugin.class.getPackage().getImplementationVersion();
-		return implementation == null ? "1.0.0" : implementation;
+		try (InputStream in = ByteboxPlugin.class.getResourceAsStream("version.properties")) {
+			if (in == null) throw new IllegalStateException(
+				"bytebox plugin has no version.properties"
+			);
+			Properties properties = new Properties();
+			properties.load(in);
+			return properties.getProperty("version");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+
+	/** The npm range the generated manifest asks for: any release in the plugin's own minor line. */
+	private static String npmRange() {
+		return "^" + version().replaceFirst("^(\\d+\\.\\d+)\\..*$", "$1.0");
 	}
 
 	@SuppressWarnings("removal")
@@ -251,6 +307,8 @@ public class ByteboxPlugin implements Plugin<Project> {
 		extension.getSize().getCompression().convention(SizeSpec.Compressor.ZSTD);
 		extension.getSize().getCompressionLevel().convention(22);
 		extension.getNPMIntrospection().convention(true);
+		extension.getClasslib().getZoneHistory().convention(false);
+		extension.getClasslib().getDateFormat().convention(false);
 	}
 
 	private TaskProvider<GenerateEntryPointTask> registerEntryPoint(
@@ -268,6 +326,9 @@ public class ByteboxPlugin implements Plugin<Project> {
 				);
 				task.getHandlerClass().set(extension.getHandlerClass());
 				task.getDurableObjectClasses().set(extension.getDurableObjectClasses());
+				task.getWorkflowClasses().set(extension.getWorkflowClasses());
+				task.getZoneHistory().set(extension.getClasslib().getZoneHistory());
+				task.getDateFormat().set(extension.getClasslib().getDateFormat());
 				task.getOutputDirectory().set(generatedSources);
 				task.getHandlerClasspath().from(handlerClasspath);
 				task.dependsOn("compileJava");
@@ -402,9 +463,10 @@ public class ByteboxPlugin implements Plugin<Project> {
 				task.getRoutes().set(wrangler.getRoutes());
 				task.getCrons().set(wrangler.getCrons());
 				task.getTailConsumers().set(wrangler.getTailConsumers());
+				task.getQueueConsumers().set(wrangler.getQueueConsumers());
 				task.getObservability().set(wrangler.getObservability());
 				task.getOutputDirectory().set(workerDirectory);
-				task.getByteboxVersion().set("^1.0.0");
+				task.getByteboxVersion().set(npmRange());
 				task.getNPMPackages().set(extension.getNPMPackages());
 				task.getDurableObjects().set(
 					project.provider(() ->
@@ -412,6 +474,11 @@ public class ByteboxPlugin implements Plugin<Project> {
 							extension.getDurableObjectClasses().get(),
 							handlerClasspath
 						)
+					)
+				);
+				task.getWorkflows().set(
+					project.provider(() ->
+						WorkflowClasses.of(extension.getWorkflowClasses().get(), handlerClasspath)
 					)
 				);
 				// a Java Durable Object binds itself, so a project names the class once rather than
@@ -428,6 +495,28 @@ public class ByteboxPlugin implements Plugin<Project> {
 						)) {
 							if (names.contains(object.bindingName())) continue;
 							bindings.durableObject(object.className());
+						}
+						// the same goes for a Java Workflow, unless the project bound the class itself
+						for (WorkflowClasses flow : WorkflowClasses.of(
+							extension.getWorkflowClasses().get(),
+							handlerClasspath
+						)) {
+							boolean bound = false;
+							for (Binding binding : bindings.getAll()) {
+								bound |=
+									binding.type() == BindingType.WORKFLOW &&
+									flow
+										.simpleName()
+										.equals(binding.identifiers().get("class_name")) &&
+									!binding.identifiers().containsKey("script_name");
+							}
+							if (!bound) {
+								bindings.workflow(
+									flow.className(),
+									flow.bindingName(),
+									flow.workflowName()
+								);
+							}
 						}
 						return bindings.getAll();
 					})

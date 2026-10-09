@@ -33,6 +33,9 @@ public abstract class WranglerSpec {
 	/** {@return the Cron Triggers that fire it} */
 	public abstract ListProperty<String> getCrons();
 
+	/** {@return the queues this Worker consumes, by the queue's own name} */
+	public abstract ListProperty<String> getQueueConsumers();
+
 	/** {@return the Workers this one sends its logs to} */
 	public abstract ListProperty<String> getTailConsumers();
 
@@ -58,6 +61,16 @@ public abstract class WranglerSpec {
 	 */
 	public void crons(String... crons) {
 		append(getCrons(), crons);
+	}
+
+	/**
+	 * Makes this Worker the consumer of queues, which is what delivers their messages to its
+	 * {@code Consumer} handler. A queue binding only sends.
+	 *
+	 * @param queues the queues' own names
+	 */
+	public void queueConsumers(String... queues) {
+		append(getQueueConsumers(), queues);
 	}
 
 	/**

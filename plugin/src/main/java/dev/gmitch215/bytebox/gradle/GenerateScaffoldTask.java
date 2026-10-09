@@ -63,6 +63,10 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 	@Input
 	public abstract ListProperty<String> getTailConsumers();
 
+	/** {@return the queues this Worker consumes, by the queue's own name} */
+	@Input
+	public abstract ListProperty<String> getQueueConsumers();
+
 	/** {@return whether to send logs to Cloudflare's observability} */
 	@Input
 	public abstract Property<Boolean> getObservability();
@@ -96,6 +100,10 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 	/** {@return the Durable Objects written in Java, each needing a JavaScript class to be one} */
 	@Input
 	public abstract ListProperty<DurableObjects> getDurableObjects();
+
+	/** {@return the Workflows written in Java, each needing a JavaScript class to be one} */
+	@Input
+	public abstract ListProperty<WorkflowClasses> getWorkflows();
 
 	/**
 	 * {@return the compiled module, read for the platform modules it imports}
@@ -229,6 +237,7 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 						"{ \"bindings\": [" + String.join(", ", entries) + "] }"
 					);
 				}
+				case QUEUE -> out.raw(type.configKey(), queues(declared));
 				default -> {
 					List<String> entries = new ArrayList<>();
 					for (Binding binding : declared) entries.add(JSON.object(binding.toConfig()));
@@ -236,6 +245,33 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 				}
 			}
 		});
+		if (!grouped.containsKey(BindingType.QUEUE) && !getQueueConsumers().get().isEmpty()) {
+			out.raw(BindingType.QUEUE.configKey(), queues(List.of()));
+		}
+	}
+
+	/**
+	 * The {@code queues} object, which holds producers and consumers apart.
+	 *
+	 * <p>A queue binding is a producer. Consuming is a property of the Worker rather than of a
+	 * binding, so the consumers come from the {@code wrangler} block and a Worker can consume
+	 * without producing.
+	 */
+	private String queues(List<Binding> producers) {
+		List<String> parts = new ArrayList<>();
+		if (!producers.isEmpty()) {
+			List<String> entries = new ArrayList<>();
+			for (Binding binding : producers) entries.add(JSON.object(binding.toConfig()));
+			parts.add("\"producers\": [" + String.join(", ", entries) + "]");
+		}
+		List<String> consumers = new ArrayList<>();
+		for (String queue : getQueueConsumers().get()) {
+			consumers.add("{ \"queue\": " + JSON.quote(queue) + " }");
+		}
+		if (!consumers.isEmpty()) parts.add(
+			"\"consumers\": [" + String.join(", ", consumers) + "]"
+		);
+		return "{ " + String.join(", ", parts) + " }";
 	}
 
 	private String index() {
@@ -250,8 +286,11 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 
 		StringBuilder out = new StringBuilder();
 		out.append("import { createGate, load } from '" + PACKAGE + "';\n");
-		if (!getDurableObjects().get().isEmpty()) {
-			out.append("import { DurableObject } from 'cloudflare:workers';\n");
+		List<String> bases = new ArrayList<>();
+		if (!getDurableObjects().get().isEmpty()) bases.add("DurableObject");
+		if (!getWorkflows().get().isEmpty()) bases.add("WorkflowEntrypoint");
+		if (!bases.isEmpty()) {
+			out.append("import { " + String.join(", ", bases) + " } from 'cloudflare:workers';\n");
 		}
 		out.append("import bytes from './app.wasmbin';\n");
 		out.append("import * as runtime from './app.wasm-runtime.js';\n");
@@ -263,14 +302,9 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 				.append("';\n");
 		}
 		out.append('\n');
+		String loader;
 		if (packages.isEmpty()) {
-			out.append(
-				"""
-				// module scope, because workerd allows WebAssembly compilation only during module
-				// evaluation. Everything the compiled program needs is resolved here too.
-				const java = load({ runtime, bytes });
-				"""
-			);
+			loader = "load({ runtime, bytes })";
 		} else {
 			// a package the program imports is named in a wasm custom section, which no bundler can
 			// follow. The static imports above are what make it resolvable.
@@ -278,20 +312,16 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 			for (String name : packages) {
 				entries.add(JSON.quote(name) + ": " + identifier(name));
 			}
-			out.append(
-				"""
-				// module scope, because workerd allows WebAssembly compilation only during module
-				// evaluation. Everything the compiled program needs is resolved here too.
-				const java = load({
-				\truntime,
-				\tbytes,
-				\tmodules: { %s }
-				});
-				""".formatted(String.join(", ", entries))
-			);
+			loader =
+				"load({\n\truntime,\n\tbytes,\n\tmodules: { " +
+				String.join(", ", entries) +
+				" }\n})";
 		}
 		out.append(
 			"""
+			// module scope, because workerd allows WebAssembly compilation only during module
+			// evaluation. Everything the compiled program needs is resolved here too.
+			const java = %s;
 
 			java.call('main', []);
 
@@ -300,8 +330,23 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 			// promise from its own context and the runtime cancels it.
 			const gate = createGate();
 
-			"""
+			""".formatted(loader)
 		);
+		if (!getDurableObjects().get().isEmpty()) {
+			out.append(
+				"""
+				// a Durable Object runs in an isolate of its own on the platform, and locally it shares the
+				// Worker's. It gets a heap and a gate of its own, or a handler waiting on its Durable
+				// Object would queue the Durable Object behind itself.
+				const durable = %s;
+
+				durable.call('main', []);
+
+				const durableGate = createGate();
+
+				""".formatted(loader)
+			);
+		}
 		out.append("export default {\n");
 		for (int i = 0; i < triggers.size(); i++) {
 			out.append(handler(triggers.get(i)));
@@ -312,7 +357,31 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 		for (DurableObjects object : getDurableObjects().get()) {
 			out.append('\n').append(durableClass(object));
 		}
+		for (WorkflowClasses workflow : getWorkflows().get()) {
+			out.append('\n').append(workflowClass(workflow));
+		}
 		return out.toString();
+	}
+
+	/**
+	 * The JavaScript class the platform instantiates for a Workflow.
+	 *
+	 * <p>The platform calls {@code run} on a new instance of this class for every invocation, and the
+	 * Java Workflow is built by the export it forwards to. It goes through the gate like every other
+	 * entry, so the whole of {@code run} holds the isolate's one heap, a sleep included.
+	 */
+	private String workflowClass(WorkflowClasses workflow) {
+		return """
+		export class %s extends WorkflowEntrypoint {
+		\trun(event: unknown, step: unknown): Promise<unknown> {
+		\t\treturn gate.run(async () => {
+		\t\t\tconst answer = java.call('%sRun', event, step, this.env);
+		\t\t\tjava.drain();
+		\t\t\treturn await answer;
+		\t\t});
+		\t}
+		}
+		""".formatted(workflow.simpleName(), workflow.exportPrefix());
 	}
 
 	/**
@@ -322,8 +391,11 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 	 * program exports functions rather than classes. So the class is here, forwarding into the exports,
 	 * and the instance's own identifier is what pairs it with a Java object.
 	 *
-	 * <p>Every method goes through the same gate as a request. One heap serves the whole isolate, and a
-	 * Durable Object method arriving while a request is parked is the same reentrancy.
+	 * <p>Every method goes through a gate, the Durable Objects' own and not the handlers'. The platform
+	 * runs a Durable Object in an isolate apart from the Worker that calls it, so the class is on a
+	 * second instance of the module: a handler parked on its Durable Object would otherwise hold the one
+	 * gate the Durable Object's call needs, which is how {@code wrangler dev --local} hung. Instances of
+	 * Durable Object classes share that second heap and gate, as they share an isolate.
 	 */
 	private String durableClass(DurableObjects object) {
 		String name = object.simpleName();
@@ -337,8 +409,8 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 		out.append("\t}\n\n");
 
 		out.append("\tfetch(request: Request): Promise<Response> {\n");
-		out.append("\t\treturn gate.run(() =>\n");
-		out.append("\t\t\tjava.call('")
+		out.append("\t\treturn durableGate.run(() =>\n");
+		out.append("\t\t\tdurable.call('")
 			.append(prefix)
 			.append("Fetch', this.id, request, this.ctx, this.env)\n");
 		out.append("\t\t) as Promise<Response>;\n");
@@ -346,8 +418,8 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 
 		if (object.alarms()) {
 			out.append("\n\talarm(): Promise<void> {\n");
-			out.append("\t\treturn gate.run(() =>\n");
-			out.append("\t\t\tjava.call('")
+			out.append("\t\treturn durableGate.run(() =>\n");
+			out.append("\t\t\tdurable.call('")
 				.append(prefix)
 				.append("Alarm', this.id, this.ctx, this.env)\n");
 			out.append("\t\t) as Promise<void>;\n");
@@ -365,16 +437,16 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 			out.append("\t\t\ttypeof message === 'string'\n");
 			out.append("\t\t\t\t? '").append(prefix).append("MessageText'\n");
 			out.append("\t\t\t\t: '").append(prefix).append("MessageBytes';\n");
-			out.append("\t\treturn gate.run(() =>\n");
-			out.append("\t\t\tjava.call(name, this.id, socket, message, this.ctx, this.env)\n");
+			out.append("\t\treturn durableGate.run(() =>\n");
+			out.append("\t\t\tdurable.call(name, this.id, socket, message, this.ctx, this.env)\n");
 			out.append("\t\t) as Promise<void>;\n");
 			out.append("\t}\n");
 
 			out.append(
 				"\n\twebSocketClose(socket: WebSocket, code: number, reason: string, clean: boolean) {\n"
 			);
-			out.append("\t\treturn gate.run(() =>\n");
-			out.append("\t\t\tjava.call(\n");
+			out.append("\t\treturn durableGate.run(() =>\n");
+			out.append("\t\t\tdurable.call(\n");
 			out.append("\t\t\t\t'").append(prefix).append("Closed',\n");
 			out.append("\t\t\t\tthis.id,\n\t\t\t\tsocket,\n\t\t\t\tcode,\n\t\t\t\treason,\n");
 			out.append("\t\t\t\tclean,\n\t\t\t\tthis.ctx,\n\t\t\t\tthis.env\n");
@@ -383,8 +455,8 @@ public abstract class GenerateScaffoldTask extends DefaultTask {
 			out.append("\t}\n");
 
 			out.append("\n\twebSocketError(socket: WebSocket, error: unknown) {\n");
-			out.append("\t\treturn gate.run(() =>\n");
-			out.append("\t\t\tjava.call(\n");
+			out.append("\t\treturn durableGate.run(() =>\n");
+			out.append("\t\t\tdurable.call(\n");
 			out.append("\t\t\t\t'").append(prefix).append("Failed',\n");
 			out.append("\t\t\t\tthis.id,\n\t\t\t\tsocket,\n\t\t\t\tString(error),\n");
 			out.append("\t\t\t\tthis.ctx,\n\t\t\t\tthis.env\n");

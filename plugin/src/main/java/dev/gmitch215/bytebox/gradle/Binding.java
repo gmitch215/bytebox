@@ -1,6 +1,7 @@
 package dev.gmitch215.bytebox.gradle;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public record Binding(
 	 * @param identifiers the Wrangler keys for this type
 	 */
 	public Binding {
-		identifiers = Map.copyOf(identifiers);
+		identifiers = Collections.unmodifiableMap(new LinkedHashMap<>(identifiers));
 	}
 
 	/**

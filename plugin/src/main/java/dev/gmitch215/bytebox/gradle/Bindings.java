@@ -254,11 +254,34 @@ public class Bindings {
 	/**
 	 * Declares a Workflow named {@code WORKFLOW}.
 	 *
+	 * <p>Writes the class and the name only. Wrangler also wants a {@code binding} key and the
+	 * Workflow's own name, which {@link #workflow(String, String, String)} writes.
+	 *
 	 * @param className the class extending Cloudflare's workflow entrypoint
 	 */
 	public void workflow(String className) {
 		String simple = className.substring(className.lastIndexOf('.') + 1);
 		declare(BindingType.WORKFLOW, null, Map.of("class_name", simple));
+	}
+
+	/**
+	 * Declares a Workflow under names of your own.
+	 *
+	 * <p>Wrangler wants three keys for one: the binding the Worker reads it from, the Workflow's own
+	 * name, which Cloudflare keeps unique per account, and the class.
+	 *
+	 * @param className the class extending Cloudflare's workflow entrypoint
+	 * @param bindingName the name {@code env} is keyed by
+	 * @param workflowName the Workflow's name
+	 */
+	public void workflow(String className, String bindingName, String workflowName) {
+		String simple = className.substring(className.lastIndexOf('.') + 1);
+		Map<String, String> identifiers = new LinkedHashMap<>();
+		// the entry already leads with a name key, which this value replaces in place
+		identifiers.put("name", workflowName);
+		identifiers.put("binding", bindingName);
+		identifiers.put("class_name", simple);
+		declare(BindingType.WORKFLOW, bindingName, identifiers);
 	}
 
 	/**
@@ -337,6 +360,11 @@ public class Bindings {
 			out.append(c);
 		}
 		return out.toString().replaceAll("_+", "_").toUpperCase(Locale.ROOT);
+	}
+
+	/** The kebab-case form of a name, which is what a Workflow is called when none is given. */
+	static String kebab(String name) {
+		return upperSnake(name).toLowerCase(Locale.ROOT).replace('_', '-');
 	}
 
 	/** An acronym is one word, so the break is where a run of capitals ends rather than inside it. */

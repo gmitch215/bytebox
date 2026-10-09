@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -12,10 +13,13 @@ import java.util.List;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.TaskProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.teavm.gradle.api.OptimizationLevel;
 import org.teavm.gradle.api.TeaVMExtension;
 
@@ -146,6 +150,24 @@ class ByteboxPluginTest {
 	}
 
 	@Test
+	@DisplayName("pins the core and the npm package to the release it was built from")
+	void followsItsOwnVersion() {
+		String release = System.getProperty("bytebox.version");
+		String line = release.replaceFirst("^(\\d+\\.\\d+)\\..*$", "^$1.0");
+
+		assertEquals(release, bytebox.getCoreVersion().get());
+		assertEquals(
+			line,
+			project
+				.getTasks()
+				.named("generateWorkerScaffold", GenerateScaffoldTask.class)
+				.get()
+				.getByteboxVersion()
+				.get()
+		);
+	}
+
+	@Test
 	@DisplayName("sets the compiler options a Worker always wants")
 	void compilerDefaults() {
 		TeaVMExtension teavm = project.getExtensions().getByType(TeaVMExtension.class);
@@ -225,6 +247,90 @@ class ByteboxPluginTest {
 		);
 	}
 
+	// #region Kotlin
+
+	@ParameterizedTest(name = "Kotlin applied {0}")
+	@ValueSource(strings = { "before", "after" })
+	@DisplayName("orders the generators around the Kotlin compile tasks, in either plugin order")
+	void kotlinOrdering(String order) {
+		Project kotlin = withKotlin(order);
+
+		assertTrue(directly(kotlin, "compileKotlin", "generateNpmBindings"));
+		for (String generator : List.of(
+			"generateEntryPoint",
+			"generateCodecs",
+			"generateSerialCodecs"
+		)) {
+			assertTrue(directly(kotlin, "compileByteboxKotlin", generator), generator);
+			assertTrue(directly(kotlin, generator, "compileKotlin"), generator);
+		}
+		assertTrue(directly(kotlin, "generateWorkerScaffold", "compileKotlin"));
+	}
+
+	@ParameterizedTest(name = "Kotlin applied {0}")
+	@ValueSource(strings = { "before", "after" })
+	@DisplayName("scans the Kotlin output, which is where a Kotlin handler and its types are")
+	void kotlinOutputIsScanned(String order) {
+		Project kotlin = withKotlin(order);
+		File classes = kotlin
+			.getLayout()
+			.getBuildDirectory()
+			.dir("classes/kotlin/main")
+			.get()
+			.getAsFile();
+
+		GenerateCodecsTask codecs = (GenerateCodecsTask) kotlin
+			.getTasks()
+			.getByName("generateCodecs");
+		GenerateSerialCodecsTask serial = (GenerateSerialCodecsTask) kotlin
+			.getTasks()
+			.getByName("generateSerialCodecs");
+
+		assertTrue(codecs.getScanned().getFiles().contains(classes));
+		assertTrue(serial.getScanned().getFiles().contains(classes));
+	}
+
+	@Test
+	@DisplayName("adds nothing Kotlin to a Java project")
+	void javaIsUnaffected() {
+		for (Task task : project.getTasks()) {
+			assertTrue(task.getName().indexOf("Kotlin") < 0, task.getName());
+			assertTrue(
+				task
+					.getDependsOn()
+					.stream()
+					.noneMatch(entry -> named(entry).contains("Kotlin")),
+				task.getName()
+			);
+		}
+	}
+
+	private Project withKotlin(String order) {
+		Project other = Projects.project(directory.resolve("kotlin-" + order));
+		if (order.equals("before")) other.getPlugins().apply("org.jetbrains.kotlin.jvm");
+		other.getPlugins().apply(ByteboxPlugin.class);
+		if (order.equals("after")) other.getPlugins().apply("org.jetbrains.kotlin.jvm");
+		return other;
+	}
+
+	/** Reads the task's own dependsOn, because resolving the classpath needs a repository. */
+	private static boolean directly(Project target, String task, String dependency) {
+		return target
+			.getTasks()
+			.getByName(task)
+			.getDependsOn()
+			.stream()
+			.anyMatch(entry -> named(entry).equals(dependency));
+	}
+
+	private static String named(Object dependency) {
+		if (dependency instanceof Task task) return task.getName();
+		if (dependency instanceof TaskProvider<?> provider) return provider.getName();
+		return String.valueOf(dependency);
+	}
+
+	// #endregion
+
 	// #region the extension
 
 	@Test
@@ -275,6 +381,29 @@ class ByteboxPluginTest {
 	}
 
 	@Test
+	@DisplayName("keeps every class library extra off until a project switches it on")
+	void classlibDefaults() {
+		assertFalse(bytebox.getClasslib().getZoneHistory().get());
+		assertFalse(entryPoint().getZoneHistory().get());
+		assertFalse(bytebox.getClasslib().getDateFormat().get());
+		assertFalse(entryPoint().getDateFormat().get());
+	}
+
+	@Test
+	@DisplayName("hands the classlib block to the entry point generator")
+	void classlibBlock() {
+		bytebox.classlib(classlib -> classlib.getZoneHistory().set(true));
+
+		assertTrue(bytebox.getClasslib().getZoneHistory().get());
+		assertTrue(entryPoint().getZoneHistory().get());
+		assertFalse(entryPoint().getDateFormat().get());
+
+		bytebox.classlib(classlib -> classlib.getDateFormat().set(true));
+
+		assertTrue(entryPoint().getDateFormat().get());
+	}
+
+	@Test
 	@DisplayName("passes compressor arguments through")
 	@SuppressWarnings("removal")
 	void compressionArgs() {
@@ -291,6 +420,10 @@ class ByteboxPluginTest {
 	}
 
 	// #endregion
+
+	private GenerateEntryPointTask entryPoint() {
+		return project.getTasks().named("generateEntryPoint", GenerateEntryPointTask.class).get();
+	}
 
 	private WranglerTask wrangler(String name) {
 		return (WranglerTask) project.getTasks().getByName(name);
