@@ -10,11 +10,14 @@ import dev.gmitch215.bytebox.Worker;
 public class ConformanceWorker implements Worker {
 
 	static {
-		for (int n = 20; n <= 30; n += 2) Conformance.backtrack(n);
+		Conformance.transcript();
 	}
 
 	@Override
 	public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+		if (request.path().equals("/backtrack")) {
+			Conformance.backtrack(Integer.parseInt(request.query("n", "20")));
+		}
 		return Bytebox.response("ok");
 	}
 }
