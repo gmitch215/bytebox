@@ -199,6 +199,149 @@ class BuildWorkerTest {
 	}
 
 	@Test
+	@DisplayName("writes queues in the object form, with the consumers the wrangler block names")
+	void writesQueuesAsAnObject(@TempDir Path root) throws IOException {
+		Fixtures.project(
+			root,
+			"""
+			bytebox {
+				handlerClass = "fixture.Handler"
+				wrangler {
+					compatibilityDate = "2026-08-22"
+					queueConsumers("orders")
+				}
+				bindings {
+					queue("QUEUE", "orders")
+				}
+			}
+			""",
+			Map.of("fixture/Handler.java", Fixtures.fetchHandler())
+		);
+
+		Fixtures.runner(root, "generateWorkerScaffold").build();
+
+		String wrangler = Files.readString(root.resolve("build/bytebox/worker/wrangler.jsonc"));
+		assertTrue(
+			wrangler.contains(
+				"\"queues\": { \"producers\": [{ \"binding\": \"QUEUE\", \"queue\": \"orders\" }]," +
+					" \"consumers\": [{ \"queue\": \"orders\" }] }"
+			),
+			wrangler
+		);
+	}
+
+	@Test
+	@DisplayName("fails the build when a @JSBody script does not parse")
+	void failsOnAScriptThatDoesNotParse(@TempDir Path root) throws IOException {
+		Fixtures.project(
+			root,
+			"""
+			bytebox {
+				handlerClass = "fixture.Handler"
+				wrangler { compatibilityDate = "2026-08-22" }
+			}
+
+			teavm { wasmGC { modularRuntime = true; obfuscated = true } }
+			""",
+			Map.of(
+				"fixture/Handler.java",
+				"""
+				package fixture;
+
+				import dev.gmitch215.bytebox.Bytebox;
+				import dev.gmitch215.bytebox.Env;
+				import dev.gmitch215.bytebox.ExecutionCtx;
+				import dev.gmitch215.bytebox.Request;
+				import dev.gmitch215.bytebox.Response;
+				import dev.gmitch215.bytebox.Worker;
+				import org.teavm.jso.JSBody;
+
+				public class Handler implements Worker {
+					@JSBody(script = "return (1 +;")
+					private static native String broken();
+
+					@Override
+					public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+						return Bytebox.response(broken());
+					}
+				}
+				"""
+			)
+		);
+
+		// under the configuration cache too, which refuses some things a task may do while it runs
+		BuildResult result = Fixtures.runner(
+			root,
+			"generateWasmGC",
+			"--configuration-cache"
+		).buildAndFail();
+
+		assertTrue(result.getOutput().contains("error(s) in @JSBody scripts"), result.getOutput());
+		assertTrue(result.getOutput().contains("Handler.broken"), result.getOutput());
+		assertEquals(
+			TaskOutcome.FAILED,
+			result.task(":generateWasmGC").getOutcome(),
+			result.getOutput()
+		);
+		assertTrue(Files.notExists(root.resolve("build/bytebox/worker/src/app.wasmbin")));
+	}
+
+	@Test
+	@DisplayName("builds a @JSBody script V8 reads and the compiler's parser does not")
+	void buildsAScriptOnlyV8Reads(@TempDir Path root) throws IOException {
+		Fixtures.project(
+			root,
+			"""
+			bytebox {
+				handlerClass = "fixture.Handler"
+				wrangler { compatibilityDate = "2026-08-22" }
+			}
+
+			teavm { wasmGC { modularRuntime = true; obfuscated = true } }
+			""",
+			Map.of(
+				"fixture/Handler.java",
+				"""
+				package fixture;
+
+				import dev.gmitch215.bytebox.Bytebox;
+				import dev.gmitch215.bytebox.Env;
+				import dev.gmitch215.bytebox.ExecutionCtx;
+				import dev.gmitch215.bytebox.Request;
+				import dev.gmitch215.bytebox.Response;
+				import dev.gmitch215.bytebox.Worker;
+				import org.teavm.jso.JSBody;
+
+				public class Handler implements Worker {
+					@JSBody(script = "var t = 0; for (const n of [1, 2, 3]) { t += n; } return t;")
+					private static native int forOf();
+
+					@JSBody(script = "var big = 10n ** 3n; return Number(big);")
+					private static native int bigint();
+
+					@Override
+					public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+						return Bytebox.response("" + forOf() + bigint());
+					}
+				}
+				"""
+			)
+		);
+
+		BuildResult result = Fixtures.runner(
+			root,
+			"generateWasmGC",
+			"--configuration-cache"
+		).build();
+
+		assertEquals(
+			TaskOutcome.SUCCESS,
+			result.task(":generateWasmGC").getOutcome(),
+			result.getOutput()
+		);
+	}
+
+	@Test
 	@DisplayName("reports every binding and where it points")
 	void reportsTheBindings(@TempDir Path root) throws IOException {
 		Fixtures.project(

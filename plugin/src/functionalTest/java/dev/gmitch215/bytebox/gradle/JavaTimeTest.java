@@ -59,6 +59,143 @@ class JavaTimeTest {
 	}
 	""";
 
+	private static final String HISTORY = """
+	package fixture;
+
+	import dev.gmitch215.bytebox.Bytebox;
+	import dev.gmitch215.bytebox.Env;
+	import dev.gmitch215.bytebox.ExecutionCtx;
+	import dev.gmitch215.bytebox.Request;
+	import dev.gmitch215.bytebox.Response;
+	import dev.gmitch215.bytebox.Worker;
+	import java.time.ZoneId;
+
+	public class Handler implements Worker {
+		@Override
+		public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+			return Bytebox.response(
+				"" + ZoneId.of("Europe/London").getRules().getTransitions().size()
+			);
+		}
+	}
+	""";
+
+	// #region the classlib extras
+
+	@Test
+	@DisplayName(
+		"leaves the timezone database out of a module that calls for the history without asking"
+	)
+	void historyOffByDefault(@TempDir Path root) throws IOException {
+		byte[] module = build(root, "", HISTORY);
+
+		assertTrue(!contains(module, "TZDB"), "the database should not be in the module");
+		String entry = Files.readString(entryPoint(root));
+		assertTrue(!entry.contains("ZoneHistory"), entry);
+	}
+
+	@Test
+	@DisplayName(
+		"copies the timezone database in when the project asks for the history and calls it"
+	)
+	void historyOn(@TempDir Path off, @TempDir Path on) throws IOException {
+		byte[] without = build(off, "", HISTORY);
+		byte[] with = build(on, "classlib { zoneHistory = true }", HISTORY);
+
+		assertTrue(contains(with, "TZDB"), "the database should be in the module");
+		assertTrue(
+			with.length - without.length > 100_000,
+			"the module grew by " + (with.length - without.length) + " bytes"
+		);
+		assertTrue(Files.readString(entryPoint(on)).contains("ZoneHistory.register();"));
+	}
+
+	@Test
+	@DisplayName("adds the database to nothing that never calls for the history, even when asked")
+	void historyOnButUnused(@TempDir Path root) throws IOException {
+		byte[] module = build(root, "classlib { zoneHistory = true }", HANDLER);
+
+		assertTrue(!contains(module, "TZDB"), "the database should not be in the module");
+	}
+
+	private static final String FORMAT = """
+	package fixture;
+
+	import dev.gmitch215.bytebox.Bytebox;
+	import dev.gmitch215.bytebox.Env;
+	import dev.gmitch215.bytebox.ExecutionCtx;
+	import dev.gmitch215.bytebox.Request;
+	import dev.gmitch215.bytebox.Response;
+	import dev.gmitch215.bytebox.Worker;
+
+	public class Handler implements Worker {
+		@Override
+		public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+			return Bytebox.response(String.format("%tF %<tA", System.currentTimeMillis()));
+		}
+	}
+	""";
+
+	@Test
+	@DisplayName(
+		"links the date conversions only when the project asks and a program formats a date"
+	)
+	void dateFormatOnlyWhenAsked(
+		@TempDir Path off,
+		@TempDir Path on,
+		@TempDir Path unused,
+		@TempDir Path plainRoot
+	) throws IOException {
+		byte[] without = build(off, "", FORMAT);
+		byte[] with = build(on, "classlib { dateFormat = true }", FORMAT);
+		byte[] idle = build(unused, "classlib { dateFormat = true }", HANDLER);
+
+		assertTrue(!Files.readString(entryPoint(off)).contains("Dates"));
+		assertTrue(Files.readString(entryPoint(on)).contains("Dates.register();"));
+		assertTrue(
+			with.length - without.length > 10_000,
+			"the module grew by " + (with.length - without.length) + " bytes"
+		);
+		byte[] plain = build(plainRoot, "", HANDLER);
+		assertTrue(
+			idle.length - plain.length < 2_000,
+			"asking and never formatting a date grew the module by " + (idle.length - plain.length)
+		);
+	}
+
+	private static byte[] build(Path root, String classlib, String handler) throws IOException {
+		Fixtures.project(
+			root,
+			"""
+			bytebox {
+				handlerClass = "fixture.Handler"
+				%s
+				wrangler {
+					name = "javatime"
+					compatibilityDate = "2026-08-22"
+				}
+			}
+			""".formatted(classlib),
+			Map.of("fixture/Handler.java", handler)
+		);
+
+		BuildResult result = Fixtures.runner(root, "buildWorker").build();
+		assertEquals(TaskOutcome.SUCCESS, result.task(":generateWasmGC").getOutcome());
+		return Files.readAllBytes(root.resolve("build/bytebox/worker/src/app.wasmbin"));
+	}
+
+	private static Path entryPoint(Path root) {
+		return root.resolve(
+			"build/generated/sources/bytebox/java/dev/gmitch215/bytebox/generated/ByteboxEntry.java"
+		);
+	}
+
+	private static boolean contains(byte[] module, String text) {
+		return new String(module, java.nio.charset.StandardCharsets.ISO_8859_1).contains(text);
+	}
+
+	// #endregion
+
 	@Test
 	@DisplayName("compiles, and carries no copy of the timezone database")
 	void compilesAProgramUsingDatesAndZones(@TempDir Path root) throws IOException {

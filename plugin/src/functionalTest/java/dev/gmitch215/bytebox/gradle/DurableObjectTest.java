@@ -103,7 +103,7 @@ class DurableObjectTest {
 		assertTrue(entry.contains("durableRoomFailed("), entry);
 
 		// one Java instance per Durable Object instance, paired by the instance's own identifier
-		assertTrue(entry.contains("DurableHandlers.instance(id, fixture.Room::new)"), entry);
+		assertTrue(entry.contains("DurableHandlers.fetch(id, fixture.Room::new,"), entry);
 	}
 
 	@Test
@@ -119,9 +119,9 @@ class DurableObjectTest {
 		assertTrue(index.contains("webSocketClose(socket: WebSocket"), index);
 		assertTrue(index.contains("alarm(): Promise<void>"), index);
 
-		// through the same gate as a request: one heap serves the isolate, so a Durable Object
-		// method arriving while a request is parked is the same reentrancy
-		assertTrue(index.contains("return gate.run(() =>"), index);
+		// a heap and a gate of its own, so a handler parked on it cannot queue it behind itself
+		assertTrue(index.contains("return durableGate.run(() =>"), index);
+		assertTrue(index.contains("durable.call('durableRoomFetch'"), index);
 	}
 
 	@Test
