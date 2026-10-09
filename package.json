@@ -28,6 +28,9 @@
 		"prettier-plugin-sh": "^0.19.0",
 		"shiki": "^4.4.3"
 	},
+	"overrides": {
+		"miniflare": "5.20261006.1-alpha"
+	},
 	"lint-staged": {
 		"*.{html,java,ts,mjs,json,jsonc,yml,yaml,md,sh}": "prettier --write"
 	}
