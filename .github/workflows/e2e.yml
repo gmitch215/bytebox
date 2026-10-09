@@ -29,14 +29,32 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
           cache: 'gradle'
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 'latest'
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+      - name: Build The Loader
+        run: bun run --cwd npm build
       - name: Change Permissions
         run: chmod +x ./gradlew
       - name: Build Every Sample
         working-directory: samples
         run: ../gradlew buildWorkers
-      - name: Refuse A Module The Engine Will Not Compile
+      - name: Refuse A Module The Engine Will Not Load
         working-directory: samples
         run: node verify-workers.mjs
+      - name: Dry Run Every Deploy
+        working-directory: samples
+        run: |
+          for worker in */build/bytebox/worker; do
+            (cd "$worker" && bun install && bunx wrangler deploy --dry-run --outdir "$RUNNER_TEMP/dry/${worker%%/*}")
+          done
       - name: Report Every Module Size
         working-directory: samples
         run: ../gradlew sizeReport

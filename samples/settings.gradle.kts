@@ -26,5 +26,9 @@ include(
 	"npm-dependency",
 	"tcp-client",
 	"standard-library",
-	"mixed-dependencies"
+	"mixed-dependencies",
+	"kotlin",
+	"workflow",
+	"cache",
+	"html-rewriter"
 )
