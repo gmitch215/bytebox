@@ -23,12 +23,16 @@ import java.util.List;
  * <ul>
  *   <li>{@link #nextTransition} and {@link #previousTransition} search a window of {@value #SEARCH_DAYS}
  *       days and answer {@code null} beyond it. Every zone that observes daylight saving changes twice
- *       a year, so a zone with nothing in that window has nothing scheduled.
+ *       a year, so a zone with nothing in that window has nothing scheduled. With
+ *       {@code classlib { zoneHistory = true }} they answer from the recorded history instead, as a
+ *       JVM does, for every zone the bundled database names.
  *   <li>{@link #getStandardOffset} is the smallest offset the zone reports across the year around the
  *       instant, which is the standard one because daylight saving only ever moves a clock forward.
  *   <li>{@link #getTransitions} and {@link #getTransitionRules} are the whole recorded history, and a
  *       search cannot produce a history. They refuse rather than answering an empty list, which is
- *       what a zone with no transitions at all would answer.
+ *       what a zone with no transitions at all would answer. A project that sets
+ *       {@code classlib { zoneHistory = true }} gets them from the bundled timezone database instead,
+ *       through {@link ZoneHistory}.
  * </ul>
  *
  * @since 1.0.0
@@ -39,6 +43,22 @@ final class IntlZoneRules {
 	static final int SEARCH_DAYS = 400;
 
 	private static final long DAY = 86_400L;
+
+	/** Where the recorded history comes from, which is nowhere until {@link ZoneHistory#register}. */
+	static History history;
+
+	/** The recorded history of a zone, which only a bundled timezone database can give. */
+	interface History {
+		List<ZoneOffsetTransition> transitions(String zoneId);
+
+		List<ZoneOffsetTransitionRule> rules(String zoneId);
+
+		boolean covers(String zoneId);
+
+		ZoneOffsetTransition next(String zoneId, Instant instant);
+
+		ZoneOffsetTransition previous(String zoneId, Instant instant);
+	}
 
 	private final String zoneId;
 	private final ZoneLookup lookup;
@@ -114,6 +134,7 @@ final class IntlZoneRules {
 	}
 
 	public ZoneOffsetTransition nextTransition(Instant instant) {
+		if (history != null && history.covers(zoneId)) return history.next(zoneId, instant);
 		long from = instant.getEpochSecond();
 		int start = lookup.offsetAt(from);
 		long previous = from;
@@ -129,6 +150,7 @@ final class IntlZoneRules {
 	}
 
 	public ZoneOffsetTransition previousTransition(Instant instant) {
+		if (history != null && history.covers(zoneId)) return history.previous(zoneId, instant);
 		// the runtime rounds a sub-second reading up, so that a transition on the second counts as past
 		long from = instant.getNano() > 0 ? instant.getEpochSecond() + 1 : instant.getEpochSecond();
 		int start = lookup.offsetAt(from - 1);
@@ -143,6 +165,7 @@ final class IntlZoneRules {
 	}
 
 	public List<ZoneOffsetTransition> getTransitions() {
+		if (history != null) return history.transitions(zoneId);
 		throw new UnsupportedOperationException(
 			"the recorded history of " +
 				zoneId +
@@ -152,6 +175,7 @@ final class IntlZoneRules {
 	}
 
 	public List<ZoneOffsetTransitionRule> getTransitionRules() {
+		if (history != null) return history.rules(zoneId);
 		throw new UnsupportedOperationException(
 			"the recurring rules of " +
 				zoneId +
