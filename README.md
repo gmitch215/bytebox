@@ -21,10 +21,15 @@ A hello world Worker starts in **10 ms** and answers a request in under a millis
 - [Why bytebox](#-why-bytebox)
 - [Install](#-install)
 - [Quick Start](#-quick-start)
+- [Kotlin](#-kotlin)
 - [Triggers](#-triggers)
 - [Bindings](#-bindings)
+- [Cache](#-cache)
+- [HTMLRewriter](#-htmlrewriter)
+- [Workflows](#-workflows)
 - [JSON](#-json)
 - [Standard Library](#-standard-library)
+- [Opt-In Extras](#-opt-in-extras)
 - [Serialization](#-serialization)
 - [npm Packages](#-npm-packages)
 - [Startup](#-startup)
@@ -103,8 +108,62 @@ bytebox {
 `buildWorker` writes a complete Worker into `build/bytebox/worker`: the module, a `wrangler.jsonc`,
 a JavaScript entry point and a package manifest. Nothing there is hand-written.
 
-[samples/](samples) has nine of these, one per feature, and
+[samples/](samples) has fourteen of these, one per feature, and
 [ADVANCED_USAGE.md](ADVANCED_USAGE.md) is the design document behind them.
+
+---
+
+## 🟣 Kotlin
+
+Apply the Kotlin plugin next to bytebox, in either order. The build orders the Kotlin compile tasks
+after the generators, and `kotlin-stdlib` is compiled into the module like any other dependency.
+
+```kotlin
+plugins {
+	id("dev.gmitch215.bytebox")
+	kotlin("jvm") version "2.4.20"
+}
+
+bytebox {
+	handlerClass = "com.example.KotlinWorker"
+
+	wrangler {
+		name = "kotlin"
+		compatibilityDate = "2026-08-22"
+	}
+}
+```
+
+A handler is a `class` with a public no-argument constructor, or an `object`, which the generated
+entry point reads through its `INSTANCE`:
+
+```kotlin
+data class Language(val name: String, val year: Int)
+
+/** A Worker written as a Kotlin object; the build reads its instance, so nothing constructs it. */
+object KotlinWorker : Worker {
+	private val languages = listOf(Language("Java", 1995), Language("Kotlin", 2011), Language("Rust", 2015))
+
+	override fun fetch(request: Request, env: Env, ctx: ExecutionCtx): Response {
+		val since = request.query("since", "2000").toInt()
+		val released = languages.filter { it.year >= since }.associate { it.name to it.year }
+		if (released.isEmpty()) return Bytebox.response("nothing since $since")
+
+		return Bytebox.response(released.entries.joinToString("\n") { "${it.key} was released in ${it.value}" })
+	}
+}
+```
+
+A Durable Object has to be a class, because there is one instance per id; naming an `object` fails
+the build with a message that says so. Collections, `Sequence`, string templates, data classes,
+sealed classes, `Regex`, `String.format` and `@JSONType` classes print what they print on a JVM, and
+the handler is plain blocking code, as in Java.
+
+kotlinx-coroutines does not build. `runBlocking`, `launch`, `delay`, `withContext` and
+`Dispatchers.*` are refused by the compiler, and a `suspend` lambda started with `startCoroutine`
+compiles to a module the engine rejects. `sequence { yield(...) }` works. The refusals name classes
+the class library lacks, so the list shrinks as they arrive; the first wall and the measurements are
+in [ADVANCED_USAGE.md](ADVANCED_USAGE.md).
 
 ---
 
@@ -158,7 +217,181 @@ bytebox {
 ```
 
 `bindingsReport` prints every declared binding and the resource it points at, which is where a name
-that drifted shows up.
+that drifted shows up. A Workflow binding is `WORKFLOW`; see [Workflows](#-workflows).
+
+`durableObject("Counter")` declares the binding only. `durableObjects("com.example.Counter")` also
+writes the exported class and a `new_sqlite_classes` migration, which Wrangler requires before it
+accepts the Worker. The generated entry loads the module a second time for the Durable Object classes,
+with a gate of their own, so a Worker can wait on its own Durable Object. A project that declares one
+compiles and instantiates the module twice and holds two heaps; the memory of the second was not
+measured. A queue binding only sends: a Worker receives a queue's messages after
+`wrangler { queueConsumers("orders") }`. The generated `wrangler.jsonc` writes `queues` as
+`{ "producers": [...], "consumers": [...] }`, and a consumer-only Worker writes only `consumers`. A
+Worker that is a queue's consumer cannot be deleted until `wrangler queues consumer remove <queue>
+<worker>` runs.
+
+---
+
+## 🗂 Cache
+
+The Workers Cache API needs no binding. `Caches.defaultCache()` returns `caches.default` and
+`Caches.open(name)` a named cache. `match`, `put` and `delete` take a `Request` or a URL string and
+block; `putAsync`, `matchAsync` and `deleteAsync` return the promise, for `ctx.waitUntil`.
+
+```java
+public class CachedWorker implements Worker {
+
+	@Override
+	public Response fetch(Request request, Env env, ExecutionCtx ctx) {
+		Cache cache = Caches.defaultCache();
+
+		Response stored = cache.match(request);
+		if (stored != null) return answer(stored.text(), "HIT");
+
+		Response fresh = answer(compute(request.path()), "MISS");
+		fresh.getHeaders().set("Cache-Control", "public, max-age=60");
+		ctx.waitUntil(cache.putAsync(request, fresh.copy()));
+		return fresh;
+	}
+
+	private static Response answer(String body, String cache) {
+		TSObject headers = TSObject.object();
+		headers.set("X-Cache", TSObject.of(cache));
+		return Bytebox.response(body, 200, headers);
+	}
+
+	private static String compute(String path) {
+		long sum = 0;
+		for (int i = 1; i <= 10_000; i++) sum += (long) i * path.length();
+		return path + " computed at " + System.currentTimeMillis() + ", sum " + sum + "\n";
+	}
+}
+```
+
+`put` consumes the response body, so `Response.copy()` makes the copy to store while the handler
+returns the original. The key must be a `GET` request: a POST key, a `206` response and `Vary: *`
+reject with a `TypeError`. A response with `Set-Cookie` is accepted and not stored, and an entry is
+local to one data center, so a request routed elsewhere is a miss.
+`samples/cache` is this class. Deployed to a free account, two requests for one URL answered
+`X-Cache: MISS` and then `X-Cache: HIT` with the same body.
+
+---
+
+## 🧱 HTMLRewriter
+
+`HTMLRewriter.create()` builds the platform's rewriter, and `transform(response)` returns a response
+whose body is rewritten as it is read. Handlers are lambdas or classes:
+
+```java
+private static Response links(Response page) {
+	ContentOptions html = ContentOptions.html();
+	return HTMLRewriter.create()
+		.on("a[href]", link -> {
+			link.setAttribute("target", "_blank");
+			link.setAttribute("rel", "noopener");
+		})
+		.on("body", body -> body.prepend("<aside>Rewritten in Java</aside>", html))
+		.onEnd(end -> end.append("<!-- served by bytebox -->", html))
+		.transform(page);
+}
+```
+
+Selectors are the platform's and pass through as strings. `on` takes an element handler; `onText`
+and `onComments` take the text and comments inside a match; `onDoctype`, `onDocumentText`,
+`onDocumentComments` and `onEnd` are the document-level ones. Content is a string, escaped as text
+unless it is wrapped in `ContentOptions.html()`. Text arrives in chunks, so collect them until
+`isLastInTextNode()` before matching a word that could span two.
+
+Each handler call runs on its own fiber and the platform waits for it, so a handler can call a
+binding or `fetch`. That costs a fiber per call, about twice the platform's own per-callback cost in
+a local measurement, so register the kinds you need and match narrowly. A handler that throws stops
+the parse and errors the body, and in Java the message arrives as a `JSRejection` that carries the
+text and not the exception class. A `Response` or a stream cannot be passed as content.
+`samples/html-rewriter` rewrites a static page on `/` and words in text on `/text`. Deployed to a free
+account, both routes answered the rewritten page.
+
+---
+
+## 🔁 Workflows
+
+A Java class that implements `WorkflowEntrypoint` is a Workflow. Name it once in the build and the
+plugin writes the exported class the platform instantiates and a `workflows` entry in
+`wrangler.jsonc`:
+
+```kotlin
+bytebox {
+	handlerClass = "com.example.OrderWorker"
+	workflows("com.example.OrderFlow")
+
+	wrangler {
+		name = "workflow"
+		compatibilityDate = "2026-08-22"
+	}
+
+	bindings {
+		workflow("com.example.OrderFlow", "WORKFLOW", "order-flow")
+	}
+}
+```
+
+```java
+public class OrderFlow implements WorkflowEntrypoint {
+
+	@Override
+	public TSObject run(WorkflowEvent event, Step step, Env env) {
+		String item = event.payload().get("item").asString();
+
+		TSObject reserved = step.run("reserve", () -> TSObject.of("reserved " + item));
+		step.sleep("wait for payment", "2 seconds");
+		TSObject receipt = step.run("ship", () ->
+			TSObject.of(reserved.asString() + ", shipped for " + event.instanceId())
+		);
+
+		TSObject output = TSObject.object();
+		output.set("receipt", receipt);
+		return output;
+	}
+}
+```
+
+`Step.run(name, body)` wraps `step.do` and stores the body's result; `Step.run(name, config, body)`
+takes Cloudflare's step config as a `TSObject`, for retries and timeouts. `Step.sleep(name, duration)`
+takes a duration string such as `"30 seconds"`. A body that throws fails the attempt and the platform
+retries it. The method is `run` because `do` is a keyword.
+
+The platform runs `run` again from the top to resume an instance, and a finished step returns its
+saved result without running its body. Keep side effects, the clock and anything random inside a
+step, and give each step the same name every time. Fields on the class do not survive a resume.
+
+`run` goes through the isolate's gate like every other entry. While an instance is inside `run`, a
+sleep included, every other call into the same Worker waits, and a sleeping instance cannot be
+terminated, paused or sent an event from that Worker. A Workflow that sleeps for long belongs in a
+Worker that serves nothing else. The three-argument `workflow(class, binding, name)` above names the
+binding and the Workflow yourself. A project that only calls `workflows(...)` gets
+`WORKFLOW_<CLASS_IN_UPPER_SNAKE_CASE>` and a Workflow name in kebab case. The name must be unique per
+account. The one-argument `workflow(class)` writes a configuration without the `binding` key, and
+Wrangler refuses it.
+
+`createBatch` starts up to 100 instances in one call. The options form takes Cloudflare's object as
+it is and reports what was and was not created:
+
+```java
+TSObject instances = TSObject.array();
+instances.push(Workflow.entry("first", params));
+instances.push(Workflow.entry("second", params));
+TSObject options = TSObject.object();
+options.set("instances", instances);
+Workflow.BatchResult result = flow.createBatch(options);
+```
+
+`createBatch(count, params)` starts `count` instances with one input. `BatchResult.created()` lists
+the instances and `errors()` the entries that were not created, each with an `index`, `id`, `code`
+and `message`: 10405 is an id that exists, and 10415 an id the batch repeats. The older list form,
+`createBatch(List<TSObject>)`, returns only the created instances and skips a duplicate id silently,
+which is why Cloudflare deprecates it. The options form needs Wrangler 4.148.0 or later for local
+development. `samples/workflow` starts a Workflow at `/start?item=lamp` and reads it back at
+`/status?id=<id>`. Deployed to a free account, `/start` returned an instance id and `/status` read
+`queued`, then `running`, then `complete` with the receipt.
 
 ---
 
@@ -197,27 +430,72 @@ HttpResponse<String> answer = HttpClient.newHttpClient()
 	.send(HttpRequest.newBuilder(URI.create("https://example.com")).build(), ofString());
 ```
 
-| Package                | Runs on                                         |
-| ---------------------- | ----------------------------------------------- |
-| `java.time`            | ThreeTen-Backport, with zone rules from `Intl`  |
-| `java.net.URL`         | `fetch`                                         |
-| `java.net.http`        | `fetch`, without `sendAsync`                    |
-| `java.net.Socket`      | `cloudflare:sockets`                            |
-| `java.net.InetAddress` | DNS over HTTPS                                  |
-| `java.util.regex`      | the platform's own engine                       |
-| `java.util.Formatter`  | digits computed in Java, separators from `Intl` |
+| Package                       | Runs on                                                        |
+| ----------------------------- | -------------------------------------------------------------- |
+| `java.time`                   | ThreeTen-Backport, with zone rules from `Intl`                 |
+| `java.net.URL`                | `fetch`                                                        |
+| `java.net.http`               | `fetch`, without `sendAsync`                                   |
+| `java.net.Socket`             | `cloudflare:sockets`                                           |
+| `java.net.InetAddress`        | DNS over HTTPS                                                 |
+| `java.util.regex`             | the platform's own engine                                      |
+| `java.util.Formatter`         | digits computed in Java, separators from `Intl`                |
+| `java.security.MessageDigest` | pure Java: MD5, SHA-1, SHA-256, SHA-384, SHA-512               |
+| `java.util.concurrent`        | `ReentrantLock`, `Condition` and `CompletableFuture` on fibers |
+| `java.lang.ClassLoader`       | an empty classpath, so a lookup finds nothing                  |
 
-Each one either matches a JVM or refuses while you are building. A pattern using an atomic group, a
-possessive quantifier or a flag written inside it will not compile, and `Pattern.compile` names what
-it refused. `String.format` refuses `%t` and `%a`. `ServerSocket` and `DatagramSocket` are left
-unresolved, because the platform accepts no inbound connection and speaks no UDP.
+Each one either matches a JVM, refuses, or is listed below as a known difference. Only `ServerSocket`
+and `DatagramSocket` fail the build, because they are left unresolved: the platform accepts no inbound
+connection and speaks no UDP. The rest refuse when the program runs. `Pattern.compile` throws a
+`PatternSyntaxException` naming a flag written anywhere but the start of a pattern, `\G`, `\X`, a
+capturing group inside an atomic group or a possessive quantifier, a backreference inside the group
+it names, and a backreference under `CASE_INSENSITIVE` without `UNICODE_CASE`. `String.format` throws on `%t` unless
+`classlib { dateFormat = true }` switches it on.
 
-Nothing about this is free of consequences, and they are written down. The clock is pinned between
-I/O, so `Instant.now()` gives the time the invocation began. `CASE_INSENSITIVE` folds the whole of
-Unicode here where a JVM folds ASCII. A timezone's recorded history is not available, because the
-rules are derived from the offsets `Intl` reports rather than read from a table.
+The differences are measured and written down. The clock is pinned between I/O, so `Instant.now()`
+gives the time the invocation began. `CASE_INSENSITIVE` with `UNICODE_CASE` folds the whole of
+Unicode, and differs from a JVM at 62 characters; with it, `Pattern.matcher` throws
+`UnsupportedOperationException` for text holding a character above U+FFFF when the pattern uses `.`
+or a negated class. A timezone's recorded history is not available by default, because
+the rules are derived from the offsets `Intl` reports rather than read from a table;
+`classlib { zoneHistory = true }` reads it from a bundled database instead. `Double.toString`,
+`Float.toString` and `Double.parseDouble` and `Float.parseFloat` agree with JDK 27 on everything
+tested, including hexadecimal floats and the messages of a refused string; `Float.toString` costs
+two to three times what the class library's did. One number difference is known: negating a runtime
+`0.0` with `-x` gives `+0.0`, where a JVM gives `-0.0`. The regex engine is the platform's, and a pattern that backtracks badly costs far more than on a
+JVM: the technical report measures `(a+)+b` at 14 ms on a reference JVM and 11,010 ms here, over
+inputs of 20 to 30 characters.
 
 [ADVANCED_USAGE.md](ADVANCED_USAGE.md) covers the rest, with the measured cost of each.
+
+---
+
+## 🧩 Opt-In Extras
+
+The `classlib` block switches on a part of the class library that costs bytes only when a program
+uses it. It has two flags, `zoneHistory` and `dateFormat`, both off by default:
+
+```kotlin
+bytebox {
+	classlib {
+		zoneHistory = true
+		dateFormat = true
+	}
+}
+```
+
+With `zoneHistory`, `ZoneRules.getTransitions()` and `getTransitionRules()` answer from the bundled
+tzdata 2024b database, and so do `nextTransition` and `previousTransition`, at any distance, as a JVM
+does. Without it the first two throw `UnsupportedOperationException` and the other two answer `null`
+past 400 days. The 108,033-byte file and about 40 KB of reader code enter the module only when the
+program calls one of those methods: a Worker that calls `getTransitions()` once grew from 45,662 to
+193,379 bytes, and one that sets the flag and never calls any of them grew by 495 to 827 bytes.
+
+With `dateFormat`, `String.format` accepts `%t` and `%T` for a `long`, `Long`, `Date`, `Calendar` or
+`java.time` value in `Locale.US`, `Locale.ENGLISH` or no locale. `%tZ`, `%tc`, any other locale and an
+instant before 1582-10-15 (a JVM reads the Julian calendar there) are still refused. The flag adds 24
+to 28 KB to a program that formats and 585 bytes to one that does not. With it off, the hook that
+makes the flag possible costs 361 bytes in a program the size of `samples/standard-library` that
+calls `String.format`, and nothing in one that does not.
 
 ---
 
@@ -268,6 +546,11 @@ Written by hand, the same call is three lines:
 private static native String id(int size);
 ```
 
+A script the compiler cannot parse fails the build with `Error in @JSBody script`. The compiler's
+parser is older than the engine that runs the module, so each script it reports is parsed again by
+`node` as a function body, and only a script `node` refuses too fails the build. A `for...of` loop or
+a BigInt literal passes. Without `node` on the PATH every reported script fails the build.
+
 ---
 
 ## ⚡ Startup
@@ -302,8 +585,15 @@ parallelism to be had. A Java thread is a fiber scheduled on the host's queue.
 
 That makes a blocking API the honest one. `env` calls look synchronous and suspend underneath, which
 is what a compiled continuation gives you. `Future` is the escape hatch when work needs to overlap or
-outlive a response — `java.util.concurrent.CompletableFuture` does not exist on this platform, and a
-thread pool cannot.
+outlive a response. `java.util.concurrent.CompletableFuture` runs each stage on a fiber, and a thread
+pool cannot.
+
+A lock, a join or a get works from the handler's constructor, from a static initialiser it
+triggers, and from the constructor of a Durable Object or a Workflow, because the generated entry
+builds each of them on a fiber. A constructor that throws fails the request that reached it, with the
+exception's message, and the next request builds again. A handler that throws while it is built fails
+every request with `module start failed: ...`, and one that never finishes fails them with
+`module start has not finished`.
 
 Workers freeze the clock between I/O, so a `Thread.sleep` would never come due. bytebox advances its
 own clock to cover one and gives the compiled program the same clock to read, which is what makes a
@@ -323,6 +613,16 @@ CPU meter is readable from inside a request.
 | Subrequests per request   | 50       | 10,000   |
 | Cron Triggers per account | 5        | 250      |
 
+The table is the platform's stated numbers. Measured on one deployed Worker on the free plan, neither
+CPU nor memory behaved as written: a Worker linking the retargeted class library reported a median
+`cpuTime` of 43 ms (range 2 to 79 ms, n = 8) with nothing terminated, and one request allocated
+254 MiB while 256 MiB was refused. The sources are the CPU and isolate memory measurements in the
+[technical report](TECHNICAL_REPORT.md). Two limits come from the compiled program itself. Calling `hashCode()` on a JavaScript string or
+number caches it in a map the platform does not promise to drain, so a long-lived isolate that hashes
+unbounded distinct strings grows that map. A class
+initialiser that throws does not leave the class erroneous for the rest of the program, as it does
+on a JVM.
+
 ---
 
 ## 🛑 Out of Scope
@@ -330,11 +630,15 @@ CPU meter is readable from inside a request.
 - **Subprocesses.** `Process` and `ProcessBuilder` do not exist, and Workers have no equivalent.
 - **Threads.** Fibers are real; parallelism is not.
 - **Dynamic class loading.** Compilation is closed-world, so reflection resolves against classes
-  registered at build time.
+  registered at build time, and `ClassLoader` finds no resources and loads no classes.
+- **Kotlin coroutines.** kotlinx-coroutines does not build, and a `suspend` lambda started with
+  `startCoroutine` produces a module the engine rejects.
 - **Listening.** `ServerSocket` and `DatagramSocket` are left unresolved, because the platform accepts
   no inbound connection and speaks no UDP.
-- **`%t` and `%a`, atomic groups, possessive quantifiers.** Anything a retargeted API cannot render
-  exactly is refused where you can see it rather than approximated where you cannot.
+- **A flag written after the start of a pattern, and `%tZ` or `%tc`.** Anything a retargeted API
+  cannot render exactly is refused where you can see it rather than approximated where you cannot.
+- **A Workflow beside a busy Worker.** While an instance is inside `run`, every other call into
+  that Worker waits.
 
 ---
 
