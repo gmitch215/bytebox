@@ -99,6 +99,27 @@ class SubstitutionsTest {
 	}
 
 	@Test
+	@DisplayName(
+		"replaces the class library's two analyzers, their results and its double synthesizer, and not the float synthesizer"
+	)
+	void textAnalyzer() {
+		List<Selection> selections = install(new dev.gmitch215.bytebox.text.Substitutions());
+
+		assertEquals(2, selections.size());
+		Selection analyzer = selections.get(1);
+		assertTrue(analyzer.matches("org.teavm.classlib.impl.text.DoubleAnalyzer"));
+		assertTrue(analyzer.matches("org.teavm.classlib.impl.text.DoubleAnalyzer$Result"));
+		assertTrue(analyzer.matches("org.teavm.classlib.impl.text.DoubleSynthesizer"));
+		assertTrue(analyzer.matches("org.teavm.classlib.impl.text.FloatAnalyzer"));
+		assertTrue(analyzer.matches("org.teavm.classlib.impl.text.FloatAnalyzer$Result"));
+		assertFalse(analyzer.matches("org.teavm.classlib.impl.text.FloatSynthesizer"));
+		assertEquals(
+			List.of("org.teavm.classlib.impl.text", "dev.gmitch215.bytebox.text"),
+			analyzer.replacement()
+		);
+	}
+
+	@Test
 	@DisplayName("replaces the pattern and the matcher, and leaves the rest of java.util.regex")
 	void regex() {
 		Selection selection = install(new dev.gmitch215.bytebox.regex.Substitutions()).get(0);
@@ -114,6 +135,52 @@ class SubstitutionsTest {
 	}
 
 	@Test
+	@DisplayName("supplies the message digest and its exception, and no other java.security class")
+	void security() {
+		Selection selection = install(new dev.gmitch215.bytebox.security.Substitutions()).get(0);
+
+		assertTrue(selection.matches("java.security.MessageDigest"));
+		assertTrue(selection.matches("java.security.DigestException"));
+		assertFalse(selection.matches("java.security.NoSuchAlgorithmException"));
+		assertFalse(selection.matches("java.security.GeneralSecurityException"));
+		assertFalse(selection.matches("dev.gmitch215.bytebox.security.Engine"));
+		assertEquals(
+			List.of("java.security", "dev.gmitch215.bytebox.security"),
+			selection.replacement()
+		);
+	}
+
+	@Test
+	@DisplayName("replaces java.lang.ClassLoader by name and nothing wider")
+	void classLoader() {
+		Selection selection = install(new dev.gmitch215.bytebox.classloader.Substitutions()).get(0);
+
+		assertTrue(selection.matches("java.lang.ClassLoader"));
+		assertFalse(selection.matches("java.lang.Class"));
+		assertFalse(selection.matches("java.lang.ClassLoader$Foo"));
+		assertFalse(selection.matches("java.lang.String"));
+		assertEquals(
+			List.of("java.lang", "dev.gmitch215.bytebox.classloader"),
+			selection.replacement()
+		);
+	}
+
+	@Test
+	@DisplayName("supplies the linked blocking queue that SLF4J replays its events through")
+	void linkedBlockingQueue() {
+		Selection queue = install(new dev.gmitch215.bytebox.util.Substitutions()).get(0);
+
+		assertTrue(queue.matches("java.util.concurrent.LinkedBlockingQueue"));
+		assertFalse(queue.matches("java.util.concurrent.ArrayBlockingQueue"));
+		assertFalse(queue.matches("java.util.concurrent.LinkedBlockingDeque"));
+		assertEquals(
+			List.of("java.util.concurrent", "dev.gmitch215.bytebox.util"),
+			queue.replacement()
+		);
+		assertEquals(1, install(new dev.gmitch215.bytebox.classloader.Substitutions()).size());
+	}
+
+	@Test
 	@DisplayName("supplies the object streams the class library has only markers for")
 	void io() {
 		Selection selection = install(new dev.gmitch215.bytebox.io.Substitutions()).get(0);
@@ -122,6 +189,50 @@ class SubstitutionsTest {
 		assertTrue(selection.matches("java.io.ObjectInputStream"));
 		assertFalse(selection.matches("java.io.Serializable"));
 		assertEquals(List.of("java.io", "dev.gmitch215.bytebox.io"), selection.replacement());
+	}
+
+	@Test
+	@DisplayName("supplies the lock, its interface and its condition, and the atomic arrays")
+	void locks() {
+		List<Selection> selections = install(new dev.gmitch215.bytebox.locks.Substitutions());
+
+		assertEquals(3, selections.size());
+		Selection locks = selections.get(0);
+		assertTrue(locks.matches("java.util.concurrent.locks.ReentrantLock"));
+		assertTrue(locks.matches("java.util.concurrent.locks.Lock"));
+		assertTrue(locks.matches("java.util.concurrent.locks.Condition"));
+		assertTrue(locks.matches("java.util.concurrent.locks.ReentrantLock$Waiters"));
+		assertFalse(locks.matches("java.util.concurrent.locks.ReadWriteLock"));
+		assertEquals(
+			List.of("java.util.concurrent.locks", "dev.gmitch215.bytebox.locks"),
+			locks.replacement()
+		);
+
+		Selection atomics = selections.get(1);
+		assertTrue(atomics.matches("java.util.concurrent.atomic.AtomicReferenceArray"));
+		assertFalse(atomics.matches("java.util.concurrent.atomic.AtomicInteger"));
+	}
+
+	@Test
+	@DisplayName("supplies the completable future with the types it needs, and not the executors")
+	void completableFuture() {
+		List<Selection> selections = install(new dev.gmitch215.bytebox.locks.Substitutions());
+
+		assertEquals(3, selections.size());
+		Selection futures = selections.get(2);
+		assertTrue(futures.matches("java.util.concurrent.CompletableFuture"));
+		assertTrue(futures.matches("java.util.concurrent.CompletionStage"));
+		assertTrue(futures.matches("java.util.concurrent.Future"));
+		assertTrue(futures.matches("java.util.concurrent.CompletionException"));
+		assertTrue(futures.matches("java.util.concurrent.TimeoutException"));
+		assertFalse(futures.matches("java.util.concurrent.TimeUnit"));
+		assertFalse(futures.matches("java.util.concurrent.Executor"));
+		assertFalse(futures.matches("java.util.concurrent.ExecutionException"));
+		assertFalse(futures.matches("java.util.concurrent.CancellationException"));
+		assertEquals(
+			List.of("java.util.concurrent", "dev.gmitch215.bytebox.locks"),
+			futures.replacement()
+		);
 	}
 
 	private static List<Selection> install(SubstitutionPolicy policy) {

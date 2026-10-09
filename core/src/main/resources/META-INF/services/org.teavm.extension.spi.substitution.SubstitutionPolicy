@@ -2,5 +2,8 @@ dev.gmitch215.bytebox.locks.Substitutions
 dev.gmitch215.bytebox.io.Substitutions
 dev.gmitch215.bytebox.net.Substitutions
 dev.gmitch215.bytebox.regex.Substitutions
+dev.gmitch215.bytebox.security.Substitutions
 dev.gmitch215.bytebox.text.Substitutions
 dev.gmitch215.bytebox.time.Substitutions
+dev.gmitch215.bytebox.classloader.Substitutions
+dev.gmitch215.bytebox.util.Substitutions
