@@ -1,0 +1,4 @@
+src/*
+!src/index.mjs
+node_modules
+.wrangler
