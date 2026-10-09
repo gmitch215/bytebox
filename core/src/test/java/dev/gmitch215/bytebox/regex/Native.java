@@ -17,10 +17,26 @@ final class Native implements Engine {
 
 	private Native() {}
 
+	/**
+	 * The platform's {@code i} folds across Unicode, so it is run as the pair of flags that does the same
+	 * here. The two still differ at a few characters, which only the transcript in
+	 * {@code experiments/conformance} can show.
+	 */
 	@Override
 	public Object compile(String source, String flags) {
-		int mask = flags.indexOf('i') >= 0 ? java.util.regex.Pattern.CASE_INSENSITIVE : 0;
-		return java.util.regex.Pattern.compile(source, mask);
+		int mask =
+			flags.indexOf('i') >= 0
+				? java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE
+				: 0;
+		// the v flag spells a code point with u and braces where a jvm spells it with x
+		String written =
+			flags.indexOf('v') >= 0
+				? source.replaceAll(
+						"(?<!\\\\)((?:\\\\\\\\)*)\\\\u\\{([0-9a-fA-F]+)\\}",
+						"$1\\\\x{$2}"
+					)
+				: source;
+		return java.util.regex.Pattern.compile(written, mask);
 	}
 
 	/**

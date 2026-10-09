@@ -26,14 +26,22 @@ public final class Matcher implements MatchResult {
 	private final String input;
 
 	private final Engine engine;
+
+	/** The source this runs, which depends on whether the input has a character above U+FFFF. */
+	private final Pattern.Form form;
+
 	private Object match;
 	private int from;
 	private boolean matched;
+
+	/** Where the text the match was found in begins, which is not the start of the input after a try inside a pair. */
+	private int shift;
 
 	Matcher(Pattern parent, String input) {
 		this.parent = parent;
 		this.engine = parent.engine();
 		this.input = input;
+		this.form = parent.form(input);
 	}
 
 	/** {@return the pattern this matches with} */
@@ -51,16 +59,80 @@ public final class Matcher implements MatchResult {
 			matched = false;
 			return false;
 		}
-		match = engine.find(parent.searching(), input, from);
+		shift = 0;
+		match = search(from);
 		matched = match != null;
 		if (!matched) {
 			from = input.length() + 1;
 			return false;
 		}
-		int end = engine.end(match, 0);
+		int end = position(0, true);
 		// a match of nothing has to move on, or the search would find it again for ever
-		from = end == engine.start(match, 0) ? end + 1 : end;
+		from = end == position(0, false) ? end + 1 : end;
 		return true;
+	}
+
+	/**
+	 * The next match from a position, as a JVM finds it.
+	 *
+	 * <p>A JVM looks at every UTF-16 unit, the middle of a surrogate pair included: a search resumes one
+	 * unit after an empty match, and a pattern that cannot take half of a pair tries each unit in turn. A
+	 * pattern for the {@code v} flag reads code points. The platform backs up to the start of a pair
+	 * it is given the middle of, and when its own scan reaches the middle of one it reads nothing there
+	 * ({@code (?![\s\S])} holds), so what it finds starting there is not what a JVM finds. Every try in
+	 * the middle of a pair is made here instead, on the text from there, where nothing before it can be
+	 * seen, which is what a JVM sees too.
+	 */
+	private Object search(int at) {
+		if (!form.unicode()) return engine.find(form.searching(), input, at);
+		if (insidePair(at)) {
+			Object inside = tryInside(at);
+			if (inside != null) return inside;
+			at++;
+		}
+		while (true) {
+			Object found = engine.find(form.searching(), input, at);
+			int limit = found == null ? input.length() : engine.start(found, 0);
+			if (form.unitScan()) {
+				for (int index = at + 1; index < limit; index++) {
+					if (!insidePair(index)) continue;
+					Object inside = tryInside(index);
+					if (inside != null) return inside;
+				}
+			}
+			if (found == null || !insidePair(limit)) return found;
+			// a match that starts in the middle of a pair was read by the platform without that half
+			if (form.unitScan()) {
+				Object inside = tryInside(limit);
+				if (inside != null) return inside;
+			}
+			at = limit + 1;
+		}
+	}
+
+	private boolean insidePair(int index) {
+		return (
+			index > 0 &&
+			index < input.length() &&
+			Character.isLowSurrogate(input.charAt(index)) &&
+			Character.isHighSurrogate(input.charAt(index - 1))
+		);
+	}
+
+	/** A match that starts at the second half of a pair, found on the text from there. */
+	private Object tryInside(int index) {
+		Object inside = engine.find(form.inside(), input.substring(index), 0);
+		if (inside != null) shift = index;
+		return inside;
+	}
+
+	/** Where the whole match, or a group, begins or ends in the input, or -1 when it took no part. */
+	private int position(int group, boolean end) {
+		return shifted(end ? engine.end(match, group) : engine.start(match, group));
+	}
+
+	private int shifted(int at) {
+		return at < 0 ? at : at + shift;
 	}
 
 	/**
@@ -84,7 +156,8 @@ public final class Matcher implements MatchResult {
 	 * @return whether it does
 	 */
 	public boolean matches() {
-		match = engine.find(parent.anchored(), input, 0);
+		shift = 0;
+		match = engine.find(form.anchored(), input, 0);
 		matched = match != null;
 		return matched;
 	}
@@ -95,7 +168,8 @@ public final class Matcher implements MatchResult {
 	 * @return whether it does
 	 */
 	public boolean lookingAt() {
-		match = engine.find(parent.leading(), input, 0);
+		shift = 0;
+		match = engine.find(form.leading(), input, 0);
 		matched = match != null;
 		return matched;
 	}
@@ -131,7 +205,7 @@ public final class Matcher implements MatchResult {
 	public String group(int index) {
 		checkMatched();
 		checkGroup(index);
-		return engine.group(match, index);
+		return engine.group(match, jsGroup(index));
 	}
 
 	@Override
@@ -143,11 +217,7 @@ public final class Matcher implements MatchResult {
 
 	@Override
 	public int groupCount() {
-		return match != null
-			? engine.count(match) - 1
-			: parent.names().size() > 0
-				? parent.names().size()
-				: countGroups();
+		return parent.groups().count();
 	}
 
 	@Override
@@ -159,14 +229,14 @@ public final class Matcher implements MatchResult {
 	public int start(int index) {
 		checkMatched();
 		checkGroup(index);
-		return engine.start(match, index);
+		return position(jsGroup(index), false);
 	}
 
 	@Override
 	public int start(String name) {
 		checkMatched();
 		checkName(name);
-		return engine.namedStart(match, name);
+		return shifted(engine.namedStart(match, name));
 	}
 
 	@Override
@@ -178,14 +248,14 @@ public final class Matcher implements MatchResult {
 	public int end(int index) {
 		checkMatched();
 		checkGroup(index);
-		return engine.end(match, index);
+		return position(jsGroup(index), true);
 	}
 
 	@Override
 	public int end(String name) {
 		checkMatched();
 		checkName(name);
-		return engine.namedEnd(match, name);
+		return shifted(engine.namedEnd(match, name));
 	}
 
 	@Override
@@ -208,14 +278,14 @@ public final class Matcher implements MatchResult {
 	/** {@return what was found, kept as it is now} */
 	public MatchResult toMatchResult() {
 		checkMatched();
-		int count = engine.count(match) - 1;
+		int count = groupCount();
 		List<String> groups = new ArrayList<>(count + 1);
 		List<Integer> starts = new ArrayList<>(count + 1);
 		List<Integer> ends = new ArrayList<>(count + 1);
 		for (int index = 0; index <= count; index++) {
-			groups.add(engine.group(match, index));
-			starts.add(engine.start(match, index));
-			ends.add(engine.end(match, index));
+			groups.add(engine.group(match, jsGroup(index)));
+			starts.add(position(jsGroup(index), false));
+			ends.add(position(jsGroup(index), true));
 		}
 		Map<String, Integer> named = parent.namedGroups();
 		return new Kept(groups, starts, ends, named);
@@ -360,7 +430,7 @@ public final class Matcher implements MatchResult {
 				group = (int) wider;
 				at++;
 			}
-			String value = engine.group(match, group);
+			String value = engine.group(match, jsGroup(group));
 			if (value != null) into.append(value);
 		}
 	}
@@ -374,21 +444,20 @@ public final class Matcher implements MatchResult {
 	}
 
 	private void checkGroup(int index) {
-		int count = engine.count(match) - 1;
-		if (index < 0 || index > count) {
+		if (index < 0 || index > groupCount()) {
 			throw new IndexOutOfBoundsException("no group " + index);
 		}
 	}
 
 	private void checkName(String name) {
-		if (!parent.names().contains(name)) {
+		if (!parent.groups().names.containsKey(name)) {
 			throw new IllegalArgumentException("no group called " + name);
 		}
 	}
 
-	/** Counted from the pattern when nothing has matched yet, which is when the runtime still answers. */
-	private int countGroups() {
-		return parent.namedGroups().size();
+	/** The platform's number for a group by the caller's, which an atomic group written as a capture shifts. */
+	private int jsGroup(int index) {
+		return parent.groups().js(index);
 	}
 
 	private static boolean isDigit(char character) {
