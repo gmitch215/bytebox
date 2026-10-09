@@ -40,8 +40,8 @@ Java code that was never written for this platform continues to work: dates and
 times, HTTP clients, sockets, regular expressions and string formatting all behave
 as they do elsewhere, because the build points each of those references at an
 implementation that the platform can actually run. Where no faithful implementation
-is possible, the build refuses the program instead of producing one that looks
-right and behaves differently.
+is possible, the build or the running program refuses instead of producing a
+result that looks right and behaves differently.
 
 # Statement of Need
 
@@ -71,10 +71,11 @@ Bytebox supplies the loader that works, the platform bindings a Worker needs, th
 build that ties them together, and a retargeted class library beneath the unchanged
 Java programming model. For researchers, it also functions as an instrument: it is
 the artifact through which a managed language runtime can be deployed to, and
-measured on, a commercial serverless host. Given identical sources and settings it
-emits byte-identical output, so committed binaries serve as stable experimental
-inputs and a change in a measurement is attributable to a change in the
-implementation rather than to build drift.
+measured on, a commercial serverless host. Given identical sources and settings the
+smallest sample emits byte-identical output and a larger one alternates between two
+outputs two bytes apart, so committed binaries serve as stable inputs for size and
+behaviour, and a measurement of one is attributable to the implementation once that
+noise floor is stated.
 
 # State of the Field
 
@@ -127,16 +128,16 @@ computed in Java because the host's rounding answers a different question. JSON
 codecs and `java.io` serialization are generated at build time rather than
 discovered by reflection, since a closed-world compiler cannot prune a reflective
 closure.
-Constructs with no faithful equivalent — inbound sockets, subprocesses, dynamic
-class loading, several formatter and regular-expression forms — fail at compile time
-with the refusal named.
+Constructs with no faithful equivalent are refused with the reason named: inbound
+sockets fail the build, and regular-expression and formatter forms throw when the
+program reaches them.
 
 Java and npm dependencies coexist. A binding generator resolves TypeScript and
 JavaScript type information in descending order of reliability and falls back to a
 dynamic representation when no static shape can be established, so a package without
 published types still binds.
 
-Ten samples in the repository each demonstrate one feature and double as the
+Fourteen samples in the repository each demonstrate one feature and double as the
 end-to-end check, and a verification step compiles every built module through the
 loader's own options before the build reports success.
 
@@ -151,9 +152,11 @@ allowance without termination; the isolate memory ceiling measured 254 MiB accep
 and 256 MiB refused against a documented 128 MB [@cflimits]; five of fourteen
 third-party Java libraries compile and run unmodified, with the refusals falling
 into three
-identifiable layers; and a regular expression translated to byte-identical results
-across 48 pattern–input pairs cost 14 ms on the reference JVM and 11,010 ms on the
-host engine, showing that semantic agreement does not imply equivalent cost.
+identifiable layers; and a regular-expression translator produced byte-identical
+results on every construct it accepts, across 48 pattern–input pairs; separately,
+`(a+)+b` over inputs of 20 to 30 characters cost 14 ms in total on the reference JVM
+and 11,010 ms on the host engine, showing that semantic agreement does not imply
+equivalent cost.
 
 None of those measurements was obtainable without a way to deploy a managed runtime
 to this platform, which is the research role the software plays. The study names this
