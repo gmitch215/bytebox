@@ -1631,6 +1631,16 @@ Durable Object gate, and a call routed through two stubs did not answer in 1.5 s
 pinned by `npm/tests/workers/durable-self.spec.ts`, which times out with the Durable Object put back
 on the handlers' gate. Source: `build/batch/v103/results/Y1.md`, `build/batch/v103/results/Z1.md`.
 
+Deployed, it does not happen. One Java Worker with two Durable Object classes, on a free-plan account
+on 2026-10-09, three arms: the handler awaiting a Durable Object (control), a Durable Object awaiting
+one of the other class, and a Durable Object awaiting another instance of its own class. Each arm took
+20 sequential and 10 concurrent requests with new ids and again with one fixed id: 180 of 180
+answered, the slowest in 4.4 s under concurrency with new ids, and `wrangler tail` showed no
+cancellation. The same Worker under `wrangler dev --local` answered none of the 12 requests in either
+Durable Object arm, and once one had hung, the control arm on that server answered none of 12 either.
+Whether the deployed instances shared an isolate was not observed. Source:
+`build/batch/v103/results/M1.md`.
+
 `main` runs once per instance, so the handler's constructor and the static initialisers it triggers
 run twice per isolate for a project with a Durable Object (`GenerateEntryPointTask` starts the
 handler's fiber from `main`). A constructor with a side effect, such as a log line, doubles.

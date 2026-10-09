@@ -60,7 +60,8 @@ compile and instantiate at startup and a second heap in every isolate that loads
 handler's constructor and the static initialisers it triggers run twice; a constructor with a side
 effect, such as a log line, doubles. A Durable Object whose `fetch` awaits another Durable Object of
 the same Worker still waits on itself under `wrangler dev --local`, because both use the Durable
-Object gate (measured: no answer in 1.5 s).
+Object gate (measured: no answer in 1.5 s), and every later call to that dev server waits behind it.
+Deployed, the same calls answer.
 
 [durable-object](samples/durable-object) shows the shape. Its methods do not synchronise anything themselves,
 because the gate has already serialised them.
