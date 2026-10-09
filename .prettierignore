@@ -13,3 +13,5 @@ npm/tests/fixtures/
 npm/tests/workers/*.build.mjs
 size/ledger/
 **/build/generated/
+experiments/kotlin-*/worker/src/
+.remember/
