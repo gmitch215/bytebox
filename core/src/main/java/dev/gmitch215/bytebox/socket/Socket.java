@@ -1,9 +1,7 @@
 package dev.gmitch215.bytebox.socket;
 
-import dev.gmitch215.bytebox.concurrent.Async;
 import org.teavm.jso.JSObject;
 import org.teavm.jso.core.JSPromise;
-import org.teavm.jso.core.JSString;
 
 /**
  * One TCP connection.
@@ -23,19 +21,43 @@ import org.teavm.jso.core.JSString;
  */
 public final class Socket implements AutoCloseable {
 
+	/** Characters held before a write is sent (64 Ki, a stream chunk, so memory stays bounded). */
+	static final int MAX_PENDING = 64 * 1024;
+
 	private final JSSocket socket;
+	private final Wire wire;
+	private final StringBuilder pending = new StringBuilder();
 
 	Socket(JSSocket socket) {
+		this(socket, Wire.of(socket));
+	}
+
+	Socket(JSSocket socket, Wire wire) {
 		this.socket = socket;
+		this.wire = wire;
 	}
 
 	/**
 	 * Writes text, UTF-8 encoded.
 	 *
+	 * <p>The text is held and sent with the next call that reads, upgrades, closes or waits on the
+	 * socket, with {@link #flush()}, or once 64 Ki characters are held, so a dialogue of short lines
+	 * costs one write per exchange rather than one per line and a large upload never sits whole in
+	 * memory. A write that fails is reported by that later call (or by this one, at the cap).
+	 *
 	 * @param text the text
 	 */
 	public void write(String text) {
-		Async.awaitVoid(Streams.write(socket, text));
+		pending.append(text);
+		if (pending.length() >= MAX_PENDING) flush();
+	}
+
+	/** Sends whatever {@link #write(String)} is holding. */
+	public void flush() {
+		if (pending.length() == 0) return;
+		String text = pending.toString();
+		pending.setLength(0);
+		wire.write(text);
 	}
 
 	/**
@@ -44,8 +66,8 @@ public final class Socket implements AutoCloseable {
 	 * @return the text, or {@code null} at end of stream
 	 */
 	public String read() {
-		JSString chunk = Async.await(Streams.read(socket));
-		return chunk == null ? null : chunk.stringValue();
+		flush();
+		return wire.read();
 	}
 
 	/**
@@ -54,7 +76,8 @@ public final class Socket implements AutoCloseable {
 	 * @return everything that arrived
 	 */
 	public String readAll() {
-		return Async.await(Streams.readAll(socket)).stringValue();
+		flush();
+		return wire.readAll();
 	}
 
 	/**
@@ -64,8 +87,8 @@ public final class Socket implements AutoCloseable {
 	 * @return the text up to but not including the delimiter, or {@code null} at end of stream
 	 */
 	public String readUntil(String delimiter) {
-		JSString found = Async.await(Streams.readUntil(socket, delimiter));
-		return found == null ? null : found.stringValue();
+		flush();
+		return wire.readUntil(delimiter);
 	}
 
 	/**
@@ -77,21 +100,32 @@ public final class Socket implements AutoCloseable {
 	 * @return the encrypted socket
 	 */
 	public Socket startTLS() {
-		return new Socket(socket.startTls());
+		flush();
+		return new Socket(wire.startTls());
 	}
 
 	/** {@return a promise that settles when the connection closes, for {@code ctx.waitUntil}} */
 	public JSPromise<JSObject> closed() {
-		return socket.getClosed();
+		flush();
+		return wire.closed();
 	}
 
-	/** {@return the platform's own socket object, for anything this surface does not cover} */
+	/**
+	 * {@return the platform's own socket object, for anything this surface does not cover}
+	 *
+	 * <p>Held writes are sent first, so what is written through the object follows them.
+	 */
 	public JSObject unwrap() {
+		flush();
 		return socket;
 	}
 
 	@Override
 	public void close() {
-		Async.awaitVoid(socket.close());
+		try {
+			flush();
+		} finally {
+			wire.close();
+		}
 	}
 }
